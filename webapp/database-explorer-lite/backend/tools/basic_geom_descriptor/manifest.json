@@ -1,0 +1,19 @@
+{
+  "manifestVersion": 1,
+  "id": "basic_geom_descriptor",
+  "name": "Basic geom descriptor",
+  "description": "Computes [n_atoms, mean_pair_dist, std_pair_dist, max_pair_dist] from already loaded XYZ files using only NumPy.",
+  "needsXyz": true,
+  "inputs": [
+    {
+      "key": "descriptor_name",
+      "label": "Descriptor name",
+      "type": "string",
+      "default": "basic_geom",
+      "required": true
+    }
+  ],
+  "output": {
+    "kind": "add_descriptor"
+  }
+}

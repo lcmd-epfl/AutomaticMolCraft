@@ -1,16 +1,19 @@
 webapp/database-explorer-lite/backend/_ase_tmp/
 *.db
 *.venv
+.env
+**/.env
+*.swp
 __pycache__/
 *.pyc
 
 # Local data, models, and generated runtime outputs
-data/
-models/
-outputs/
-generated/
-analysis_jobs/
-training_outputs/
+/data/
+/models/
+/outputs/
+/generated/
+/analysis_jobs/
+/training_outputs/
 *.mol
 
 # Documentation build artifacts and local bundles

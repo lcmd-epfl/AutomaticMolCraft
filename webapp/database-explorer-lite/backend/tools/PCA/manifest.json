@@ -1,0 +1,33 @@
+{
+  "manifestVersion": 1,
+  "id": "pca_descriptor",
+  "name": "PCA descriptor",
+  "description": "Runs a NumPy-only PCA on one stored descriptor and saves the first two principal components as numeric columns.",
+  "needsXyz": false,
+  "inputs": [
+    {
+      "key": "descriptor_name",
+      "label": "Descriptor name",
+      "type": "string",
+      "default": "",
+      "required": true
+    },
+    {
+      "key": "pc1_name",
+      "label": "PC1 column name",
+      "type": "string",
+      "default": "",
+      "required": false
+    },
+    {
+      "key": "pc2_name",
+      "label": "PC2 column name",
+      "type": "string",
+      "default": "",
+      "required": false
+    }
+  ],
+  "output": {
+    "kind": "add_columns"
+  }
+}

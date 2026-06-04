@@ -1,0 +1,26 @@
+{
+  "manifestVersion": 1,
+  "id": "row_index",
+  "name": "Row index",
+  "description": "Adds a simple per-row index column. This example shows the minimal tool structure.",
+  "needsXyz": false,
+  "inputs": [
+    {
+      "key": "target_name",
+      "label": "Choose numeric column",
+      "type": "string",
+      "default": "row_index",
+      "required": true
+    },
+    {
+      "key": "start_at",
+      "label": "Start index at",
+      "type": "integer",
+      "default": 0,
+      "required": true
+    }
+  ],
+  "output": {
+    "kind": "add_columns"
+  }
+}

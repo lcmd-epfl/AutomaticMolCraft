@@ -1,0 +1,9 @@
+fastapi==0.114.2
+uvicorn[standard]==0.29.0
+PyYAML>=6.0
+
+
+ase>=3.22,<3.24
+
+python-multipart
+openTSNE>=1.0.4
