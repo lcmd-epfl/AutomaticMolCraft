@@ -1,0 +1,51 @@
+site_name: AutomaticMolCraft
+site_description: User tutorial for the AutomaticMolCraft web UI
+repo_url: https://github.com/pregHosh/AutomaticMolCraft
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - toc.integrate
+    - search.suggest
+    - content.tooltips
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Quick Start: quickstart.md
+  - UI Overview: ui-overview.md
+  - Generation:
+      - De-novo: generation/index.md
+      - Structure-guided: generation/structure-guided.md
+      - Presets: generation/presets.md
+  - Data Manager: data-manager.md
+  - Analysis Tools: analysis-tools.md
+  - Visualization: visualization.md
+  - Workflows: workflows/index.md
+  - Model Training: training.md
+  - Plug-in Tools: plugin-tools.md
+  - FAQ: faq.md

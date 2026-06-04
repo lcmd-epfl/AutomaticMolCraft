@@ -1,0 +1,29 @@
+webapp/database-explorer-lite/backend/_ase_tmp/
+*.db
+*.venv
+__pycache__/
+*.pyc
+
+# Local data, models, and generated runtime outputs
+data/
+models/
+outputs/
+generated/
+analysis_jobs/
+training_outputs/
+*.mol
+
+# Documentation build artifacts and local bundles
+site/
+docs.zip
+
+# Frontend build/cache artifacts
+webapp/database-explorer-lite/frontend/dist/
+webapp/database-explorer-lite/frontend/tsconfig.tsbuildinfo
+
+# Local assistant/editor metadata
+AGENTS.md
+CLAUDE.md
+
+# Large local papers or notes
+*.pdf
