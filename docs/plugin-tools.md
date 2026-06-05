@@ -2,8 +2,6 @@
 
 The **Plug-in tools** tab exposes custom external property predictors — docking workflows, QSAR models, FEP surrogates, or any scoring function that can be wrapped in a Python script.
 
-<!-- screenshot: plugin tools tab — list of discovered plug-ins with one selected and its inputs rendered -->
-![Plug-in tools tab](assets/screenshots/plugins_overview.png)
 
 ## Using a plug-in
 

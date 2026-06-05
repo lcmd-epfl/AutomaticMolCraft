@@ -2,8 +2,6 @@
 
 The **Analysis tools** tab enriches the loaded dataset by running computations as asynchronous background jobs. Each job either adds new columns to the dataset or replaces existing XYZ geometries with optimized versions.
 
-<!-- screenshot: analysis tools tab — left panel showing tool list, right panel showing tool inputs for one selected tool -->
-![Analysis tools overview](assets/screenshots/analysis_overview.png)
 
 !!! note
     A compiled dataset must be present (loaded via the [Data Manager](data-manager.md)) before running any tool.
@@ -20,8 +18,6 @@ The **Analysis tools** tab enriches the loaded dataset by running computations a
 
 Each job in the queue shows its tool name, status badge (`queued / running / completed / failed / cancelled`), and a log/terminal button to inspect the raw output.
 
-<!-- screenshot: analysis tools tab — job queue with one completed job showing Apply and Register buttons -->
-![Completed job with Apply](assets/screenshots/analysis_job_done.png)
 
 **Cancelling**: click the stop button on a running job to cancel it. Queued jobs can be removed before they start.
 

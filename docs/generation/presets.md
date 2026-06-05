@@ -2,8 +2,6 @@
 
 Both generation tabs (**3D molecule generation** and **Structure-directed generation**) include a **Presets** bar that lets you save and restore named parameter configurations. Presets are stored as JSON files on disk and survive server restarts.
 
-<!-- screenshot: generation tab — presets bar with two saved presets and the save/load controls -->
-![Presets bar](../assets/screenshots/presets_bar.png)
 
 ## Saving a preset
 

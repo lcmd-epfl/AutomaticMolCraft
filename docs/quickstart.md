@@ -13,8 +13,6 @@ conda activate molcraft
 
 Open `http://localhost:8000`. The app opens on the **Management** tab by default.
 
-<!-- screenshot: top-level — browser showing the app on first load, Management tab active, empty state -->
-![App on first load](assets/screenshots/quickstart_first_load.png)
 
 ---
 
@@ -33,8 +31,6 @@ The **Models** panel (left column) lists every checkpoint folder found under `MO
 
 If the list is empty, check that your checkpoint folders each contain `edm_chem.pkl` and that `MOLCRAFT_MODELS_DIR` points to the right location (shown as grey text under the model list).
 
-<!-- screenshot: generation tab — models panel with one model selected, description visible -->
-![Model selected](assets/screenshots/quickstart_model_selected.png)
 
 ### 2c. Configure parameters
 
@@ -53,15 +49,11 @@ The **Results** panel (right column) shows:
 - A status badge cycling `queued → running → completed`
 - A live log tail updating every 2 seconds
 
-<!-- screenshot: generation tab — results panel with status "running" and several log lines visible -->
-![Generation running](assets/screenshots/quickstart_running.png)
 
 ### 2e. Inspect the result
 
 When the status shows `completed`, the molecule name appears as a pill in the results list. Click the pill to load it.
 
-<!-- screenshot: generation tab — 3D viewer showing the generated molecule, pill highlighted in the list -->
-![3D viewer with result](assets/screenshots/quickstart_result.png)
 
 In the viewer:
 
@@ -87,8 +79,6 @@ Click **Use as ref** (→ button) to send the molecule to the Structure-directed
 
 A progress bar appears while the dataset is built. On completion, the header card shows the molecule and column count.
 
-<!-- screenshot: management tab — after compile, header showing molecule count and column count -->
-![Dataset compiled](assets/screenshots/quickstart_compiled.png)
 
 !!! tip "Loading non-generated data"
     For existing data, use the source registration panel instead. Choose **CSV + XYZ folder** or **ASE database (.db)**, pick files or paste paths, then click **Register source** to stage and inspect columns or **Register and compile** for a one-step load.
@@ -103,8 +93,6 @@ A progress bar appears while the dataset is built. On completion, the header car
 4. Left-click drag to draw a lasso and select a subset of molecules.
 5. The built-in **3D Structure Viewer** panel updates to show the selected molecule.
 
-<!-- screenshot: visualization tab — scatter plot with a lasso selection and the 3D viewer showing the selected molecule -->
-![Visualization with selection](assets/screenshots/quickstart_visualization.png)
 
 ---
 

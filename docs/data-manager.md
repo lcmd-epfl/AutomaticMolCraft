@@ -2,8 +2,9 @@
 
 The **Management** tab assembles molecular datasets from multiple sources, merges them, and exports the result. It operates in two stages: **staging** (register and configure each source) and **compilation** (merge into one dataset).
 
-<!-- screenshot: management tab — full tab showing the dataset stats header, source flashcards, and compile controls -->
-![Data Manager overview](assets/screenshots/management_overview.png)
+![Management workspace](assets/screenshots/management_tab.png)
+
+*Molecular sources can be staged, renamed, included or excluded, reconciled at the column level, compiled into an active dataset, and exported for downstream modelling or analysis.*
 
 ## Header
 
@@ -41,8 +42,6 @@ Up to 3 recently used paths are shown as clickable chips below the inputs. Click
 
 A progress overlay (with a live progress bar) appears while the CSV is being parsed or the ASE file is being uploaded.
 
-<!-- screenshot: management tab — DatasetBuilder showing CSV + XYZ mode with a recent path chip highlighted -->
-![Source registration](assets/screenshots/management_register.png)
 
 ---
 
@@ -65,8 +64,6 @@ Generated rows contain molecule IDs and `data_source`; scalar descriptor columns
 
 Each source appears as a **flashcard**. You can have multiple sources open simultaneously.
 
-<!-- screenshot: management tab — one expanded source flashcard with column list and stats visible -->
-![Source flashcard](assets/screenshots/management_staged_source.png)
 
 ### Source-level controls
 

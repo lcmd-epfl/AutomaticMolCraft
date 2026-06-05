@@ -119,6 +119,30 @@ Applies to **diffusion** and **flow_matching** task families.
 | Generative analysis | true | Run a sample-quality evaluation at each validation step |
 | Use PoseBuster | true | Include PoseBuster validity metrics in the generative analysis |
 
+#### Conditional training (CFG)
+
+Setting **Context mask rate** > 0 trains a conditional model compatible with classifier-free guidance (CFG) at inference. During each training step, the property label is randomly dropped with this probability; the model learns both the conditional (`φ(z, t, y)`) and unconditional (`φ(z, t)`) denoising distributions in one pass. At inference, the two predictions are combined as:
+
+```
+ε̃ = (1 + w) φ(z, t, y) − w φ(z, t)
+```
+
+where `w` is the CFG scale set at generation time. Typical values for Context mask rate are 0.1–0.3.
+
+**Property normalization** affects how strongly the conditioning signal contributes to the denoising function and consequently how well CFG guidance transfers to generated structures. Two common approaches:
+
+- **Fixed scaling** — multiply the raw property value by a constant before feeding it to the model. Simple but sensitive to the chosen scale.
+- **MAD normalization** — scale property values by the median absolute deviation of the training set. More robust across different property ranges and has been shown to retain a higher structural validity rate at strong CFG scales compared to fixed scaling.
+
+Choose the normalization scheme consistently across the generative and regression (property-predictor) models for a given experiment.
+
+**Conditioning mechanism** — MolCraftDiffusion supports two ways to inject the property signal into the denoising network:
+
+| Mechanism | How it works | Notes |
+|---|---|---|
+| **Feature concatenation (Concat.)** | The property label `y` is appended directly to the molecular representation before each denoising step: `z = [x, h, y]`. | The conditional variable becomes part of the main noise-prediction input, giving it a stronger gradient during fine-tuning. Generally effective for CFG-guided generation. |
+| **Adapter** | A learnable MLP maps `y` into the hidden feature space of each EGNN block and adds this contribution only when the property context is present. | Attaches the conditioning pathway to an already-trained denoising network; may receive weaker corrective gradients during fine-tuning. |
+
 **Flow-matching extras** (shown only for `flow_matching`):
 
 | Parameter | Default | Description |
@@ -219,8 +243,6 @@ After clicking **Generate YAML**, the rendered configuration appears in a read-o
 - **Copy command** — copies a ready-to-run shell command (`MolCraftDiff train --config <path>`) to the clipboard.
 - **Download YAML** — saves the configuration as a `.yaml` file.
 
-<!-- screenshot: training tab — dry mode result showing inline YAML and Copy command + Download YAML buttons -->
-![Dry mode YAML output](assets/screenshots/training_dry_yaml.png)
 
 ---
 
@@ -245,8 +267,6 @@ Click a row to expand it. Three sub-tabs are available:
 | **Download YAML** | Any job | Saves this job's YAML configuration |
 | **Delete** | Completed / failed / cancelled jobs | Removes the job record (training output files on disk are not deleted) |
 
-<!-- screenshot: training tab — job history expanded, LOG tab active, running job with Stop button -->
-![Training job history](assets/screenshots/training_job_history.png)
 
 ---
 

@@ -35,8 +35,6 @@ Three ways to provide the reference XYZ:
 
 Once a scaffold loads, its 3D structure appears in an interactive viewer and the atom count fields are auto-populated (Fixed atom count = scaffold atoms + 1; Min = scaffold atoms).
 
-<!-- screenshot: structure-guided tab — scaffold loaded, 3D viewer showing molecule with atom count and name below it -->
-![Scaffold loaded](../assets/screenshots/sg_scaffold_loaded.png)
 
 ### 3. Choose inpaint or outpaint
 
@@ -55,8 +53,6 @@ Selected atom indices appear as removable chips below the viewer — click a chi
 
 Outpaint mode requires at least one selected atom; inpaint mode works with any number (including zero, which is equivalent to de-novo generation with a positional prior).
 
-<!-- screenshot: structure-guided tab — viewer with 4 atoms highlighted and their index chips below -->
-![Atom selection in viewer](../assets/screenshots/sg_atom_selection.png)
 
 ### 5. Set connector bonds *(outpaint only)*
 

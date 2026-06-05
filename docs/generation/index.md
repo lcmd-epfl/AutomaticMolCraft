@@ -12,8 +12,9 @@ The tab has three resizable columns. Drag the vertical dividers to adjust their 
 | **Generation** (centre) | Parameter controls, presets bar |
 | **Results** (right) | Job status, live log, molecule viewer, download buttons |
 
-<!-- screenshot: generation tab — all three columns annotated with their names -->
-![Generation tab layout](../assets/screenshots/generation_layout.png)
+![Generation workspace](../assets/screenshots/generation_tab.png)
+
+*The generation workspace exposes model selection, sampling parameters, conditional-generation controls, job execution, generated-structure inspection, and registration of generated molecules for downstream curation and analysis.*
 
 ---
 
@@ -31,8 +32,6 @@ Click **Show Model Details** to inspect:
 - All training hyperparameters
 - **Training-set property distributions** as mini histograms — click **Expand** on any histogram to see a full-size chart with axis ticks. These distributions tell you what property ranges the model has seen, which helps you choose realistic CFG targets.
 
-<!-- screenshot: generation models panel — one model selected, model details open showing histograms -->
-![Model details and histograms](../assets/screenshots/generation_model_details.png)
 
 ### 2. Configure parameters
 
@@ -53,8 +52,6 @@ When molecules are ready, their filenames appear as pills in the results list:
 - **All** button: load the first 9 molecules at once.
 - **Reset** button: clear all displayed molecules.
 
-<!-- screenshot: generation results panel — 3 panes showing different molecules, split=3 -->
-![Multi-molecule split view](../assets/screenshots/generation_split_view.png)
 
 In each pane:
 
@@ -107,6 +104,9 @@ In **random** mode, the **Max size** field (visible in Basic Parameters) acts as
 - **1**: mild guidance; the model balances diversity with property steering.
 - **2–5**: stronger guidance; output properties are closer to the targets but structural diversity decreases. Values above 3 can produce geometrically strained structures.
 
+!!! note "Guidance quality trade-off"
+    Increasing CFG scale strengthens property steering but typically reduces the fraction of generated structures that pass geometric validity checks (e.g. PoseBuster). This trade-off is sensitive to how the model was trained: models with MAD-normalized property targets tend to retain higher structural quality at equivalent CFG strengths compared to models trained with fixed-scale normalization. Check the training-set property histograms (visible in **Show Model Details**) to choose a realistic target value — requesting a property far outside the training distribution reduces both guidance effectiveness and structural quality.
+
 For each property the model was trained with:
 
 | Field | Range | Description |
@@ -127,8 +127,6 @@ When **Frames** > 1, each result pane shows a **3D / Denoising** toggle.
 
 The GIF is rendered server-side; a "Rendering…" message appears while it loads.
 
-<!-- screenshot: one result pane in Denoising mode showing the animated GIF -->
-![Denoising trajectory playback](../assets/screenshots/generation_trajectory.png)
 
 ---
 

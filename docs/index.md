@@ -2,8 +2,6 @@
 
 **AutomaticMolCraft** is a browser-based platform for 3D molecular generative design built on [MolCraftDiffusion](https://github.com/pregHosh/MolCraftDiffusion). It runs entirely locally — no cloud account or scripting required.
 
-<!-- screenshot: top-level — full app with all 7 tabs visible in the tab bar -->
-<!-- ![App overview](assets/screenshots/app_overview.png) -->
 
 ## What it covers
 
@@ -11,10 +9,19 @@
 |---|---|
 | **3D Generation** | Run pretrained diffusion models to generate novel 3D molecules from scratch |
 | **Structure-directed generation** | Extend or complete an existing structure using a reference scaffold |
-| **Data Manager** | Load, merge, and export multi-source molecular datasets |
+| **Data Manager** | Load, stage, merge, compute derived columns, and export multi-source molecular datasets |
 | **Analysis Tools** | Enrich datasets with quantum-chemistry calculations, fingerprints, and 2D coordinates |
 | **Visualization** | Explore chemical space in linked scatter plots, histograms, and a 3D structure viewer |
+| **Model Training** | Configure and queue MolCraftDiffusion training and fine-tuning jobs from the browser |
 | **Plug-in Tools** | Connect external property predictors without touching backend code |
+
+## System architecture
+
+![AutomaticMolCraft system architecture](assets/architecture_diagram.svg)
+
+*The browser-based React/TypeScript frontend communicates with a FastAPI backend that manages datasets, model discovery, generation jobs, analysis jobs, exports, and external tool execution. MolCraftDiffusion provides the model-training, sampling, and molecular-analysis routines exposed through the WebUI.*
+
+---
 
 ## Background and key concepts
 

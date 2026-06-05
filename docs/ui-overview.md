@@ -16,6 +16,14 @@ The tab bar runs across the top. Each tab is a self-contained workspace.
 
 ---
 
+## Workspace overview
+
+![AutomaticMolCraft workspace modules](assets/workspace_interplay_diagram.svg)
+
+*The interface is organized into task-specific workspaces for Management, Visualization, 3D molecule generation, Structure-directed generation, Analysis tools, Model training, and Plug-in tools, which together cover the main stages of a 3D molecular design workflow.*
+
+---
+
 ## How the tabs connect
 
 ```mermaid

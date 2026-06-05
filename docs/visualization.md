@@ -2,8 +2,9 @@
 
 The **Visualization** tab is a multi-panel workspace for exploring a compiled dataset. All panels share a **selection state**: interacting with any panel highlights the same molecules across all others and in the molecule viewer.
 
-<!-- screenshot: visualization tab — full tab with two scatter plots, a histogram, and a 3D molecule viewer, showing a lasso selection highlighted across all panels -->
-![Visualization workspace](assets/screenshots/visualization_overview.png)
+![Visualization workspace](assets/screenshots/visualization_tab.png)
+
+*Linked plots, filters, sortable tables, and molecular viewers share the same molecule-selection state, allowing property trends and structural subsets to be inspected within a single interface.*
 
 !!! note
     A dataset must be loaded via the [Data Manager](data-manager.md) before any panels can be used.
@@ -43,8 +44,6 @@ Click the **X** or **Y** axis label directly on the plot to open a column picker
 
 Lasso is the primary multi-selection tool. The lasso polygon activates only after the cursor has moved more than ~6 pixels from the starting point (short clicks are treated as single-point selection instead).
 
-<!-- screenshot: 2D scatter plot — freeform lasso polygon drawn with highlighted points inside -->
-![Lasso selection](assets/screenshots/viz_lasso.png)
 
 ### Plot settings
 
@@ -106,8 +105,6 @@ Each axis has its own section:
 
 Enable **Show summary and correlation** to overlay mean, standard deviation, and Pearson r for the two plotted axes.
 
-<!-- screenshot: scatter settings modal — all sections open, example values set -->
-![Scatter settings modal](assets/screenshots/viz_scatter_settings.png)
 
 ---
 
@@ -140,8 +137,6 @@ Click **⚙** on the histogram panel.
 | Dim unselected bins | off | Fade bars with no selected molecules |
 | Show stats | off | Overlay mean and standard deviation |
 
-<!-- screenshot: histogram settings modal -->
-![Histogram settings](assets/screenshots/viz_histogram_settings.png)
 
 ---
 
@@ -149,8 +144,6 @@ Click **⚙** on the histogram panel.
 
 The molecule viewer renders the 3D geometry of each selected molecule. It supports viewing up to 9 molecules simultaneously in a configurable split layout.
 
-<!-- screenshot: 3D viewer panel — three panes showing different molecules, 3D mode active in two, 2D mode in one -->
-![Molecule viewer](assets/screenshots/viz_molecule_viewer.png)
 
 ### Viewer controls (header bar)
 
@@ -237,5 +230,3 @@ Row-level filters apply across all panels in real time. The active filter scope 
 
 **Tanimoto similarity**: ranges 0–1 (0 = nothing in common, 1 = identical) based on shared Morgan fingerprint bits between the query and each dataset molecule.
 
-<!-- screenshot: filter panel — range slider active on one column, SMARTS filter on another, row count reduced -->
-![Filter panel](assets/screenshots/viz_filters.png)
