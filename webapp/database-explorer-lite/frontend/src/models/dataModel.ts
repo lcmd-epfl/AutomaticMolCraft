@@ -62,6 +62,9 @@ export type PlotPanelSpec = { i: string; x: number; y: number; w: number; h: num
 export type ScatterMarkerShape = 'circle' | 'square' | 'diamond' | 'triangle'
 export type ScatterGridDensity = 'auto' | 'light' | 'dense'
 export type ScatterColorPalette = 'tealSunset' | 'viridis' | 'plasma' | 'cividis' | 'turbo'
+export type ScatterColorSource = 'fixed' | 'column' | 'density'
+export type ScatterDensityMethod = 'binFrequency' | 'kde'
+export type ScatterDensityScale = 'linear' | 'log'
 
 export type Axis2DSettings = {
   range?: [number, number]
@@ -80,9 +83,14 @@ export type ScatterSettings = {
   markerShape: ScatterMarkerShape
   shapeBy?: string
   markerColor: string
+  colorSource?: ScatterColorSource
   colorBy?: string
   forceCategoricalColorBy?: boolean
   colorPalette?: ScatterColorPalette
+  densityMethod?: ScatterDensityMethod
+  densityGridSize?: number
+  densitySmoothing?: number
+  densityScale?: ScatterDensityScale
   backgroundColor: string
   showColorbar: boolean
   showXAxis: boolean

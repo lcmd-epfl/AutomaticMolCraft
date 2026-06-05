@@ -1197,18 +1197,6 @@ export default function StructureGuidedGenerationPage({
                   <NumberField label="Maximum" value={maxSize} setValue={setMaxSize} min={1} max={512} />
                 </div>
               )}
-              {structureMode === 'inpaint' && (
-                <div className="generation-form-grid compact">
-                  <NumberField
-                    label="Denoising strength"
-                    value={denoisingStrength}
-                    setValue={setDenoisingStrength}
-                    min={0}
-                    max={1}
-                    step={0.05}
-                  />
-                </div>
-              )}
             </>
           )}
         </section>
@@ -1270,8 +1258,20 @@ export default function StructureGuidedGenerationPage({
         <section className="generation-section">
           <div className="generation-section-title collapsible" onClick={() => setShowStructureSettings(v => !v)}>
             <ChevronDown size={13} style={{ transform: showStructureSettings ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
-            Structure Settings
+            Structure Guidance Settings
           </div>
+          {structureMode === 'inpaint' && (
+            <div className="generation-form-grid compact">
+              <NumberField
+                label="Denoising strength"
+                value={denoisingStrength}
+                setValue={setDenoisingStrength}
+                min={0}
+                max={1}
+                step={0.05}
+              />
+            </div>
+          )}
           {showStructureSettings && (
             <>
               <button className="generation-details-toggle" onClick={() => setShowAdjustmentPanel(v => !v)}>
@@ -1281,7 +1281,6 @@ export default function StructureGuidedGenerationPage({
                 <div className="generation-details-drawer">
                   {samplingMode === 'sample' && (
                     <>
-                      <div className="generation-mode"><Wand2 size={15} /> sample guidance</div>
                       <div className="generation-form-grid compact">
                         <NumberField label="Constraint strength" value={constraintStrength} setValue={setConstraintStrength} min={0} max={1} step={0.05} />
                         <NumberField label="Scale factor" value={scaleFactor} setValue={setScaleFactor} min={0} max={20} step={0.1} />

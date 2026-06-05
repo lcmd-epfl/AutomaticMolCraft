@@ -421,8 +421,12 @@ const DEFAULT_SCATTER_SETTINGS: ScatterSettings = {
   markerSize: 3,
   markerShape: 'circle',
   markerColor: '#5ac8fa',
+  colorSource: 'fixed',
   forceCategoricalColorBy: false,
   colorPalette: 'tealSunset',
+  densityMethod: 'binFrequency',
+  densitySmoothing: 1.5,
+  densityScale: 'linear',
   backgroundColor: '',
   showColorbar: true,
   showXAxis: true,
@@ -437,11 +441,13 @@ const DEFAULT_SCATTER_SETTINGS: ScatterSettings = {
 }
 
 function normalizeScatterSettings(spec: any): ScatterSettings {
+  const stored = spec.scatterSettings || {}
   return {
     ...DEFAULT_SCATTER_SETTINGS,
-    ...(spec.scatterSettings || {}),
-    sizeBy: spec.scatterSettings?.sizeBy ?? spec.sizeBy,
-    colorBy: spec.scatterSettings?.colorBy ?? spec.colorBy,
+    ...stored,
+    sizeBy: stored.sizeBy ?? spec.sizeBy,
+    colorBy: stored.colorBy ?? spec.colorBy,
+    colorSource: stored.colorSource ?? ((stored.colorBy ?? spec.colorBy) ? 'column' : 'fixed'),
   }
 }
 
@@ -751,7 +757,18 @@ function ScatterSettingsModal({
                 <option value="turbo">Turbo</option>
               </select>
             </label>
-            <label className="setting-row">
+            {!is3D && <label className="setting-row">
+              <span>Color source</span>
+              <select
+                value={settings.colorSource || 'fixed'}
+                onChange={e => patch({ colorSource: e.target.value as ScatterSettings['colorSource'] })}
+              >
+                <option value="fixed">Fixed</option>
+                <option value="column">Column</option>
+                <option value="density">Density / frequency</option>
+              </select>
+            </label>}
+            {(is3D || settings.colorSource === 'column') && <label className="setting-row">
               <span>Color by</span>
               <select
                 value={settings.colorBy || ''}
@@ -763,13 +780,43 @@ function ScatterSettingsModal({
                 <option value="">Fixed</option>
                 {colorColumns.map(col => <option key={col} value={col}>{col}</option>)}
               </select>
-            </label>
+            </label>}
+            {!is3D && settings.colorSource === 'density' && <>
+              <label className="setting-row">
+                <span>Method</span>
+                <select value={settings.densityMethod || 'binFrequency'} onChange={e => patch({ densityMethod: e.target.value as ScatterSettings['densityMethod'] })}>
+                  <option value="binFrequency">Bin frequency</option>
+                  <option value="kde">KDE density</option>
+                </select>
+              </label>
+              <label className="setting-row">
+                <span>Grid resolution</span>
+                <select value={settings.densityGridSize || ''} onChange={e => patch({ densityGridSize: e.target.value ? Number(e.target.value) : undefined })}>
+                  <option value="">Auto</option>
+                  <option value="24">24 x 24</option>
+                  <option value="48">48 x 48</option>
+                  <option value="72">72 x 72</option>
+                  <option value="96">96 x 96</option>
+                </select>
+              </label>
+              {settings.densityMethod === 'kde' && <label className="setting-row">
+                <span>Smoothing</span>
+                <input type="range" min={0.5} max={4} step={0.25} value={settings.densitySmoothing || 1.5} onChange={e => patch({ densitySmoothing: Number(e.target.value) })} />
+              </label>}
+              <label className="setting-row">
+                <span>Color scale</span>
+                <select value={settings.densityScale || 'linear'} onChange={e => patch({ densityScale: e.target.value as ScatterSettings['densityScale'] })}>
+                  <option value="linear">Linear</option>
+                  <option value="log">Log</option>
+                </select>
+              </label>
+            </>}
             <label className="setting-check">
-              <input type="checkbox" checked={settings.showColorbar} disabled={!settings.colorBy} onChange={e => patch({ showColorbar: e.target.checked })} />
+              <input type="checkbox" checked={settings.showColorbar} disabled={is3D ? !settings.colorBy : settings.colorSource === 'fixed' || (settings.colorSource === 'column' && !settings.colorBy)} onChange={e => patch({ showColorbar: e.target.checked })} />
               <span>Show colorbar</span>
             </label>
             <label className="setting-check">
-              <input type="checkbox" checked={!!settings.forceCategoricalColorBy} disabled={!settings.colorBy} onChange={e => patch({ forceCategoricalColorBy: e.target.checked })} />
+              <input type="checkbox" checked={!!settings.forceCategoricalColorBy} disabled={is3D ? !settings.colorBy : settings.colorSource !== 'column' || !settings.colorBy} onChange={e => patch({ forceCategoricalColorBy: e.target.checked })} />
               <span>Categorical</span>
             </label>
           </SettingsSection>

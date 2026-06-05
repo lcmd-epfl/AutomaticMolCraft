@@ -11,6 +11,7 @@ import { exportHostCanvasesToPng } from '../utils/plotExport'
 import type { ScatterPlotSpec, ScatterSettings } from '../models/dataModel'
 import { axisLabelExpressionToPlainText, formatAxisTick, generateLinearTicks, normalizeAxisSettings, normalizeRange, resolveAxisLabel } from '../utils/axisSettings'
 import { MAX_AUTO_CATEGORICAL_CLASSES, categoryLabelForValue, collectCategoryLegend, colorForCategoryLabel, paletteStops, rampColor, resolveScatterColorMode } from '../utils/scatterColor'
+import { computeScatterDensity } from '../utils/scatterDensity'
 import AxisLabelText from './AxisLabelText'
 
 type Bounds = { xmin: number; xmax: number; ymin: number; ymax: number }
@@ -35,8 +36,12 @@ const DEFAULT_SCATTER_SETTINGS: ScatterSettings = {
   markerSize: 3,
   markerShape: 'circle',
   markerColor: '#5ac8fa',
+  colorSource: 'fixed',
   forceCategoricalColorBy: false,
   colorPalette: 'tealSunset',
+  densityMethod: 'binFrequency',
+  densitySmoothing: 1.5,
+  densityScale: 'linear',
   backgroundColor: '',
   showColorbar: true,
   showXAxis: true,
@@ -193,11 +198,13 @@ function formatNum(v: number) {
 }
 
 function normalizeScatterSettings(spec: ScatterPlotSpec): ScatterSettings {
+  const stored = spec.scatterSettings || {}
   return {
     ...DEFAULT_SCATTER_SETTINGS,
-    ...(spec.scatterSettings || {}),
-    sizeBy: spec.scatterSettings?.sizeBy ?? spec.sizeBy,
-    colorBy: spec.scatterSettings?.colorBy ?? spec.colorBy,
+    ...stored,
+    sizeBy: stored.sizeBy ?? spec.sizeBy,
+    colorBy: stored.colorBy ?? spec.colorBy,
+    colorSource: stored.colorSource ?? ((stored.colorBy ?? spec.colorBy) ? 'column' : 'fixed'),
   }
 }
 
@@ -574,23 +581,11 @@ export default function ScatterPlot({
 
   useEffect(() => {
     setColorbarPos(null)
-  }, [settings.colorBy])
+  }, [settings.colorBy, settings.colorSource, settings.densityMethod])
 
   const sizeValues = settings.sizeBy && ds?.columns ? ds.columns[settings.sizeBy] : null
-  const colorValues = settings.colorBy && ds?.columns ? ds.columns[settings.colorBy] : null
-  const colorMode = useMemo(
-    () => resolveScatterColorMode(colorValues, {
-      maxCategoricalClasses: MAX_AUTO_CATEGORICAL_CLASSES,
-      forceCategorical: !!settings.forceCategoricalColorBy,
-    }),
-    [settings.forceCategoricalColorBy, colorValues]
-  )
-  const isContinuousColor = !!settings.colorBy && colorMode === 'continuous'
-  const isCategoricalColor = !!settings.colorBy && colorMode === 'categorical'
   const shapeValues = settings.shapeBy && ds?.columns ? ds.columns[settings.shapeBy] : null
   const sizeRange = useMemo(() => finiteRange(sizeValues), [sizeValues])
-  const colorRange = useMemo(() => (isContinuousColor ? finiteRange(colorValues) : null), [isContinuousColor, colorValues])
-  const categoryLegend = useMemo(() => (isCategoricalColor ? collectCategoryLegend(colorValues) : []), [isCategoricalColor, colorValues])
 
   const positions = useMemo(() => {
     if (!ds) return null
@@ -598,6 +593,42 @@ export default function ScatterPlot({
   }, [ds, spec.x, spec.y])
 
   const indexAll = useMemo(() => (positions ? getIndexArrayCached(positions) : null), [positions])
+  const densityValues = useMemo(() => {
+    if (settings.colorSource !== 'density' || !positions) return null
+    const raw = computeScatterDensity(positions, visibleMask, {
+      method: settings.densityMethod || 'binFrequency',
+      gridSize: settings.densityGridSize,
+      smoothing: settings.densitySmoothing || 1.5,
+    })
+    if (settings.densityScale !== 'log') return raw
+    const transformed = new Float32Array(raw.length)
+    for (let i = 0; i < raw.length; i++) {
+      transformed[i] = Number.isFinite(raw[i]) ? Math.log1p(raw[i]) : Number.NaN
+    }
+    return transformed
+  }, [positions, visibleMask, settings.colorSource, settings.densityMethod, settings.densityGridSize, settings.densitySmoothing, settings.densityScale])
+  const columnColorValues = settings.colorSource === 'column' && settings.colorBy && ds?.columns
+    ? ds.columns[settings.colorBy]
+    : null
+  const colorValues = settings.colorSource === 'density' ? densityValues : columnColorValues
+  const colorMode = useMemo(
+    () => settings.colorSource === 'density'
+      ? 'continuous'
+      : resolveScatterColorMode(colorValues, {
+        maxCategoricalClasses: MAX_AUTO_CATEGORICAL_CLASSES,
+        forceCategorical: !!settings.forceCategoricalColorBy,
+      }),
+    [settings.colorSource, settings.forceCategoricalColorBy, colorValues]
+  )
+  const hasColorValues = settings.colorSource === 'density' || (settings.colorSource === 'column' && !!settings.colorBy)
+  const isContinuousColor = hasColorValues && colorMode === 'continuous'
+  const isCategoricalColor = hasColorValues && colorMode === 'categorical'
+  const colorRange = useMemo(() => (isContinuousColor ? finiteRange(colorValues) : null), [isContinuousColor, colorValues])
+  const categoryLegend = useMemo(() => (isCategoricalColor ? collectCategoryLegend(colorValues) : []), [isCategoricalColor, colorValues])
+  const colorbarTitle = settings.colorSource === 'density'
+    ? `${settings.densityMethod === 'kde' ? 'KDE density' : 'Frequency'}${settings.densityScale === 'log' ? ' (log scale)' : ''}`
+    : settings.colorBy
+
   const dataBounds = useMemo(() => {
     if (!positions) return null
     const b = computeBounds(positions)
@@ -1155,7 +1186,7 @@ export default function ScatterPlot({
           </div>
         )}
 
-        {settings.colorBy && settings.showColorbar && (colorRange || isCategoricalColor) && (
+        {hasColorValues && settings.showColorbar && (colorRange || isCategoricalColor) && (
           <div
             ref={colorbarRef}
             className="scatter-colorbar"
@@ -1203,7 +1234,7 @@ export default function ScatterPlot({
               window.addEventListener('pointerup', onUp)
             }}
           >
-            <div className="scatter-colorbar-title" title={settings.colorBy}>{settings.colorBy}</div>
+            <div className="scatter-colorbar-title" title={colorbarTitle}>{colorbarTitle}</div>
             {colorRange && (
               <div className="scatter-colorbar-body">
                 <div
@@ -1215,7 +1246,7 @@ export default function ScatterPlot({
                   {colorbarTicks.map(t => (
                     <div key={t.pct} className="scatter-colorbar-tick" style={{ bottom: `${t.pct * 100}%` }}>
                       <span className="scatter-colorbar-tick-line" />
-                      <span className="scatter-colorbar-tick-label">{formatNum(t.value)}</span>
+                      <span className="scatter-colorbar-tick-label">{formatNum(settings.colorSource === 'density' && settings.densityScale === 'log' ? Math.expm1(t.value) : t.value)}</span>
                     </div>
                   ))}
                 </div>
