@@ -653,6 +653,9 @@ function ScatterSettingsModal({
     () => Array.from(new Set([...numericColumns, ...categoricalColumns])),
     [numericColumns, categoricalColumns]
   )
+  const categoricalColorSelected = Boolean(
+    settings.colorBy && (settings.forceCategoricalColorBy || categoricalColumns.includes(settings.colorBy))
+  )
 
   const axisFullRange = useCallback((column: string): [number, number] => {
     const values = ds?.columns?.[column] as Float32Array | Int32Array | undefined
@@ -748,13 +751,13 @@ function ScatterSettingsModal({
               <input type="color" value={settings.markerColor} onChange={e => patch({ markerColor: e.target.value })} />
             </label>
             <label className="setting-row">
-              <span>Palette</span>
+              <span>{categoricalColorSelected ? 'Categorical palette' : 'Palette'}</span>
               <select value={settings.colorPalette || 'tealSunset'} onChange={e => patch({ colorPalette: e.target.value as ScatterSettings['colorPalette'] })}>
-                <option value="tealSunset">Teal Sunset</option>
-                <option value="viridis">Viridis</option>
-                <option value="plasma">Plasma</option>
-                <option value="cividis">Cividis</option>
-                <option value="turbo">Turbo</option>
+                <option value="tealSunset">{categoricalColorSelected ? 'Tableau 20' : 'Teal Sunset'}</option>
+                <option value="viridis">{categoricalColorSelected ? 'Viridis contrast' : 'Viridis'}</option>
+                <option value="plasma">{categoricalColorSelected ? 'Plasma contrast' : 'Plasma'}</option>
+                <option value="cividis">{categoricalColorSelected ? 'Cividis contrast' : 'Cividis'}</option>
+                <option value="turbo">{categoricalColorSelected ? 'Turbo contrast' : 'Turbo'}</option>
               </select>
             </label>
             {!is3D && <label className="setting-row">

@@ -64,9 +64,7 @@ export function resolveScatterColorMode(
   }
 
   if (nonMissing === 0) return 'categorical'
-  if (options?.forceCategorical) {
-    return uniqueCats.size <= maxCategoricalClasses ? 'categorical' : 'continuous'
-  }
+  if (options?.forceCategorical) return 'categorical'
   if (nonNumeric === 0 && numericFinite >= 2) return 'continuous'
   if (numericFinite >= 8 && numericFinite / nonMissing >= 0.98) return 'continuous'
   if (uniqueCats.size > maxCategoricalClasses) return 'continuous'
@@ -91,21 +89,40 @@ export function collectCategoryLegend(values: any): CategoryLegendItem[] {
   return out
 }
 
-// Qualitative palette — visually distinct colors for categorical data
-const CATEGORICAL_COLORS: Array<[number, number, number]> = [
-  [78, 121, 167],
-  [242, 142, 43],
-  [225, 87, 89],
-  [118, 183, 178],
-  [89, 161, 79],
-  [237, 201, 72],
-  [176, 122, 162],
-  [255, 157, 167],
-  [156, 117, 95],
-  [186, 176, 172],
-  [59, 162, 114],
-  [255, 120, 70],
+const TABLEAU_20: Array<[number, number, number]> = [
+  [78, 121, 167], [242, 142, 43], [225, 87, 89], [118, 183, 178], [89, 161, 79],
+  [237, 201, 72], [176, 122, 162], [255, 157, 167], [156, 117, 95], [186, 176, 172],
+  [114, 158, 206], [255, 190, 125], [255, 142, 144], [154, 218, 210], [140, 209, 125],
+  [255, 226, 133], [211, 166, 201], [255, 188, 121], [214, 210, 207], [121, 199, 229],
 ]
+
+const QUALITATIVE_PALETTES: Record<NonNullable<ScatterSettings['colorPalette']>, Array<[number, number, number]>> = {
+  tealSunset: TABLEAU_20,
+  viridis: [
+    [68, 1, 84], [253, 231, 37], [33, 145, 140], [59, 82, 139], [144, 215, 67],
+    [72, 40, 120], [40, 174, 128], [190, 223, 38], [49, 104, 142], [94, 201, 98],
+    [90, 24, 120], [31, 158, 137], [216, 226, 25], [53, 183, 121], [44, 113, 142],
+    [115, 208, 86], [72, 193, 110], [38, 130, 142], [173, 220, 48], [62, 73, 137],
+  ],
+  plasma: [
+    [13, 8, 135], [240, 249, 33], [203, 71, 119], [126, 3, 167], [248, 149, 64],
+    [75, 3, 161], [229, 107, 93], [156, 23, 158], [251, 180, 47], [183, 48, 139],
+    [46, 5, 150], [218, 90, 105], [104, 0, 168], [244, 136, 73], [230, 246, 36],
+    [142, 13, 164], [238, 121, 83], [88, 2, 165], [249, 164, 55], [169, 35, 149],
+  ],
+  cividis: [
+    [0, 34, 78], [253, 234, 69], [109, 111, 112], [53, 76, 110], [166, 146, 99],
+    [17, 53, 91], [207, 179, 83], [82, 94, 112], [137, 128, 107], [232, 207, 75],
+    [35, 66, 103], [184, 162, 91], [68, 85, 112], [151, 137, 103], [220, 194, 79],
+    [8, 45, 85], [193, 170, 87], [95, 103, 113], [123, 120, 110], [242, 220, 72],
+  ],
+  turbo: [
+    [48, 18, 59], [249, 210, 74], [41, 122, 142], [122, 4, 3], [40, 187, 116],
+    [70, 55, 170], [238, 82, 54], [30, 154, 137], [174, 22, 39], [141, 224, 67],
+    [55, 89, 160], [220, 48, 43], [34, 174, 127], [199, 31, 47], [196, 238, 57],
+    [45, 106, 151], [250, 117, 51], [37, 201, 101], [151, 13, 25], [229, 229, 64],
+  ],
+}
 
 function hashString(s: string) {
   let h = 2166136261
@@ -119,10 +136,23 @@ function hashString(s: string) {
 export function colorForCategoryLabel(
   label: string,
   alpha: number,
-  _palette: ScatterSettings['colorPalette']
+  palette: ScatterSettings['colorPalette'],
+  categoryIndex?: number
 ): [number, number, number, number] {
   if (label === MISSING_CATEGORY_LABEL) return [MISSING_CATEGORY_COLOR[0], MISSING_CATEGORY_COLOR[1], MISSING_CATEGORY_COLOR[2], clamp(alpha, 0, 255)]
-  const h = hashString(label)
-  const c = CATEGORICAL_COLORS[h % CATEGORICAL_COLORS.length]
+  const colors = QUALITATIVE_PALETTES[palette || 'tealSunset']
+  const index = categoryIndex ?? hashString(label)
+  const c = colors[index % colors.length]
   return [c[0], c[1], c[2], clamp(alpha, 0, 255)]
+}
+
+export function categoryIndexMap(legend: CategoryLegendItem[]): Map<string, number> {
+  const out = new Map<string, number>()
+  let index = 0
+  for (const item of legend) {
+    if (item.label === MISSING_CATEGORY_LABEL) continue
+    out.set(item.label, index)
+    index += 1
+  }
+  return out
 }

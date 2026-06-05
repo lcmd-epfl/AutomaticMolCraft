@@ -35,7 +35,7 @@
 The core workflow is built around [MolCraftDiffusion](https://github.com/pregHosh/MolCraftDiffusion), a unified DDPM/DDIM diffusion framework for 3D molecular generation.
 
 - **De-novo generation**: run pretrained models directly from the browser with configurable sampling parameters and optional classifier-free guidance (CFG) toward per-property targets, each with an optional negative contrastive target.
-- **Structure-guided generation (inpaint / outpaint)**: provide a reference `.xyz` scaffold and select which atoms are frozen; the model completes or extends the structure. Denoising strength, constraint strength, and connector bond order are all tunable. The checkpoint's own reference scaffold can be extracted and used directly.
+- **Structure-guided generation (inpaint / outpaint)**: provide a reference `.xyz` scaffold and select atoms as the inpaint mask or outpaint connectors; the model modifies or extends the structure. Denoising strength, constraint strength, and connector bond order are all tunable. The checkpoint's own reference scaffold can be extracted and used directly.
 - **Trajectory inspection**: each generated molecule carries a full denoising trajectory that can be played back step-by-step in the 3D viewer.
 - **Multi-molecule comparison**: view up to nine generated structures side-by-side in a configurable split viewer.
 - **Job management**: generation runs asynchronously with live log streaming; past job outputs can be reloaded into the viewer or fed into the data pipeline without re-running the model.
@@ -96,7 +96,7 @@ Run pretrained 3D diffusion models directly from the browser.
 Complete or modify existing structures using a reference input.
 
 - Paste or upload a reference `.xyz` file as the structural scaffold.
-- Atom selection: choose which atoms from the reference are frozen as the scaffold; the model completes the remaining atoms.
+- Atom selection: choose the inpaint mask or the outpaint connector atoms directly in the reference viewer.
 - Load the reference scaffold from a model checkpoint automatically.
 - **Denoising strength** control: interpolate between preserving the reference and full de-novo generation.
 - Conditional property targets and CFG guidance work alongside structural guidance.
@@ -272,6 +272,95 @@ FRONTEND_HOST=0.0.0.0 FRONTEND_PORT=5174 FRONTEND_DEV=1 ./dev.sh
 ```
 
 Then open `http://localhost:8000` (or the configured host/port).
+
+---
+
+## Using the WebUI
+
+The WebUI is organized into seven tabs:
+
+| Tab | Purpose |
+|---|---|
+| **Visualization** | Explore the active compiled dataset with linked plots, filters, a data table, and the 3D viewer. |
+| **Management** | Register, organize, compile, filter, and export datasets. |
+| **3D molecule generation** | Run de-novo or property-guided generation. |
+| **Structure-directed generation** | Run inpaint or outpaint generation from a reference structure. |
+| **Analysis tools** | Queue analysis jobs or build multi-step analysis workflows. |
+| **Model training** | Configure, queue, monitor, and export MolCraftDiff training jobs. |
+| **Plug-in tools** | Run locally installed external tools. |
+
+### De-novo 3D molecule generation
+
+1. Open **3D molecule generation** and select a model from the left panel. Model metadata and training-distribution plots are shown beneath the model selector when available.
+2. In **Basic Parameters**, set:
+   - **Total molecules**: total number of structures to produce.
+   - **Batch size**: structures sampled per diffusion pass. Total molecules must be greater than batch size.
+   - **Frames**: number of saved trajectory frames. This must be lower than **Diffusion steps**.
+   - **Diffusion steps**, **Seed**, and **Max size**.
+3. In **Molecular Size**, choose:
+   - **random** to use the model's learned size distribution;
+   - **fixed** to provide one atom count; or
+   - **range** to provide minimum and maximum atom counts.
+4. For a conditional model, open **Conditional Targets**, set the **CFG scale**, and enter each property **Target**. Leave **Negative** as `-` to disable the negative target. For multi-property runs, either leave every negative target as `-` or provide all of them.
+5. Click **Generate** or press `Shift+Enter`.
+6. In **Results**, follow the job status and log, select up to nine molecules for split-view comparison, inspect their denoising trajectories, or download an individual **XYZ**, **SVG**, or the complete **XYZ zip**.
+7. Click **Use as ref** on a selected result to send it directly to **Structure-directed generation**.
+
+Named configurations can be saved and restored from the preset bar above the form.
+
+### Structure-directed generation
+
+Use this tab to modify a reference molecule with **inpaint** or extend it with **outpaint**.
+
+1. Open **Structure-directed generation** and select a compatible model from the left panel.
+2. Set **Basic Parameters** as for de-novo generation. The same total-molecule, batch-size, frame, and diffusion-step constraints apply.
+3. In **Input Structure**:
+   - choose **inpaint** to regenerate or perturb a reference structure;
+   - choose **outpaint** to extend a reference from one or more selected connector atoms;
+   - upload a **Reference XYZ**, paste a backend-accessible `.xyz` path, click **Load checkpoint scaffold** when available, or use **Use as ref** from a generated molecule;
+   - click atoms in the reference viewer to select them; right-click the viewer to clear the selection.
+4. In **Molecular Size**, choose **fixed** or **range** and set the requested output atom count. Inpaint output size must be at least the reference atom count; outpaint output size must be greater than the reference atom count.
+5. For property-conditioned structure models, use **Conditional Targets** to set **CFG scale**, targets, and optional negative targets.
+6. Configure **Structure Guidance Settings**:
+   - For **inpaint**, **Denoising strength** is always visible. Lower values preserve more of the reference; higher values permit stronger regeneration.
+   - Open **Adjustment Panel** for advanced controls such as **Constraint strength**, **Scale factor**, retry settings, and **Initial mask noise**.
+   - For **outpaint**, select at least one connector atom, then use the Adjustment Panel to set **Seed dist**, **Min dist**, **Spread**, **t_start**, and the bond order for each selected connector.
+7. Click **Generate** or press `Shift+Enter`, then inspect and download structures from **Results**.
+
+### Build and manage a dataset
+
+1. Open **Management**.
+2. Under **Upload / Register source**, register a CSV + XYZ source or an ASE `.db`; alternatively, use the generated-molecule builder to register a previous generation job.
+3. In **Dataset sources organizer**, include or exclude sources and columns, rename source labels or output columns, optionally subsample rows, and add simple computed numeric columns.
+4. Choose the **Duplicate ID policy** and **Column conflict policy**, then click **Compile dataset**. Visualization and analysis continue using the last successfully compiled dataset until compilation completes.
+5. Review and filter **Current compiled data**.
+6. Under **Download dataset**, export the full dataset, filtered rows, or selected rows as ASE `.db`, CSV + XYZ ZIP, or CSV. CSV + XYZ ZIP export is limited to 5,000 rows.
+
+Every compiled row carries a `data_source` value. Analysis tools operate on one selected source at a time unless **all compiled sources** is explicitly selected.
+
+### Run analysis tools
+
+1. Compile or register a dataset, then open **Analysis tools**.
+2. Select an **Analysis tool** and **Analysis source**, then configure the displayed parameters.
+3. Click **Add to queue** for a single job. Completed jobs must be explicitly applied with **Apply results** before their columns, descriptors, vectors, atom properties, or replacement XYZ geometries appear in the active dataset.
+4. For a repeatable sequence, click **Add workflow step**, configure each step's source and post-action, then click **Run** in the Workflow panel.
+5. For completed geometry-optimization jobs:
+   - **Apply results** replaces matching XYZ geometries in place.
+   - **Register optimized set** creates or replaces a managed source. An empty ID prefix with the original source label uses replacement mode; changing either uses append mode and requires collision-safe IDs and a new source label.
+
+**Clear queue** only removes the frontend queue history; it does not cancel or delete backend jobs.
+
+### Visualize and export results
+
+After compiling a dataset, open **Visualization**. Add 2D scatter, 3D scatter, or histogram panels from the toolbar. Plot selections, the table, filters, and the molecular viewer share the same active selection. Panels can be moved and resized, and each plot exposes its own axis, color, size, and marker settings.
+
+### Configure model training
+
+Open **Model training** to create a training configuration from the form or import an existing YAML file. Select the task family, choose **Run (queued)** or **Dry (YAML only)**, then configure the Data, Model, diffusion or flow-matching, optimization, logging, and engine sections. Use **Generate YAML** to inspect and download a configuration without running it, or **Queue training job** to start it. The Job History panel provides status, logs, cancellation, cloning, and YAML download actions.
+
+### Run plug-in tools
+
+Open **Plug-in tools**, select a loaded tool manifest, choose the required dataset/source, fill in its declared inputs, and run it. Tool availability and form fields are defined by each local `backend/tools/<tool_id>/manifest.json`; any manifest-loading problems appear as **Tool warnings** near the top of the WebUI.
 
 ---
 

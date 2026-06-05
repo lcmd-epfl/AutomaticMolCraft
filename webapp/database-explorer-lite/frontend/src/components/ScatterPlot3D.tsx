@@ -7,7 +7,7 @@ import { useUIStore } from '../store/uiStore'
 import { exportHostCanvasesToPng } from '../utils/plotExport'
 import type { ScatterPlotSpec, ScatterSettings } from '../models/dataModel'
 import { axisLabelExpressionToPlainText, formatAxisTick, generateLinearTicks, normalizeAxisSettings, normalizeRange, resolveAxisLabel } from '../utils/axisSettings'
-import { MAX_AUTO_CATEGORICAL_CLASSES, categoryLabelForValue, collectCategoryLegend, colorForCategoryLabel, paletteStops, rampColor, resolveScatterColorMode } from '../utils/scatterColor'
+import { MAX_AUTO_CATEGORICAL_CLASSES, categoryIndexMap, categoryLabelForValue, collectCategoryLegend, colorForCategoryLabel, paletteStops, rampColor, resolveScatterColorMode } from '../utils/scatterColor'
 
 type Point3D = {
   index: number
@@ -153,6 +153,7 @@ export default function ScatterPlot3D({
   const sizeRange = useMemo(() => finiteRange(sizeVals), [sizeVals])
   const colorRange = useMemo(() => (isContinuousColor ? finiteRange(colorVals) : null), [isContinuousColor, colorVals])
   const categoryLegend = useMemo(() => (isCategoricalColor ? collectCategoryLegend(colorVals) : []), [isCategoricalColor, colorVals])
+  const categoryIndices = useMemo(() => categoryIndexMap(categoryLegend), [categoryLegend])
 
   const dataRangeX = useMemo<[number, number]>(() => [xRange?.min ?? 0, xRange?.max ?? 1], [xRange?.min, xRange?.max])
   const dataRangeY = useMemo<[number, number]>(() => [yRange?.min ?? 0, yRange?.max ?? 1], [yRange?.min, yRange?.max])
@@ -219,7 +220,8 @@ export default function ScatterPlot3D({
           color = rampColor(t, alpha, settings.colorPalette)
         }
       } else if (settings.colorBy && colorVals && isCategoricalColor) {
-        color = colorForCategoryLabel(categoryLabelForValue(colorVals[i]), alpha, settings.colorPalette)
+        const label = categoryLabelForValue(colorVals[i])
+        color = colorForCategoryLabel(label, alpha, settings.colorPalette, categoryIndices.get(label))
       }
 
       let radius = settings.markerSize
@@ -235,7 +237,7 @@ export default function ScatterPlot3D({
     }
 
     return out
-  }, [dataset, xVals, yVals, zVals, visibleMask, dimSet, settings.opacity, settings.markerColor, settings.markerSize, settings.colorBy, settings.colorPalette, colorVals, colorRange, isCategoricalColor, settings.sizeBy, sizeVals, sizeRange, displayXRange.min, displayXRange.max, displayYRange.min, displayYRange.max, displayZRange.min, displayZRange.max])
+  }, [dataset, xVals, yVals, zVals, visibleMask, dimSet, settings.opacity, settings.markerColor, settings.markerSize, settings.colorBy, settings.colorPalette, colorVals, colorRange, isCategoricalColor, categoryIndices, settings.sizeBy, sizeVals, sizeRange, displayXRange.min, displayXRange.max, displayYRange.min, displayYRange.max, displayZRange.min, displayZRange.max])
 
   const colorbarStyle = useMemo(() => {
     const stops = paletteStops(settings.colorPalette)
@@ -461,7 +463,7 @@ export default function ScatterPlot3D({
           <div className="scatter-colorbar-title" title={settings.colorBy}>{settings.colorBy}</div>
           <div style={{ maxHeight: 190, overflowY: 'auto', display: 'grid', gap: 4, marginTop: 6 }}>
             {categoryLegend.map(item => {
-              const c = colorForCategoryLabel(item.label, 230, settings.colorPalette)
+              const c = colorForCategoryLabel(item.label, 230, settings.colorPalette, categoryIndices.get(item.label))
               return (
                 <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ width: 12, height: 12, borderRadius: 2, display: 'inline-block', background: `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${c[3] / 255})`, border: '1px solid rgba(255,255,255,0.28)' }} />

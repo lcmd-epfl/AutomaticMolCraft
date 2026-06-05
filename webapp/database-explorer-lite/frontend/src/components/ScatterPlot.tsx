@@ -10,7 +10,7 @@ import { perfHasMark, perfMarkEnd } from '../utils/perfMetrics'
 import { exportHostCanvasesToPng } from '../utils/plotExport'
 import type { ScatterPlotSpec, ScatterSettings } from '../models/dataModel'
 import { axisLabelExpressionToPlainText, formatAxisTick, generateLinearTicks, normalizeAxisSettings, normalizeRange, resolveAxisLabel } from '../utils/axisSettings'
-import { MAX_AUTO_CATEGORICAL_CLASSES, categoryLabelForValue, collectCategoryLegend, colorForCategoryLabel, paletteStops, rampColor, resolveScatterColorMode } from '../utils/scatterColor'
+import { MAX_AUTO_CATEGORICAL_CLASSES, categoryIndexMap, categoryLabelForValue, collectCategoryLegend, colorForCategoryLabel, paletteStops, rampColor, resolveScatterColorMode } from '../utils/scatterColor'
 import { computeScatterDensity } from '../utils/scatterDensity'
 import AxisLabelText from './AxisLabelText'
 
@@ -372,6 +372,7 @@ function buildBinaryData(
     colorRange?: { min: number; max: number } | null
     colorMode?: 'continuous' | 'categorical'
     colorPalette?: ScatterSettings['colorPalette']
+    categoryIndices?: Map<string, number>
     dimSet?: Set<number> | null
   }
 ) {
@@ -398,7 +399,8 @@ function buildBinaryData(
     let c = options.fixedColor
     const cv = options.colorValues?.[gi]
     if (options.colorMode === 'categorical') {
-      c = colorForCategoryLabel(categoryLabelForValue(cv), alpha, options.colorPalette || 'tealSunset')
+      const label = categoryLabelForValue(cv)
+      c = colorForCategoryLabel(label, alpha, options.colorPalette || 'tealSunset', options.categoryIndices?.get(label))
     } else if (options.colorRange && Number.isFinite(cv)) {
       c = rampColor((cv - options.colorRange.min) / (options.colorRange.max - options.colorRange.min), alpha, options.colorPalette || 'tealSunset')
     }
@@ -625,6 +627,7 @@ export default function ScatterPlot({
   const isCategoricalColor = hasColorValues && colorMode === 'categorical'
   const colorRange = useMemo(() => (isContinuousColor ? finiteRange(colorValues) : null), [isContinuousColor, colorValues])
   const categoryLegend = useMemo(() => (isCategoricalColor ? collectCategoryLegend(colorValues) : []), [isCategoricalColor, colorValues])
+  const categoryIndices = useMemo(() => categoryIndexMap(categoryLegend), [categoryLegend])
   const colorbarTitle = settings.colorSource === 'density'
     ? `${settings.densityMethod === 'kde' ? 'KDE density' : 'Frequency'}${settings.densityScale === 'log' ? ' (log scale)' : ''}`
     : settings.colorBy
@@ -758,6 +761,7 @@ export default function ScatterPlot({
       colorRange,
       colorMode,
       colorPalette: settings.colorPalette,
+      categoryIndices,
       dimSet
     })
 
@@ -825,7 +829,7 @@ export default function ScatterPlot({
     if (pickedLayer) out.push(pickedLayer)
     if (highlight) out.push(highlight)
     return out
-  }, [positions, renderData, spec.x, spec.y, selectedIndex, visibleMask, isInteracting, deckDataCount, picked, settings.markerSize, settings.markerColor, settings.opacity, settings.colorPalette, sizeValues, sizeRange, colorValues, colorRange, colorMode, dimSet])
+  }, [positions, renderData, spec.x, spec.y, selectedIndex, visibleMask, isInteracting, deckDataCount, picked, settings.markerSize, settings.markerColor, settings.opacity, settings.colorPalette, sizeValues, sizeRange, colorValues, colorRange, colorMode, categoryIndices, dimSet])
 
   const vis = useMemo(() => visibleWorldRange(viewState, size), [viewState, size.w, size.h])
   const ticksX = useMemo(() => generateLinearTicks(vis.xmin, vis.xmax, xAxisSettings.tickCount), [vis.xmin, vis.xmax, xAxisSettings.tickCount])
@@ -890,10 +894,11 @@ export default function ScatterPlot({
         r = SIZE_MIN + clamp((sn - sizeRange.min) / (sizeRange.max - sizeRange.min), 0, 1) * (SIZE_MAX - SIZE_MIN)
       }
       const cv = colorValues?.[gi]
+      const categoryLabel = categoryLabelForValue(cv)
       const rgba = colorRange && Number.isFinite(cv)
         ? rampColor((Number(cv) - colorRange.min) / (colorRange.max - colorRange.min), clamp(Math.round(settings.opacity * 255), 20, 255), settings.colorPalette)
         : (isCategoricalColor
-          ? colorForCategoryLabel(categoryLabelForValue(cv), clamp(Math.round(settings.opacity * 255), 20, 255), settings.colorPalette)
+          ? colorForCategoryLabel(categoryLabel, clamp(Math.round(settings.opacity * 255), 20, 255), settings.colorPalette, categoryIndices.get(categoryLabel))
           : fixed)
       out.push({
         key: String(gi),
@@ -906,7 +911,7 @@ export default function ScatterPlot({
       })
     }
     return out
-  }, [positions, renderData, settings.markerShape, settings.markerColor, settings.markerSize, settings.opacity, settings.colorPalette, shapeValues, sizeValues, sizeRange, colorValues, colorRange, isCategoricalColor, viewState, size.w, size.h, isInteracting, picked, selectedIndex, visibleMask])
+  }, [positions, renderData, settings.markerShape, settings.markerColor, settings.markerSize, settings.opacity, settings.colorPalette, shapeValues, sizeValues, sizeRange, colorValues, colorRange, isCategoricalColor, categoryIndices, viewState, size.w, size.h, isInteracting, picked, selectedIndex, visibleMask])
 
   const colorbarStyle = useMemo(() => {
     const stops = paletteStops(settings.colorPalette)
@@ -1255,7 +1260,7 @@ export default function ScatterPlot({
             {isCategoricalColor && (
               <div style={{ maxHeight: 190, overflowY: 'auto', display: 'grid', gap: 4, marginTop: 6 }}>
                 {categoryLegend.map(item => {
-                  const c = colorForCategoryLabel(item.label, 230, settings.colorPalette)
+                  const c = colorForCategoryLabel(item.label, 230, settings.colorPalette, categoryIndices.get(item.label))
                   return (
                     <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <span
