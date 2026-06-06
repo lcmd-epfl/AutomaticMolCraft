@@ -386,6 +386,15 @@ export function validateStagedSources(sources: StagedSource[]): CompileIssue[] {
       issues.push({ sourceId: source.id, message: 'Source has no rows.' })
     }
 
+    for (const [name, values] of Object.entries(source.dataset.columns)) {
+      if (values.length !== source.dataset.ids.length) {
+        issues.push({
+          sourceId: source.id,
+          message: `Column '${name}' has ${values.length.toLocaleString()} values but the source has ${source.dataset.ids.length.toLocaleString()} molecules.`,
+        })
+      }
+    }
+
     if (source.columns.length > 0 && !source.columns.some(c => c.included)) {
       issues.push({ sourceId: source.id, message: 'Select at least one column.' })
     }

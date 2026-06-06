@@ -100,7 +100,7 @@ type AnalysisToolSpec = {
 type AnalysisRunResponse = {
   message?: string
   warnings?: string[]
-  addColumns?: { name: string; kind?: string; values: Array<number | string | null> }[]
+  addColumns?: { name: string; kind?: string; ids?: string[]; values: Array<number | string | null> }[]
   addDescriptor?: { name: string; valuesById: Record<string, number[]>; dtype?: 'float32'; source?: { kind: 'tool' | 'file'; label?: string } }
   addDescriptors?: { name: string; valuesById: Record<string, number[]>; dtype?: 'float32'; source?: { kind: 'tool' | 'file'; label?: string } }[]
   addMolecularVectors?: { name: string; valuesById: Record<string, number[]>; dtype?: 'float32'; source?: { kind: 'tool' | 'file'; label?: string } }[]
@@ -124,6 +124,18 @@ type AnalysisJobStatus = {
   started_at?: string
   finished_at?: string
   queue_position?: number
+}
+
+function withAnalysisColumnIds(result: AnalysisRunResponse, ids: string[]): AnalysisRunResponse {
+  if (!result.addColumns?.length) return result
+  return {
+    ...result,
+    addColumns: result.addColumns.map(column => (
+      column.ids || column.values.length !== ids.length
+        ? column
+        : { ...column, ids }
+    )),
+  }
 }
 
 type AnalysisQueueItem = {
@@ -1589,7 +1601,10 @@ export default function AnalysisToolsPage({ stagedSources, setStagedSources }: A
         return fail(`Cannot apply ${item.tool_name}: the staged source dataset has changed since this job was queued.`)
       }
       try {
-        const result = await fetchApplyResult(item.job_id)
+        const result = withAnalysisColumnIds(
+          await fetchApplyResult(item.job_id),
+          item.dataset_id_fingerprint
+        )
         const descriptorWarnings: string[] = []
         const molecularVectorWarnings: string[] = []
         const atomPropertyWarnings: string[] = []
@@ -1623,9 +1638,17 @@ export default function AnalysisToolsPage({ stagedSources, setStagedSources }: A
             for (const col of result.addColumns) {
               const isVector = col.kind === 'vector'
               const isNumeric = !isVector && (col.kind === 'numeric' || (col.kind == null && col.values.some(v => typeof v === 'number' && !Number.isNaN(v))))
+              const hasExplicitIds = Array.isArray(col.ids)
+              const valueById = hasExplicitIds && col.ids!.length === col.values.length
+                ? new Map(col.ids.map((id, index) => [String(id), col.values[index]]))
+                : null
+              const alignedValues = hasExplicitIds
+                ? (valueById ? dataset.ids.map(id => valueById.get(String(id)) ?? null) : [])
+                : col.values
+              if (alignedValues.length !== dataset.ids.length) continue
               dataset.columns[col.name] = isNumeric
-                ? new Float32Array(col.values.map(v => (v == null || v === '' ? Number.NaN : Number(v))))
-                : col.values.map(v => (v == null ? '' : String(v)))
+                ? new Float32Array(alignedValues.map(v => (v == null || v === '' ? Number.NaN : Number(v))))
+                : alignedValues.map(v => (v == null ? '' : String(v)))
               if (isVector) {
                 dataset.meta.vectorColumns = Array.from(new Set([...(dataset.meta.vectorColumns || []), col.name]))
                 dataset.meta.numericColumns = dataset.meta.numericColumns.filter(name => name !== col.name)
@@ -1698,7 +1721,10 @@ export default function AnalysisToolsPage({ stagedSources, setStagedSources }: A
     }
 
     try {
-      const result = await fetchApplyResult(item.job_id)
+      const result = withAnalysisColumnIds(
+        await fetchApplyResult(item.job_id),
+        item.dataset_id_fingerprint
+      )
       let baseXyzById = xyzByIdRef.current || undefined
       if (result.replaceXyzById && Object.keys(result.replaceXyzById).length > 0) {
         try {

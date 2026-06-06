@@ -512,7 +512,7 @@ interface StoreState {
    * that reference removed columns, and recomputes visibility.
    */
   removeColumns: (cols: string[]) => void
-  addColumns: (cols: { name: string; kind?: string; values: Array<number | string | null> }[]) => void
+  addColumns: (cols: { name: string; kind?: string; ids?: string[]; values: Array<number | string | null> }[]) => void
   renameColumn: (oldName: string, newName: string) => { ok: boolean; error?: string }
   renameDataSource: (oldName: string, newName: string) => { ok: boolean; error?: string }
   registerOptimizedGeometrySet: (options: RegisterOptimizedGeometryOptions) => { ok: boolean; error?: string; rowCount?: number }
@@ -1389,9 +1389,15 @@ export const useStore = create<StoreState>((set, get) => ({
           if (!name) continue
           const kind = col.kind === 'vector' ? 'vector' : col.kind === 'categorical' ? 'categorical' : 'numeric'
           const values = Array.isArray(col.values) ? col.values : []
-          const sourceIds = values.length === base.ids.length
-            ? base.ids.map(String)
-            : (full && values.length === full.ids.length ? full.ids.map(String) : null)
+          const hasExplicitIds = Array.isArray(col.ids)
+          const explicitIds = hasExplicitIds && col.ids!.length === values.length
+            ? col.ids.map(String)
+            : null
+          const sourceIds = hasExplicitIds ? explicitIds : (
+            values.length === base.ids.length
+              ? base.ids.map(String)
+              : (full && values.length === full.ids.length ? full.ids.map(String) : null)
+          )
           if (!sourceIds) continue
           const valueById = new Map<string, number | string | null>()
           sourceIds.forEach((id, index) => valueById.set(id, values[index]))

@@ -2584,6 +2584,45 @@ select {
   box-shadow: var(--shadow-sm), var(--shadow-inner-line);
 }
 
+.reference-drop-section {
+  transition: border-color 150ms, background-color 150ms, box-shadow 150ms;
+}
+
+.reference-drop-section-active {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-sm), var(--shadow-inner-line), 0 0 0 2px var(--color-accent-soft);
+}
+
+.reference-drop-zone {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 10px;
+  padding: 10px 12px;
+  border: 1.5px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  transition: border-color 150ms, background 150ms, color 150ms;
+  user-select: none;
+}
+
+.reference-drop-zone svg {
+  flex-shrink: 0;
+}
+
+.reference-drop-zone code {
+  color: inherit;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.reference-drop-zone-active {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-text);
+}
+
 .generation-section-head {
   display: flex;
   align-items: center;

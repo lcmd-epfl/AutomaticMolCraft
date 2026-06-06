@@ -379,19 +379,19 @@ def _infer_stat_properties(model_dir: Path) -> list[str]:
     if not stat.exists():
         return []
 
-    strings: list[str] = []
-    try:
-        for op, arg, _pos in pickletools.genops(stat.read_bytes()):
-            if op.name in {"SHORT_BINUNICODE", "BINUNICODE", "UNICODE"} and isinstance(arg, str):
-                strings.append(arg)
-    except Exception:
-        strings = []
-
-    if "prop" not in strings and "distributions" not in strings and "property_names" not in strings:
+    payload = _safe_stats_load(stat)
+    if not isinstance(payload, dict):
         return []
-    if "score" in strings or model_dir.name == "edm_formed_score":
-        return ["score"]
-    return []
+
+    prop = payload.get("prop")
+    if prop is None:
+        return []
+
+    distributions = _mapping_get(prop, "distributions")
+    if isinstance(distributions, dict):
+        return [str(name) for name in distributions]
+
+    return _coerce_string_list(_mapping_get(prop, "property_names"))
 
 
 def _infer_chem_from_pickle(model_dir: Path) -> dict[str, Any]:
@@ -1309,14 +1309,17 @@ class GenerationJobRequest(BaseModel):
 
 
 def _parse_xyz_atom_count(xyz_text: str) -> int:
-    lines = [ln.strip() for ln in xyz_text.splitlines() if ln.strip()]
+    lines = xyz_text.splitlines()
+    while lines and not lines[-1].strip():
+        lines.pop()
     if len(lines) < 3:
         raise HTTPException(status_code=400, detail="Invalid XYZ: expected atom count and atom rows")
     try:
-        atom_count = int(lines[0])
+        atom_count = int(lines[0].strip().lstrip("\ufeff"))
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"Invalid XYZ atom count: {exc}")
-    if atom_count <= 0 or len(lines) < atom_count + 2:
+    atom_rows = lines[2 : atom_count + 2]
+    if atom_count <= 0 or len(atom_rows) < atom_count or any(not row.strip() for row in atom_rows):
         raise HTTPException(status_code=400, detail="Invalid XYZ: missing atom rows")
     return atom_count
 
@@ -1388,7 +1391,9 @@ def _generation_config(model: dict[str, Any], payload: GenerationJobRequest, out
     return config
 
 
-def _validate_structure_guidance(payload: GenerationJobRequest) -> tuple[dict[str, Any], str] | tuple[None, None]:
+def _validate_structure_guidance(
+    payload: GenerationJobRequest, model: dict[str, Any]
+) -> tuple[dict[str, Any], str] | tuple[None, None]:
     sg = payload.structure_guidance
     if not sg:
         return None, None
@@ -1400,6 +1405,11 @@ def _validate_structure_guidance(payload: GenerationJobRequest) -> tuple[dict[st
         raise HTTPException(status_code=400, detail="Structure mode must be inpaint or outpaint")
     if sampling_mode not in {"sample", "sample_hybrid"}:
         raise HTTPException(status_code=400, detail="Sampling mode must be sample or sample_hybrid")
+    if sampling_mode == "sample_hybrid" and not model.get("properties"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Model {model['id']} has no conditional properties and must use sample",
+        )
     try:
         selected = [int(v) for v in (sg.get("selected_indices") or [])]
     except Exception as exc:
@@ -2150,13 +2160,19 @@ def generation_model_reference_scaffold(model_id: str):
 @app.post("/generation/jobs")
 def create_generation_job(payload: GenerationJobRequest):
     model = _model_by_id(payload.model_id)
-    if model.get("properties") and payload.property_targets:
-        valid_props = set(model.get("properties", []))
+    properties = model.get("properties", [])
+    if payload.property_targets:
+        if not properties:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Model {model['id']} has no conditional properties",
+            )
+        valid_props = set(properties)
         bad = [t.name for t in payload.property_targets if t.name not in valid_props]
         if bad:
             raise HTTPException(status_code=400, detail=f"Unknown conditional properties: {', '.join(bad)}")
 
-    structure_cfg, reference_xyz = _validate_structure_guidance(payload)
+    structure_cfg, reference_xyz = _validate_structure_guidance(payload, model)
     job_id = uuid.uuid4().hex[:12]
     date_part, time_part = _utc_now_parts()
     run_token = f"{time_part}_{job_id}"
@@ -5342,6 +5358,25 @@ def _analysis_write_job_status(job_id: str, patch: dict[str, Any]) -> dict[str, 
     return status
 
 
+def _analysis_attach_column_ids(result: Any, dataset: dict[str, Any]) -> Any:
+    """Attach the row identity used by each positional scalar result column."""
+    if not isinstance(result, dict):
+        return result
+
+    ids = [str(value) for value in (dataset.get("ids", []) or [])]
+    columns = result.get("addColumns")
+    if not isinstance(columns, list):
+        return result
+
+    for column in columns:
+        if not isinstance(column, dict) or isinstance(column.get("ids"), list):
+            continue
+        values = column.get("values")
+        if isinstance(values, list) and len(values) == len(ids):
+            column["ids"] = ids
+    return result
+
+
 def _analysis_run_job_worker(job_id: str, tool_id: str, payload: AnalysisToolRunRequest) -> None:
     current = _analysis_read_job_status(job_id)
     if current.get("status") == "cancelled":
@@ -5357,6 +5392,7 @@ def _analysis_run_job_worker(job_id: str, tool_id: str, payload: AnalysisToolRun
     job_dir = _analysis_job_dir(job_id)
     try:
         result = _analysis_execute_tool(tool_id, payload, job_id=job_id)
+        result = _analysis_attach_column_ids(result, payload.dataset)
         current = _analysis_read_job_status(job_id)
         if current.get("status") == "cancelled":
             return
@@ -5464,7 +5500,7 @@ def _analysis_enqueue_job(
 
 @app.post("/analysis-tools/{tool_id}/run")
 def run_analysis_tool(tool_id: str, payload: AnalysisToolRunRequest):
-    return _analysis_execute_tool(tool_id, payload)
+    return _analysis_attach_column_ids(_analysis_execute_tool(tool_id, payload), payload.dataset)
 
 
 @app.post("/analysis-tools/{tool_id}/jobs")
@@ -5562,6 +5598,7 @@ def _analysis_backfill_featurize_columns(result: Any) -> Any:
         {
             "name": name,
             "kind": "vector",
+            "ids": [str(_id) for _id in values_by_id.keys()],
             "values": [label for _id in values_by_id.keys()],
         }
     ]

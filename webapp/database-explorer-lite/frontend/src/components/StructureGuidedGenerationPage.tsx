@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, ChevronDown, CornerDownLeft, Download, FileArchive, Play, RefreshCw, Square, Trash2, Wand2 } from 'lucide-react'
+import { AlertTriangle, ChevronDown, CornerDownLeft, Download, FileArchive, Play, RefreshCw, Square, Trash2, Upload, Wand2 } from 'lucide-react'
 import { BACKEND } from '../config'
 import RawXyzViewer from './RawXyzViewer'
 import PresetsBar from './PresetsBar'
@@ -197,6 +197,7 @@ export default function StructureGuidedGenerationPage({
   const [referenceName, setReferenceName] = useState('')
   const [referenceXyz, setReferenceXyz] = useState('')
   const [xyzPathInput, setXyzPathInput] = useState('')
+  const [isReferenceDragOver, setIsReferenceDragOver] = useState(false)
   const [selectedAtoms, setSelectedAtoms] = useState<number[]>([])
   const [structureMode, setStructureMode] = useState<'inpaint' | 'outpaint'>('inpaint')
   const [connectorBonds, setConnectorBonds] = useState<Record<number, number>>({})
@@ -215,13 +216,13 @@ export default function StructureGuidedGenerationPage({
   const [negativeTargets, setNegativeTargets] = useState<Record<string, number | null>>({})
   const [negativeTargetDrafts, setNegativeTargetDrafts] = useState<Record<string, string>>({})
   const [constraintStrength, setConstraintStrength] = useState(0.8)
-  const [scaleFactor, setScaleFactor] = useState(1)
+  const [scaleFactor, setScaleFactor] = useState(1.2)
   const [seedDist, setSeedDist] = useState(1.5)
   const [minDist, setMinDist] = useState(1)
   const [spread, setSpread] = useState(1)
-  const [nBqAtom, setNBqAtom] = useState(8)
+  const [nBqAtom, setNBqAtom] = useState(0)
   const [noiseInitialMask, setNoiseInitialMask] = useState(true)
-  const [nRetrys, setNRetrys] = useState(5)
+  const [nRetrys, setNRetrys] = useState(0)
   const [tRetry, setTRetry] = useState(10)
   const [denoisingStrength, setDenoisingStrength] = useState(0.5)
   const [tStart, setTStart] = useState(0.8)
@@ -373,6 +374,44 @@ export default function StructureGuidedGenerationPage({
     const next = Math.max(1, Math.floor(value || 1))
     setBatchSize(next)
     if (numGenerate <= next) setNumGenerate(next + 1)
+  }
+
+  const loadReferenceFile = async (file: File) => {
+    if (!file.name.toLowerCase().endsWith('.xyz')) {
+      setScaffoldError('Drop an .xyz file.')
+      return
+    }
+    const text = await file.text()
+    const parsed = parseXyz(text)
+    setScaffoldError('')
+    setReferenceName(file.name)
+    setReferenceXyz(text)
+    setXyzPathInput('')
+    setSelectedAtoms([])
+    const defaultAtomCount = parsed.atomCount + (structureMode === 'outpaint' ? 1 : 0)
+    setFixedSize(defaultAtomCount)
+    setMinSize(parsed.atomCount)
+    setMaxSize(defaultAtomCount)
+  }
+
+  const handleReferenceDragOver = (event: React.DragEvent<HTMLElement>) => {
+    if (!event.dataTransfer.types.includes('Files')) return
+    event.preventDefault()
+    event.dataTransfer.dropEffect = 'copy'
+    setIsReferenceDragOver(true)
+  }
+
+  const handleReferenceDragLeave = (event: React.DragEvent<HTMLElement>) => {
+    if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+      setIsReferenceDragOver(false)
+    }
+  }
+
+  const handleReferenceDrop = (event: React.DragEvent<HTMLElement>) => {
+    event.preventDefault()
+    setIsReferenceDragOver(false)
+    const file = event.dataTransfer.files[0]
+    if (file) void loadReferenceFile(file)
   }
 
   const loadXyzFromPath = async (pathInput: string) => {
@@ -1058,7 +1097,12 @@ export default function StructureGuidedGenerationPage({
           )}
         </section>
 
-        <section className="generation-section">
+        <section
+          className={`generation-section reference-drop-section${isReferenceDragOver ? ' reference-drop-section-active' : ''}`}
+          onDragOver={handleReferenceDragOver}
+          onDragLeave={handleReferenceDragLeave}
+          onDrop={handleReferenceDrop}
+        >
           <div className="generation-section-head">
             <div className="generation-section-title collapsible" onClick={() => setShowInputStructure(v => !v)}>
               <ChevronDown size={13} style={{ transform: showInputStructure ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
@@ -1088,20 +1132,15 @@ export default function StructureGuidedGenerationPage({
                   accept=".xyz"
                   onChange={async event => {
                     const file = event.target.files?.[0]
-                    if (!file) return
-                    const text = await file.text()
-                    const parsed = parseXyz(text)
-                    setReferenceName(file.name)
-                    setReferenceXyz(text)
-                    setXyzPathInput('')
-                    setSelectedAtoms([])
-                    const defaultAtomCount = parsed.atomCount + (structureMode === 'outpaint' ? 1 : 0)
-                    setFixedSize(defaultAtomCount)
-                    setMinSize(parsed.atomCount)
-                    setMaxSize(defaultAtomCount)
+                    if (file) await loadReferenceFile(file)
+                    event.target.value = ''
                   }}
                 />
               </label>
+              <div className={`reference-drop-zone${isReferenceDragOver ? ' reference-drop-zone-active' : ''}`}>
+                <Upload size={14} strokeWidth={1.8} />
+                <span>Drop an <code>.xyz</code> input structure anywhere in this section</span>
+              </div>
               <div className="file-path-row" style={{ marginTop: -4 }}>
                 <input
                   type="text"
