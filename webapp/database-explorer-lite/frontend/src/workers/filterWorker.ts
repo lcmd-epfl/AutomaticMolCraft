@@ -21,7 +21,8 @@ type FilterWorkerRequest =
 type FilterWorkerProgress = { type: 'progress'; version: number; jobId: number; scanned: number; total: number }
 type FilterWorkerResult = { type: 'result'; version: number; jobId: number; visibleIndices: Uint32Array | null; count: number }
 type FilterWorkerError = { type: 'error'; version: number; jobId: number; message: string }
-type FilterWorkerResponse = FilterWorkerProgress | FilterWorkerResult | FilterWorkerError
+type FilterWorkerSuperseded = { type: 'superseded'; version: number; jobId: number }
+type FilterWorkerResponse = FilterWorkerProgress | FilterWorkerResult | FilterWorkerError | FilterWorkerSuperseded
 
 type CachedRow = { mol: OCL.Molecule | null; index: number[] | null }
 
@@ -37,10 +38,25 @@ function getSmartsParser(): OCL.SmilesParser {
   return smartsParser
 }
 
+function sameColumnContent(a: any, b: any): boolean {
+  if (!a || !b || a.length !== b.length) return false
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false
+  }
+  return true
+}
+
 function resetForDataset(version: number, next: DatasetPayload) {
+  const prev = dataset
   datasetVersion = version
   dataset = next
-  structureCache.clear()
+  // Only drop parsed-molecule caches for SMILES columns whose content actually
+  // changed; an O(n) string compare is far cheaper than re-parsing molecules.
+  for (const colName of Array.from(structureCache.keys())) {
+    if (!sameColumnContent(prev?.columns[colName], next.columns[colName])) {
+      structureCache.delete(colName)
+    }
+  }
   smartsParser = null
 }
 
@@ -169,7 +185,12 @@ function computeFilterResult(ds: DatasetPayload, version: number, jobId: number,
   const chunkSize = 10000
 
   const step = (i0: number) => {
-    if (jobId !== activeJobId || version !== datasetVersion || dataset !== ds) return
+    if (jobId !== activeJobId || version !== datasetVersion || dataset !== ds) {
+      // Tell the main thread this job was aborted so its listener detaches.
+      const resp: FilterWorkerSuperseded = { type: 'superseded', version, jobId }
+      ;(self as any).postMessage(resp)
+      return
+    }
     const end = Math.min(n, i0 + chunkSize)
 
     outer: for (let i = i0; i < end; i++) {

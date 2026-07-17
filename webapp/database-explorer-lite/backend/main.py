@@ -8,10 +8,13 @@ import pickle
 import pickletools
 import struct
 import re
+import secrets
 import shutil
 import sqlite3
 import subprocess
 import tempfile
+import threading
+import time
 import traceback
 import uuid
 import zipfile
@@ -81,8 +84,13 @@ _load_env_discovery()
 # -------------------------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],          # simplest: avoid CORS headaches
-    allow_credentials=False,      # must be False if allow_origins=["*"]
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -96,7 +104,16 @@ XYZ_BASE.mkdir(parents=True, exist_ok=True)
 # -------------------------------------------------------------------
 # ASE mode: cache XYZ in memory after /ase/load
 # -------------------------------------------------------------------
+# Loads merge into this cache instead of replacing it: staged frontend
+# sources resolve their XYZ lazily, so wiping the cache on a new load
+# would orphan every previously staged source.
 ASE_XYZ: Dict[str, str] = {}
+ASE_XYZ_LOWER: Dict[str, str] = {}
+
+
+def _ase_xyz_store(key: str, xyz: str) -> None:
+    ASE_XYZ[key] = xyz
+    ASE_XYZ_LOWER[key.lower()] = key
 
 # -------------------------------------------------------------------
 # MolCraftDiffusion generation mode
@@ -141,7 +158,9 @@ TRAINING_QUEUE_WORKER_STARTED = False
 ACTIVE_TRAINING_PROCS: Dict[str, subprocess.Popen] = {}
 
 # Password-gated unlock — tokens live for the server process lifetime.
-_UNLOCK_TOKENS: set[str] = set()
+# Insertion-ordered dict so we can evict the oldest tokens (cap at 100).
+_UNLOCK_TOKENS: dict[str, None] = {}
+_UNLOCK_TOKENS_MAX = 100
 
 
 def _unlock_password() -> str | None:
@@ -237,17 +256,29 @@ def _read_job_index() -> dict[str, str]:
     return {}
 
 
+_GEN_INDEX_LOCK = threading.Lock()
+# Guards read-modify-write of generation status.json (worker finish vs cancel).
+_GEN_STATUS_LOCK = threading.Lock()
+
+
+def _atomic_write_text(path: Path, text: str) -> None:
+    tmp_path = path.with_suffix(path.suffix + ".tmp")
+    tmp_path.write_text(text, encoding="utf-8")
+    os.replace(tmp_path, path)
+
+
 def _write_job_index(data: dict[str, str]) -> None:
     GEN_OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
-    _job_index_path().write_text(
-        json.dumps(data, indent=2, sort_keys=True), encoding="utf-8"
+    _atomic_write_text(
+        _job_index_path(), json.dumps(data, indent=2, sort_keys=True)
     )
 
 
 def _register_job_dir(job_id: str, job_dir: Path) -> None:
-    index = _read_job_index()
-    index[job_id] = str(job_dir.resolve())
-    _write_job_index(index)
+    with _GEN_INDEX_LOCK:
+        index = _read_job_index()
+        index[job_id] = str(job_dir.resolve())
+        _write_job_index(index)
 
 
 def _resolve_job_dir(job_id: str) -> Path:
@@ -280,10 +311,20 @@ def _ensure_under(base: Path, path: Path) -> Path:
 def _read_status(job_id: str) -> dict[str, Any]:
     job_dir = _job_dir(job_id)
     path = _status_path(job_dir)
-    try:
-        status = json.loads(path.read_text(encoding="utf-8"))
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Could not read job status: {exc}")
+    status: dict[str, Any] | None = None
+    read_error: Exception | None = None
+    # One short retry: a poll can catch the file mid-replacement.
+    for attempt in range(2):
+        try:
+            status = json.loads(path.read_text(encoding="utf-8"))
+            read_error = None
+            break
+        except Exception as exc:
+            read_error = exc
+            if attempt == 0:
+                time.sleep(0.05)
+    if status is None:
+        raise HTTPException(status_code=500, detail=f"Could not read job status: {read_error}")
     proc = ACTIVE_GENERATION_PROCS.get(job_id)
     if proc is not None and proc.poll() is None:
         status["status"] = "running"
@@ -302,16 +343,31 @@ def _write_status(job_id: str, patch: dict[str, Any]) -> dict[str, Any]:
             status = {}
     status.update(patch)
     status["updated_at"] = _utc_now()
-    path.write_text(json.dumps(status, indent=2, sort_keys=True), encoding="utf-8")
+    _atomic_write_text(path, json.dumps(status, indent=2, sort_keys=True))
     return status
+
+
+def _tail_lines(path: Path, max_lines: int) -> str:
+    """Last max_lines of a file, reading only the tail instead of the whole file."""
+    # ponytail: 256 bytes/line heuristic (min 64KB); good enough for log tails.
+    read_bytes = max(64 * 1024, max_lines * 256)
+    try:
+        with path.open("rb") as fh:
+            fh.seek(0, os.SEEK_END)
+            size = fh.tell()
+            fh.seek(max(0, size - read_bytes))
+            data = fh.read()
+    except OSError:
+        return ""
+    lines = data.decode("utf-8", errors="replace").splitlines()
+    return "\n".join(lines[-max_lines:])
 
 
 def _log_tail(job_dir: Path, max_lines: int = 120) -> str:
     log_path = job_dir / "job.log"
     if not log_path.exists():
         return ""
-    lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
-    return "\n".join(lines[-max_lines:])
+    return _tail_lines(log_path, max_lines)
 
 
 def _generation_xyz_files(job_dir: Path) -> list[Path]:
@@ -691,15 +747,21 @@ def _safe_torch_load(path: Path) -> Any | None:
         return None
 
 
-@lru_cache(maxsize=32)
-def _load_generation_checkpoint(model_dir: Path) -> Any | None:
-    chem = model_dir / "edm_chem.pkl"
-    if not chem.exists():
-        return None
+@lru_cache(maxsize=2)
+def _load_generation_checkpoint_cached(chem: Path, mtime: float) -> Any | None:
     payload = _safe_torch_load(chem)
     if payload is None:
         payload = _safe_pickle_load(chem)
     return payload
+
+
+def _load_generation_checkpoint(model_dir: Path) -> Any | None:
+    chem = model_dir / "edm_chem.pkl"
+    try:
+        mtime = chem.stat().st_mtime
+    except OSError:
+        return None
+    return _load_generation_checkpoint_cached(chem, mtime)
 
 
 def _mapping_get(data: Any, key: str, default: Any = None) -> Any:
@@ -1089,7 +1151,36 @@ def _extract_model_details_stats(model_dir: Path) -> list[dict[str, Any]]:
     return stats
 
 
+# Single-entry cache: (fingerprint of models dir) -> discovered models.
+_GEN_MODELS_CACHE: dict[str, Any] = {"key": None, "models": []}
+
+
+def _gen_models_fingerprint() -> tuple:
+    if not GEN_MODELS_DIR.exists():
+        return ()
+    parts: list[tuple] = []
+    for p in sorted(GEN_MODELS_DIR.iterdir()):
+        if not p.is_dir():
+            continue
+        chem = p / "edm_chem.pkl"
+        try:
+            parts.append((p.name, p.stat().st_mtime, chem.stat().st_mtime if chem.exists() else None))
+        except OSError:
+            parts.append((p.name, None, None))
+    return (str(GEN_MODELS_DIR), tuple(parts))
+
+
 def _discover_generation_models() -> list[dict[str, Any]]:
+    key = _gen_models_fingerprint()
+    if _GEN_MODELS_CACHE["key"] == key:
+        return _GEN_MODELS_CACHE["models"]
+    models = _discover_generation_models_uncached()
+    _GEN_MODELS_CACHE["key"] = key
+    _GEN_MODELS_CACHE["models"] = models
+    return models
+
+
+def _discover_generation_models_uncached() -> list[dict[str, Any]]:
     models: list[dict[str, Any]] = []
     if not GEN_MODELS_DIR.exists():
         return models
@@ -1551,20 +1642,21 @@ def _run_generation_job(job_id: str, cmd: list[str], job_dir: Path, log_path: Pa
         return
 
     ACTIVE_GENERATION_PROCS.pop(job_id, None)
-    current = _read_status(job_id)
-    if current.get("status") == "cancelled":
-        return
     files = [p.name for p in _generation_xyz_files(job_dir)]
-    _write_status(
-        job_id,
-        {
-            "status": "completed" if return_code == 0 else "failed",
-            "finished_at": _utc_now(),
-            "return_code": return_code,
-            "molecule_count": len(files),
-            "log_tail": _log_tail(job_dir),
-        },
-    )
+    with _GEN_STATUS_LOCK:
+        current = _read_status(job_id)
+        if current.get("status") == "cancelled":
+            return
+        _write_status(
+            job_id,
+            {
+                "status": "completed" if return_code == 0 else "failed",
+                "finished_at": _utc_now(),
+                "return_code": return_code,
+                "molecule_count": len(files),
+                "log_tail": _log_tail(job_dir),
+            },
+        )
 
 
 def _resolve_xyz_text(mol_id: str) -> tuple[str, str]:
@@ -1573,10 +1665,14 @@ def _resolve_xyz_text(mol_id: str) -> tuple[str, str]:
     if key in ASE_XYZ:
         return key, ASE_XYZ[key]
 
-    p = XYZ_BASE / f"{key}.xyz"
-    if not p.exists():
-        raise HTTPException(status_code=404, detail=f"XYZ not found: {p.name}")
-    return key, p.read_text(encoding="utf-8")
+    canonical = ASE_XYZ_LOWER.get(key.lower())
+    if canonical is not None:
+        return canonical, ASE_XYZ[canonical]
+
+    for candidate in (XYZ_BASE / f"{key}.xyz", XYZ_BASE / f"{key.lower()}.xyz"):
+        if candidate.exists():
+            return key, candidate.read_text(encoding="utf-8")
+    raise HTTPException(status_code=404, detail=f"XYZ not found: {key}.xyz")
 
 
 class XyzBatchRequest(BaseModel):
@@ -1589,8 +1685,16 @@ def get_xyz(mol_id: str):
     return xyz
 
 
+_XYZ_BATCH_MAX_IDS = 2000
+
+
 @app.post("/xyz/batch")
 def get_xyz_batch(req: XyzBatchRequest):
+    if len(req.ids) > _XYZ_BATCH_MAX_IDS:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Too many ids in one request (max {_XYZ_BATCH_MAX_IDS}); split into batches.",
+        )
     xyz_by_id: dict[str, str] = {}
     missing: list[str] = []
 
@@ -1611,6 +1715,8 @@ def get_xyz_batch(req: XyzBatchRequest):
 
 
 def _render_xyz_to_svg_response(key: str, xyz: str) -> Response | JSONResponse:
+    # Sanitize once here so every caller is covered (path + header safety).
+    key = re.sub(r"[^A-Za-z0-9._-]", "_", key).lstrip(".") or "molecule"
     bin_path = shutil.which("xyzrender")
     if not bin_path:
         return JSONResponse(
@@ -1678,6 +1784,7 @@ def _render_xyz_to_svg_response(key: str, xyz: str) -> Response | JSONResponse:
 
 
 def _render_trajectory_to_gif_response(key: str, trajectory_path: Path) -> Response | JSONResponse:
+    key = re.sub(r"[^A-Za-z0-9._-]", "_", key).lstrip(".") or "molecule"
     bin_path = shutil.which("xyzrender")
     if not bin_path:
         return JSONResponse(
@@ -1772,7 +1879,7 @@ def render3d_from_xyz(payload: Render3DFromXYZRequest):
 
 
 @app.post("/ase/load")
-async def ase_load(file: UploadFile = File(...)):
+def ase_load(file: UploadFile = File(...)):
     """
     Upload an ASE SQLite DB file, extract:
       - ids
@@ -1781,19 +1888,19 @@ async def ase_load(file: UploadFile = File(...)):
 
     Returns JSON: { ids, columns, meta }
     """
+    tmp_path: Path | None = None
     try:
         # Lazy imports: backend can start even if ase not installed (until this endpoint is used)
         from ase.db import connect
         from ase.io import write
 
-        raw = await file.read()
+        raw = file.file.read()
 
         tmp_dir = Path(os.environ.get("ASE_TMP", "./_ase_tmp")).resolve()
         tmp_dir.mkdir(parents=True, exist_ok=True)
-        tmp_path = tmp_dir / (file.filename or "uploaded.db")
+        safe_name = Path(file.filename or "uploaded.db").name or "uploaded.db"
+        tmp_path = tmp_dir / safe_name
         tmp_path.write_bytes(raw)
-
-        ASE_XYZ.clear()
 
         db = connect(str(tmp_path))
 
@@ -1852,7 +1959,7 @@ async def ase_load(file: UploadFile = File(...)):
             atoms = row.toatoms()
             buf = io.StringIO()
             write(buf, atoms, format="xyz")
-            ASE_XYZ[mol_id] = buf.getvalue()
+            _ase_xyz_store(mol_id, buf.getvalue())
 
         n = len(ids)
 
@@ -1891,11 +1998,18 @@ async def ase_load(file: UploadFile = File(...)):
         )
 
     except Exception as e:
-        tb = traceback.format_exc()
+        traceback.print_exc()
         return JSONResponse(
             status_code=500,
-            content={"error": "ASE load failed", "message": str(e), "traceback": tb},
+            content={"error": "ASE load failed", "message": str(e)},
         )
+    finally:
+        # The uploaded DB is only needed during ingestion — don't leave it behind.
+        if tmp_path is not None:
+            try:
+                tmp_path.unlink(missing_ok=True)
+            except OSError:
+                pass
 
 
 class LoadCsvFolderPathRequest(BaseModel):
@@ -1912,7 +2026,7 @@ class LoadXyzFilePathRequest(BaseModel):
 
 
 @app.post("/load-path/csv-folder")
-async def load_csv_folder_from_path(req: LoadCsvFolderPathRequest):
+def load_csv_folder_from_path(req: LoadCsvFolderPathRequest):
     """Read CSV from a local path and register XYZ files from a local
     directory into the ASE_XYZ cache.
     Returns {csv_content: str, xyz_stems: [str]}.
@@ -1932,12 +2046,11 @@ async def load_csv_folder_from_path(req: LoadCsvFolderPathRequest):
 
     csv_content = csv_path.read_text(encoding="utf-8")
 
-    ASE_XYZ.clear()
     xyz_stems: list[str] = []
     for xyz_file in sorted(xyz_dir.glob("*.xyz")):
         stem = xyz_file.stem
         try:
-            ASE_XYZ[stem] = xyz_file.read_text(encoding="utf-8")
+            _ase_xyz_store(stem, xyz_file.read_text(encoding="utf-8"))
             xyz_stems.append(stem)
         except Exception:
             pass
@@ -1948,7 +2061,7 @@ async def load_csv_folder_from_path(req: LoadCsvFolderPathRequest):
 
 
 @app.post("/load-path/ase")
-async def load_ase_from_path(req: LoadAsePathRequest):
+def load_ase_from_path(req: LoadAsePathRequest):
     """Load an ASE SQLite DB from a local path (no upload required).
     Same response shape as /ase/load.
     """
@@ -1963,7 +2076,6 @@ async def load_ase_from_path(req: LoadAsePathRequest):
                 detail=f"ASE database not found: {db_path}",
             )
 
-        ASE_XYZ.clear()
         db = connect(str(db_path))
 
         ids: list[str] = []
@@ -2017,7 +2129,7 @@ async def load_ase_from_path(req: LoadAsePathRequest):
             atoms = row.toatoms()
             buf = io.StringIO()
             write(buf, atoms, format="xyz")
-            ASE_XYZ[mol_id] = buf.getvalue()
+            _ase_xyz_store(mol_id, buf.getvalue())
 
         numeric_cols: list[str] = []
         categorical_cols: list[str] = []
@@ -2057,19 +2169,18 @@ async def load_ase_from_path(req: LoadAsePathRequest):
     except HTTPException:
         raise
     except Exception as e:
-        tb = traceback.format_exc()
+        traceback.print_exc()
         return JSONResponse(
             status_code=500,
             content={
                 "error": "ASE path load failed",
                 "message": str(e),
-                "traceback": tb,
             },
         )
 
 
 @app.post("/load-path/xyz")
-async def load_xyz_from_path(req: LoadXyzFilePathRequest):
+def load_xyz_from_path(req: LoadXyzFilePathRequest):
     """Read a single XYZ file from a local path."""
     xyz_path = Path(req.xyz_path).expanduser().resolve()
     if not xyz_path.is_file():
@@ -2096,7 +2207,7 @@ def list_tools():
 
 
 @app.post("/tools/{tool_id}/run")
-async def run_external_tool(tool_id: str, payload: ToolRunRequest):
+def run_external_tool(tool_id: str, payload: ToolRunRequest):
     tools, _errors = discover_tools()
     spec = next((t for t in tools if t.id == tool_id), None)
     if spec is None:
@@ -2263,9 +2374,18 @@ def get_generation_bundle(job_id: str):
         raise HTTPException(status_code=404, detail="No generated XYZ files are available")
 
     zip_path = job_dir / "molecules.zip"
-    with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
-        for path in xyz_files:
-            zf.write(path, arcname=path.name)
+    newest = max(p.stat().st_mtime for p in xyz_files)
+    if not (zip_path.exists() and zip_path.stat().st_mtime >= newest):
+        # Build to a unique temp path then os.replace: concurrent requests
+        # never see a half-written zip.
+        tmp_zip = job_dir / f"molecules.{uuid.uuid4().hex}.zip.tmp"
+        try:
+            with zipfile.ZipFile(tmp_zip, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+                for path in xyz_files:
+                    zf.write(path, arcname=path.name)
+            os.replace(tmp_zip, zip_path)
+        finally:
+            tmp_zip.unlink(missing_ok=True)
     return FileResponse(
         zip_path,
         media_type="application/zip",
@@ -2295,18 +2415,23 @@ def cancel_generation_job(job_id: str):
     proc = ACTIVE_GENERATION_PROCS.get(job_id)
     if proc is not None and proc.poll() is None:
         proc.terminate()
-        _write_status(
-            job_id,
-            {
-                "status": "cancelled",
-                "finished_at": _utc_now(),
-                "return_code": None,
-                "log_tail": _log_tail(_job_dir(job_id)),
-            },
-        )
+        with _GEN_STATUS_LOCK:
+            _write_status(
+                job_id,
+                {
+                    "status": "cancelled",
+                    "finished_at": _utc_now(),
+                    "return_code": None,
+                    "log_tail": _log_tail(_job_dir(job_id)),
+                },
+            )
         return _read_status(job_id)
     if status.get("status") in {"queued", "running"}:
-        return _write_status(job_id, {"status": "cancelled", "finished_at": _utc_now()})
+        with _GEN_STATUS_LOCK:
+            current = _read_status(job_id)
+            if current.get("status") not in {"queued", "running"}:
+                return current
+            return _write_status(job_id, {"status": "cancelled", "finished_at": _utc_now()})
     return status
 
 
@@ -2685,10 +2810,10 @@ def export_ase(payload: ExportAseRequest):
         )
 
     except Exception as e:
-        tb = traceback.format_exc()
+        traceback.print_exc()
         return JSONResponse(
             status_code=500,
-            content={"error": "ASE export failed", "message": str(e), "traceback": tb},
+            content={"error": "ASE export failed", "message": str(e)},
         )
 
 
@@ -2702,7 +2827,9 @@ ANALYSIS_WORK_DIR = Path(
 ANALYSIS_WORK_DIR.mkdir(parents=True, exist_ok=True)
 ACTIVE_ANALYSIS_PROCS: Dict[str, subprocess.Popen] = {}
 ANALYSIS_QUEUE: list[str] = []
-ANALYSIS_QUEUE_PAYLOADS: dict[str, tuple[str, AnalysisToolRunRequest]] = {}
+# job_id -> tool_id; the (possibly huge) payload is spilled to
+# <job_dir>/payload.json instead of being held in memory while queued.
+ANALYSIS_QUEUE_PAYLOADS: dict[str, str] = {}
 ANALYSIS_QUEUE_CONDITION = Condition()
 ANALYSIS_QUEUE_WORKER_STARTED = False
 ANALYSIS_BACKEND_VERSION = "analysis_outputs_v4"
@@ -3114,22 +3241,18 @@ def _analysis_run_command(
         with log_path.open("w", encoding="utf-8", errors="replace") as log_fh:
             log_fh.write(f"$ {command_text}\n\n")
             log_fh.flush()
+            # Write straight to the log file: live tailing keeps working and
+            # proc.wait(timeout=...) is not defeated by an EOF drain loop.
             proc = subprocess.Popen(
                 cmd,
                 cwd=str(REPO_ROOT),
-                stdout=subprocess.PIPE,
+                stdout=log_fh,
                 stderr=subprocess.STDOUT,
                 text=True,
-                bufsize=1,
                 env=env,
             )
             if job_id:
                 ACTIVE_ANALYSIS_PROCS[job_id] = proc
-
-            assert proc.stdout is not None
-            for line in proc.stdout:
-                log_fh.write(line)
-                log_fh.flush()
 
             return_code = proc.wait(timeout=timeout)
             log_fh.write(f"\nRETURN CODE: {return_code}\n")
@@ -4368,6 +4491,27 @@ def _analysis_prediction_columns_from_csv(
     }
 
 
+def _default_predict_config() -> dict[str, Any]:
+    """Ad-hoc base config for `MolCraftDiff predict`.
+
+    Mirrors the static fields of the old predict.yaml; the paths
+    (chkpt/xyz/output) are filled in by the caller per job.
+    """
+    return {
+        "defaults": [
+            {"tasks": "regression"},
+            {"interference": "prediction"},
+            "_self_",
+        ],
+        "name": "akatsuki",
+        "atom_vocab": [
+            "H", "B", "C", "N", "O", "F", "Al", "Si", "P", "S",
+            "Cl", "As", "Se", "Br", "I", "Hg", "Bi",
+        ],
+        "node_feature": None,
+    }
+
+
 def _analysis_predict_config(
     params: dict[str, Any],
     xyz_dir: Path,
@@ -4380,33 +4524,29 @@ def _analysis_predict_config(
             detail="Predictive model is required.",
         )
     model = _predict_model_by_id(model_id)
-    if not PREDICT_CONFIG_PATH.exists():
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Predict config file does not exist: "
-                f"{PREDICT_CONFIG_PATH}"
-            ),
-        )
-    try:
-        config = (
-            yaml.safe_load(PREDICT_CONFIG_PATH.read_text(encoding="utf-8"))
-            or {}
-        )
-    except Exception as exc:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Could not read predict config "
-            f"{PREDICT_CONFIG_PATH}: {exc}",
-        )
-    if not isinstance(config, dict):
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Predict config must contain a YAML mapping: "
-                f"{PREDICT_CONFIG_PATH}"
-            ),
-        )
+    config = _default_predict_config()
+    # Optional override: point MOLCRAFT_PREDICT_CONFIG at a custom base config.
+    if PREDICT_CONFIG_PATH.exists():
+        try:
+            loaded = (
+                yaml.safe_load(PREDICT_CONFIG_PATH.read_text(encoding="utf-8"))
+                or {}
+            )
+        except Exception as exc:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Could not read predict config "
+                f"{PREDICT_CONFIG_PATH}: {exc}",
+            )
+        if not isinstance(loaded, dict):
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Predict config must contain a YAML mapping: "
+                    f"{PREDICT_CONFIG_PATH}"
+                ),
+            )
+        config.update(loaded)
 
     output_dir = job_dir / "pred"
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -5306,6 +5446,7 @@ def _analysis_read_job_status(job_id: str) -> dict[str, Any]:
             break
         except Exception as exc:
             read_error = exc
+            time.sleep(0.05)
             continue
 
     if status is None:
@@ -5458,7 +5599,7 @@ def _analysis_queue_worker() -> None:
         if item is None:
             continue
 
-        tool_id, payload = item
+        tool_id = item
         try:
             status = _analysis_read_job_status(job_id)
         except HTTPException:
@@ -5466,7 +5607,24 @@ def _analysis_queue_worker() -> None:
         if status.get("status") == "cancelled":
             continue
 
+        payload_path = _analysis_job_dir(job_id) / "payload.json"
+        try:
+            payload = AnalysisToolRunRequest(
+                **json.loads(payload_path.read_text(encoding="utf-8"))
+            )
+        except Exception as exc:
+            _analysis_write_job_status(
+                job_id,
+                {
+                    "status": "failed",
+                    "finished_at": _utc_now(),
+                    "error": f"Could not load queued payload: {exc}",
+                },
+            )
+            continue
+
         _analysis_run_job_worker(job_id, tool_id, payload)
+        payload_path.unlink(missing_ok=True)
 
 
 def _analysis_start_queue_worker_locked() -> None:
@@ -5483,9 +5641,14 @@ def _analysis_enqueue_job(
     tool_id: str,
     payload: AnalysisToolRunRequest,
 ) -> int:
+    payload_path = _analysis_job_dir(job_id) / "payload.json"
+    payload_path.write_text(
+        json.dumps(payload.model_dump(), ensure_ascii=False, allow_nan=True),
+        encoding="utf-8",
+    )
     with ANALYSIS_QUEUE_CONDITION:
         _analysis_start_queue_worker_locked()
-        ANALYSIS_QUEUE_PAYLOADS[job_id] = (tool_id, payload)
+        ANALYSIS_QUEUE_PAYLOADS[job_id] = tool_id
         ANALYSIS_QUEUE.append(job_id)
         queue_position = len(
             [
@@ -5625,6 +5788,8 @@ def apply_analysis_job(job_id: str):
 # -------------------------------------------------------------------
 
 _TRAIN_DB_LOCK = __import__("threading").Lock()
+# Guards status read-modify-write (worker finish vs cancel endpoint).
+_TRAIN_STATUS_LOCK = threading.Lock()
 _TRAINING_SCHEMA = """
 CREATE TABLE IF NOT EXISTS training_jobs (
     job_id      TEXT PRIMARY KEY,
@@ -5723,12 +5888,11 @@ def _train_log_tail(job_id: str, max_lines: int = 200) -> str:
     p = Path(log_path)
     if not p.exists():
         return row.get("error") or ""
-    text = p.read_text(encoding="utf-8", errors="replace")
+    text = _tail_lines(p, max_lines)
     if not text.strip():
         # Log file is empty — surface the DB error field instead
         return row.get("error") or ""
-    lines = text.splitlines()
-    return "\n".join(lines[-max_lines:])
+    return text
 
 
 def _training_run_job_worker(job_id: str, cmd: list[str], job_dir: Path, log_path: Path) -> None:
@@ -5744,19 +5908,20 @@ def _training_run_job_worker(job_id: str, cmd: list[str], job_dir: Path, log_pat
         ACTIVE_TRAINING_PROCS[job_id] = proc
         return_code = proc.wait()
         ACTIVE_TRAINING_PROCS.pop(job_id, None)
-        row = _train_db_get(job_id)
-        if row.get("status") == "cancelled":
-            return
-        status = "completed" if return_code == 0 else "failed"
-        _train_db_upsert(
-            job_id,
-            {
-                "status": status,
-                "finished_at": _utc_now(),
-                "return_code": return_code,
-                "error": "" if return_code == 0 else f"Process exited with code {return_code}",
-            },
-        )
+        with _TRAIN_STATUS_LOCK:
+            row = _train_db_get(job_id)
+            if row.get("status") == "cancelled":
+                return
+            status = "completed" if return_code == 0 else "failed"
+            _train_db_upsert(
+                job_id,
+                {
+                    "status": status,
+                    "finished_at": _utc_now(),
+                    "return_code": return_code,
+                    "error": "" if return_code == 0 else f"Process exited with code {return_code}",
+                },
+            )
     except Exception as exc:
         ACTIVE_TRAINING_PROCS.pop(job_id, None)
         err_msg = traceback.format_exc()
@@ -5875,7 +6040,9 @@ def training_unlock(body: UnlockBody) -> dict[str, Any]:
     if not secrets.compare_digest(body.password, pwd):
         raise HTTPException(status_code=401, detail="Incorrect password.")
     token = secrets.token_hex(32)
-    _UNLOCK_TOKENS.add(token)
+    while len(_UNLOCK_TOKENS) >= _UNLOCK_TOKENS_MAX:
+        _UNLOCK_TOKENS.pop(next(iter(_UNLOCK_TOKENS)))
+    _UNLOCK_TOKENS[token] = None
     return {"token": token}
 
 
@@ -5978,10 +6145,8 @@ def get_training_job_log(job_id: str, lines: int = Query(default=0)) -> str:
     log_path = row.get("log_path")
     if not log_path or not Path(log_path).exists():
         return ""
-    all_lines = Path(log_path).read_text(encoding="utf-8", errors="replace").splitlines()
-    if lines > 0:
-        return "\n".join(all_lines[-lines:])
-    return "\n".join(all_lines)
+    # lines=0 means "default tail", not the whole file.
+    return _tail_lines(Path(log_path), lines if lines > 0 else 200)
 
 
 @app.delete("/training/jobs/{job_id}")
@@ -6005,14 +6170,18 @@ def cancel_training_job(job_id: str) -> dict[str, Any]:
         except Exception:
             proc.kill()
         ACTIVE_TRAINING_PROCS.pop(job_id, None)
-        _train_db_upsert(
-            job_id,
-            {"status": "cancelled", "finished_at": _utc_now()},
-        )
+        with _TRAIN_STATUS_LOCK:
+            _train_db_upsert(
+                job_id,
+                {"status": "cancelled", "finished_at": _utc_now()},
+            )
         return _train_row_to_summary(_train_db_get(job_id))
 
     if status in {"queued", "running"}:
-        _train_db_upsert(job_id, {"status": "cancelled", "finished_at": _utc_now()})
+        with _TRAIN_STATUS_LOCK:
+            row = _train_db_get(job_id)
+            if row.get("status") in {"queued", "running"}:
+                _train_db_upsert(job_id, {"status": "cancelled", "finished_at": _utc_now()})
     return _train_row_to_summary(_train_db_get(job_id))
 
 
@@ -6164,12 +6333,20 @@ def delete_preset(page: str, preset_id: str):
 @app.get("/healthz")
 def healthz():
     tools, errors = discover_tools()
+    # Cheap dir listing only — no model unpickling on a health check.
+    model_count = 0
+    if GEN_MODELS_DIR.exists():
+        model_count = sum(
+            1
+            for p in GEN_MODELS_DIR.iterdir()
+            if p.is_dir() and (p / "edm_chem.pkl").exists()
+        )
     return {
         "ok": True,
         "ase_cached": len(ASE_XYZ),
         "tools": len(tools),
         "tool_errors": len(errors),
-        "generation_models": len(_discover_generation_models()),
+        "generation_models": model_count,
         "molcraft_available": shutil.which(MOLCRAFT_CMD) is not None,
     }
 

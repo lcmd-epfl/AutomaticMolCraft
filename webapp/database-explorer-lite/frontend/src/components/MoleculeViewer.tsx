@@ -460,11 +460,25 @@ function MoleculePane({
       }
     })
     ro.observe(hostRef.current)
+    const host = hostRef.current
 
     return () => {
       try {
         ro.disconnect()
         clearAtomLabels()
+      } catch {
+        // ignore
+      }
+      // Tear down the viewer's WebGL context — browsers cap live contexts,
+      // so leaked viewers eventually kill all 3D panes.
+      try {
+        v.clear()
+        const canvas = host?.querySelector('canvas')
+        if (canvas) {
+          const gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
+          ;(gl as any)?.getExtension('WEBGL_lose_context')?.loseContext()
+          canvas.remove()
+        }
       } catch {
         // ignore
       }

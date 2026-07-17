@@ -603,12 +603,12 @@ export default function HistogramPlot({
           const rect = host.getBoundingClientRect()
           const x = e.clientX - rect.left
           const y = e.clientY - rect.top
-          const pick = deck.pickObject({ x, y, radius: 14, layerIds: [`hist-${spec.id}`] })
+          // Include grouped layers (`hist-<id>-g-<group>`) so split mode is pickable.
+          const pick = deck.pickObject({ x, y, radius: 14, layerIds: layers.map((l: any) => l.id) })
           const bin = pick?.object?.bin
           if (!bin) {
+            // Missed pick: clear the active bin, but keep the user's selection.
             setActiveBinIndex(null)
-            setSelected(new Int32Array(0))
-            setPickedIndices(new Int32Array(0))
             return
           }
           const members = membersForBin(bin.i)

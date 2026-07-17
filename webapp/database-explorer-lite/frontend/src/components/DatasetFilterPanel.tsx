@@ -110,7 +110,7 @@ export default function DatasetFilterPanel({
 
   const numericCols = ds?.meta.numericColumns ?? []
   const categoricalCols = ds?.meta.categoricalColumns ?? []
-  const columnNames = ds ? (ds.columnOrder ?? Object.keys(ds.columns)) : []
+  const columnNames = useMemo(() => (ds ? (ds.columnOrder ?? Object.keys(ds.columns)) : []), [ds])
   const booleanCols = useMemo(
     () => ds ? columnNames.filter(c => !numericCols.includes(c) && isBooleanColumn(ds, c)) : [],
     [ds, columnNames, numericCols]

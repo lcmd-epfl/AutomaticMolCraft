@@ -180,11 +180,10 @@ function DataTable() {
   const [colSearch, setColSearch] = useState('')
   const [colDropdownOpen, setColDropdownOpen] = useState(false)
 
-  if (!ds) return null
-
-  const numericCols = ds.meta.numericColumns
+  // No early return before hooks — all hooks below tolerate ds === null and
+  // the null check happens just before render (avoids conditional-hooks crash).
   const allCols = useMemo(() => {
-    return orderedTableColumns(ds)
+    return ds ? orderedTableColumns(ds) : []
   }, [ds])
 
   const columnPageCount = Math.max(1, Math.ceil(allCols.length / COLS_PER_PAGE))
@@ -203,14 +202,15 @@ function DataTable() {
   }
 
   const pageCount = useMemo(() => {
-    const count = visibleIndices ? visibleIndices.length : visibleCount || ds.ids.length
+    const count = visibleIndices ? visibleIndices.length : visibleCount || (ds?.ids.length ?? 0)
     return Math.max(1, Math.ceil(count / PAGE_SIZE))
-  }, [visibleIndices, visibleCount, ds.ids.length])
+  }, [visibleIndices, visibleCount, ds?.ids.length])
 
   const clampedPage = Math.min(page, pageCount - 1)
 
   // When a point is selected from scatter, move table to the page containing that row.
   useEffect(() => {
+    if (!ds) return
     if (selected0 == null || selected0 < 0) return
 
     let rowPos = -1
@@ -228,14 +228,14 @@ function DataTable() {
     if (rowPos < 0) return
     const nextPage = Math.floor(rowPos / PAGE_SIZE)
     setPage(prev => (prev === nextPage ? prev : nextPage))
-  }, [selected0, visibleIndices, ds.ids.length])
+  }, [selected0, visibleIndices, ds?.ids.length])
 
   // ✅ Build only the row indices for the current page
   const pageRowIndices = useMemo(() => {
     const start = clampedPage * PAGE_SIZE
     const end = start + PAGE_SIZE
     if (!visibleIndices) {
-      const n = ds.ids.length
+      const n = ds?.ids.length ?? 0
       const out = new Array(Math.max(0, Math.min(end, n) - start))
       let k = 0
       for (let i = start; i < Math.min(end, n); i++) out[k++] = i
@@ -247,7 +247,7 @@ function DataTable() {
     let k = 0
     for (let i = start; i < Math.min(end, n); i++) out[k++] = visibleIndices[i]
     return out
-  }, [clampedPage, visibleIndices, ds.ids.length])
+  }, [clampedPage, visibleIndices, ds?.ids.length])
 
   const columnsToShow = useMemo(() => {
     const clampedColumnPage = Math.min(columnPage, columnPageCount - 1)
@@ -271,10 +271,9 @@ function DataTable() {
     }
   }, [setSelected, togglePicked, setPickedIndices, replaceMoleculeInDisplay, pickedIndices, activeViewerPane])
 
-  const shownCount = visibleIndices ? visibleIndices.length : visibleCount || ds.ids.length
-
   // ✅ Precompute cell strings once per page/columns (reduces allocations during render)
   const pageCells: string[][] = useMemo(() => {
+    if (!ds) return []
     const out: string[][] = new Array(pageRowIndices.length)
     for (let r = 0; r < pageRowIndices.length; r++) {
       const idx = pageRowIndices[r]
@@ -295,6 +294,10 @@ function DataTable() {
     }
     return out
   }, [ds, pageRowIndices, columnsToShow])
+
+  if (!ds) return null
+
+  const shownCount = visibleIndices ? visibleIndices.length : visibleCount || ds.ids.length
 
   return (
     <div>

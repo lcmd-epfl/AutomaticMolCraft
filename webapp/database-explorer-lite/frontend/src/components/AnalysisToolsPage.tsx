@@ -546,7 +546,15 @@ function queueItemFromStatus(
     register_data_source: existing?.register_data_source,
     show_log: existing?.show_log ?? status.status === 'running',
   }
-  if (existing) return merged
+  if (existing) {
+    // Return the existing object when nothing changed so pollers don't
+    // trigger pointless re-renders / localStorage rewrites.
+    // merged = {...existing, ...overrides}, so its key set is a superset of
+    // existing's; value-comparing merged's keys is a full equality check.
+    const keys = Object.keys(merged) as Array<keyof AnalysisQueueItem>
+    const unchanged = keys.every(k => merged[k] === existing[k])
+    return unchanged ? existing : merged
+  }
   return withOptimizationRegistrationLegacyFix(withOptimizationRegistrationDefaults(merged))
 }
 
@@ -1050,7 +1058,8 @@ export default function AnalysisToolsPage({ stagedSources, setStagedSources }: A
       .catch(() => setMolcraftAvailable(null))
   }, [])
 
-  const dataSourceColumn = useStore(s => s.dataset?.columns.data_source, shallow) as ArrayLike<unknown> | undefined
+  // Reference compare only — shallow-comparing the whole column array is O(rows) per store update.
+  const dataSourceColumn = useStore(s => s.dataset?.columns.data_source) as ArrayLike<unknown> | undefined
   const sourceOptions = useMemo<SourceOption[]>(() => {
     const options: SourceOption[] = []
 
@@ -1544,6 +1553,23 @@ export default function AnalysisToolsPage({ stagedSources, setStagedSources }: A
         ...result.replaceXyzById,
       }
       setSource({ mode: 'mixed', xyzById: mergedXyzById } as any)
+
+      // Also write the replacements back onto any staged source that owns those
+      // molecule IDs, so a subsequent "Compile dataset" keeps the optimized
+      // geometry instead of reverting to the original staged XYZ. Best-effort:
+      // only IDs a source actually contains are merged; renamed IDs are skipped.
+      const replacements = result.replaceXyzById
+      setStagedSources(prev => prev.map(s => {
+        const owned: Record<string, string> = {}
+        for (const id of s.dataset.ids) {
+          const key = String(id)
+          const xyz = replacements[key] ?? replacements[key.replace(/\.xyz$/i, '')]
+          if (xyz) owned[key] = xyz
+        }
+        return Object.keys(owned).length
+          ? { ...s, xyzById: { ...(s.xyzById || {}), ...owned } }
+          : s
+      }))
     }
 
     setStatusMessage(result.message || `${toolName} finished.`)
@@ -1593,7 +1619,7 @@ export default function AnalysisToolsPage({ stagedSources, setStagedSources }: A
       return false
     }
     if (item.source_kind === 'staged') {
-      const staged = stagedSources.find(s => s.id === item.staged_source_id)
+      const staged = stagedSourcesRef.current.find(s => s.id === item.staged_source_id)
       if (!staged) {
         return fail('Cannot apply: the staged source this job was queued from no longer exists.')
       }
@@ -1778,7 +1804,7 @@ export default function AnalysisToolsPage({ stagedSources, setStagedSources }: A
       return null
     }
     if (item.source_kind === 'staged') {
-      const staged = stagedSources.find(s => s.id === item.staged_source_id)
+      const staged = stagedSourcesRef.current.find(s => s.id === item.staged_source_id)
       if (!staged) {
         return fail('Cannot register: the staged source this job was queued from no longer exists.')
       }
@@ -1854,7 +1880,14 @@ export default function AnalysisToolsPage({ stagedSources, setStagedSources }: A
         const resolvedBaseXyzById = await resolveXyzByIds(idsNeeded, source as any)
         baseXyzById = { ...(baseXyzById || {}), ...resolvedBaseXyzById }
         xyzByIdRef.current = baseXyzById
+        // Warn (don't silently drop) if some carry-over rows have no geometry,
+        // so the user knows the registered source may be missing structures.
+        const stillMissing = idsNeeded.filter(id => !(baseXyzById as Record<string, string>)[id]).length
+        if (stillMissing > 0) {
+          pushToast(`${stillMissing.toLocaleString()} non-optimized molecules have no XYZ and will be registered without geometry.`, 'warning')
+        }
       } catch {
+        pushToast('Could not resolve original geometries; non-optimized molecules may be registered without XYZ.', 'warning')
         baseXyzById = baseXyzById || {}
       }
 
@@ -2453,10 +2486,12 @@ export default function AnalysisToolsPage({ stagedSources, setStagedSources }: A
   }
 
   useEffect(() => {
-    const pollable = queue.filter(item => item.job_id && !isTerminalAnalysisStatus(item.status))
-    if (!pollable.length) return
+    // Stable 2s poll: read the latest queue via a ref so updating the queue
+    // doesn't re-run this effect (which effectively polled at 0ms).
     let cancelled = false
     const tick = async () => {
+      const pollable = queueRef.current.filter(item => item.job_id && !isTerminalAnalysisStatus(item.status))
+      if (!pollable.length) return
       const updates: Record<string, AnalysisJobStatus> = {}
       for (const item of pollable) {
         try {
@@ -2470,10 +2505,16 @@ export default function AnalysisToolsPage({ stagedSources, setStagedSources }: A
         }
       }
       if (cancelled) return
-      setQueue(prev => prev.map(item => {
-        const status = updates[item.job_id]
-        return status ? queueItemFromStatus(status, item) : item
-      }))
+      setQueue(prev => {
+        let changed = false
+        const next = prev.map(item => {
+          const status = updates[item.job_id]
+          const merged = status ? queueItemFromStatus(status, item) : item
+          if (merged !== item) changed = true
+          return merged
+        })
+        return changed ? next : prev
+      })
       const failed = Object.values(updates).find(status => status.status === 'failed')
       if (failed?.error) {
         setErrorMessage(failed.error)
@@ -2486,7 +2527,7 @@ export default function AnalysisToolsPage({ stagedSources, setStagedSources }: A
       cancelled = true
       window.clearInterval(timer)
     }
-  }, [queue])
+  }, [])
 
   if (sourceOptions.length === 0) {
     return (

@@ -23,6 +23,7 @@ import type { DatasetSource } from '../utils/xyzLoader'
 import {
   compileStagedSources,
   createStagedSource,
+  lookupXyz,
   type ColumnConflictPolicy,
   type ComputedColumnDefinition,
   type ComputedOperand,
@@ -314,29 +315,6 @@ function moveItem(arr: string[], from: number, to: number) {
   return next
 }
 
-function hasXyzForId(source: any, id: string) {
-  const key = String(id ?? '').trim()
-  if (!key) return false
-  if (!source) return true
-  if (source.mode === 'base') return true
-
-  if (source.mode === 'mixed') {
-    return Boolean(source.xyzById?.[key] || source.xyzById?.[`${key}.xyz`])
-  }
-
-  if (source.mode === 'folder') {
-    const lower = key.toLowerCase()
-    return Boolean(
-      source.files?.has(key) ||
-      source.files?.has(`${key}.xyz`) ||
-      source.files?.has(lower) ||
-      source.files?.has(`${lower}.xyz`)
-    )
-  }
-
-  return true
-}
-
 type ManagementPageProps = {
   stagedSources: StagedSource[]
   setStagedSources: React.Dispatch<React.SetStateAction<StagedSource[]>>
@@ -435,6 +413,40 @@ function ManagementPage({ stagedSources, setStagedSources }: ManagementPageProps
     })
   }, [ds])
 
+  // Backend-served sources (mode 'base') keep their XYZ only in the backend's
+  // in-memory cache, which a later upload can overwrite. Snapshot the
+  // geometries onto the staged source right away so it owns its own data.
+  const snapshotStagedXyz = (staged: StagedSource) => {
+    if (!staged.source || staged.source.mode !== 'base') return
+    const ids = (staged.dataset.ids || []).map(String)
+    if (ids.length === 0) return
+
+    resolveXyzByIds(ids, staged.source)
+      .then(xyzById => {
+        const missing = ids.filter(id => !lookupXyz(xyzById, id)).length
+        setStagedSources(prev => prev.map(s => (
+          s.id === staged.id
+            ? {
+                ...s,
+                xyzById: { ...xyzById, ...(s.xyzById || {}) },
+                warnings: missing > 0
+                  ? [`${missing.toLocaleString()} / ${ids.length.toLocaleString()} molecules have no XYZ geometry.`]
+                  : [],
+              }
+            : s
+        )))
+        if (missing > 0) {
+          pushToast(
+            `'${staged.label}': no XYZ found for ${missing.toLocaleString()} / ${ids.length.toLocaleString()} molecules`,
+            'warning'
+          )
+        }
+      })
+      .catch(() => {
+        // Compile-time resolution will retry and report any failures.
+      })
+  }
+
   const registerStagedSource = (input: {
     kind: StagedSourceKind
     label: string
@@ -464,6 +476,7 @@ function ManagementPage({ stagedSources, setStagedSources }: ManagementPageProps
     setStagedSources(prev => [...prev, staged])
     setCompileIssues([])
     pushToast(`Staged source '${label}'`, 'success')
+    snapshotStagedXyz(staged)
   }
 
   const registerStagedSourceAndCompile = (input: {
@@ -707,30 +720,34 @@ function ManagementPage({ stagedSources, setStagedSources }: ManagementPageProps
     }, ms)
   }
 
+  // Resolve only the IDs that are still missing from each source's xyzById
+  // and merge the results in. A partially resolved map can therefore always
+  // be completed later, and already-resolved geometries are never discarded.
   const resolveSourcesForCompile = async (
     onProgress: (pct: number, detail: string) => void,
     sourcesToUse: StagedSource[] = stagedSources
   ) => {
     const resolved: StagedSource[] = []
-    const hasResolvedXyz = (sourceRecord: StagedSource) => (
-      Boolean(sourceRecord.xyzById && Object.keys(sourceRecord.xyzById).length > 0)
-    )
-    const needsResolution = sourcesToUse.filter(s => s.included && !hasResolvedXyz(s) && s.source)
-    const totalIds = needsResolution.reduce((sum, s) => sum + (s.dataset.ids?.length || 0), 0)
+    const plans = sourcesToUse.map(sourceRecord => ({
+      sourceRecord,
+      missing: sourceRecord.included && sourceRecord.source
+        ? (sourceRecord.dataset.ids || []).map(String).filter(id => !lookupXyz(sourceRecord.xyzById, id))
+        : [],
+    }))
+    const totalIds = plans.reduce((sum, plan) => sum + plan.missing.length, 0)
     let resolvedCount = 0
 
-    for (const sourceRecord of sourcesToUse) {
-      if (!sourceRecord.included || hasResolvedXyz(sourceRecord) || !sourceRecord.source) {
+    for (const { sourceRecord, missing } of plans) {
+      if (missing.length === 0 || !sourceRecord.source) {
         resolved.push(sourceRecord)
         continue
       }
 
-      const ids = sourceRecord.dataset.ids || []
       const resolvedBeforeSource = resolvedCount
-      const xyzById = await resolveXyzByIds(ids.map(String), sourceRecord.source, {
+      const xyzById = await resolveXyzByIds(missing, sourceRecord.source, {
         onProgress: count => {
           resolvedCount = resolvedBeforeSource + count
-          if (count % 100 === 0 || count === ids.length) {
+          if (count % 100 === 0 || count === missing.length) {
             const pct = totalIds > 0 ? Math.round((resolvedCount / totalIds) * 75) : 75
             onProgress(
               Math.max(5, pct),
@@ -739,9 +756,9 @@ function ManagementPage({ stagedSources, setStagedSources }: ManagementPageProps
           }
         },
       })
-      resolvedCount = resolvedBeforeSource + ids.length
+      resolvedCount = resolvedBeforeSource + missing.length
 
-      resolved.push({ ...sourceRecord, xyzById })
+      resolved.push({ ...sourceRecord, xyzById: { ...(sourceRecord.xyzById || {}), ...xyzById } })
       await new Promise<void>(r => setTimeout(r, 0))
     }
 
@@ -759,6 +776,13 @@ function ManagementPage({ stagedSources, setStagedSources }: ManagementPageProps
         setCompileProgress(pct)
         setCompileDetail(detail)
       }, sourcesOverride)
+
+      // Persist resolved geometries on the staged sources so they survive
+      // backend cache changes and don't need re-fetching on the next compile.
+      setStagedSources(prev => prev.map(s => {
+        const r = resolved.find(x => x.id === s.id)
+        return r && r.xyzById !== s.xyzById ? { ...s, xyzById: r.xyzById } : s
+      }))
 
       setCompileProgress(80)
       setCompileMsg('Compiling dataset…')
@@ -825,45 +849,6 @@ function ManagementPage({ stagedSources, setStagedSources }: ManagementPageProps
     return Array.from(new Set(getDataSourceValues(ds))).sort((a, b) => a.localeCompare(b))
   }, [ds])
 
-  const sourceSections = useMemo(() => {
-    if (!ds) return []
-
-    const sourceValues = getDataSourceValues(ds)
-    const sourceToRows = new Map<string, number[]>()
-
-    for (let i = 0; i < sourceValues.length; i++) {
-      const source = sourceValues[i]
-      if (!sourceToRows.has(source)) sourceToRows.set(source, [])
-      sourceToRows.get(source)!.push(i)
-    }
-
-    return Array.from(sourceToRows.entries()).map(([source, rows]) => {
-      const columnsWithValues = allColumns.filter(column => {
-        const values = getColumnValues(ds, column)
-        return rows.some(row => !isMissingValue(values[row]))
-      })
-
-      const q = (searchBySource[source] || '').trim().toLowerCase()
-      const filteredColumns = q
-        ? columnsWithValues.filter(c => c.toLowerCase().includes(q))
-        : columnsWithValues
-
-      const missingXyz = rows.reduce((count, row) => {
-        const id = ds.ids[row]
-        return count + (hasXyzForId(source, id) ? 0 : 1)
-      }, 0)
-
-      return {
-        source,
-        rows,
-        moleculeCount: rows.length,
-        columnsWithValues,
-        filteredColumns,
-        missingXyz,
-      }
-    })
-  }, [ds, allColumns, searchBySource, source])
-
   const selectedEntries = useMemo(
     () => Array.from(selected).map(parseSelectionKey),
     [selected]
@@ -875,17 +860,6 @@ function ManagementPage({ stagedSources, setStagedSources }: ManagementPageProps
   )
 
   const selectedCount = selectedUniqueColumns.length
-
-  const selectedColumnNameCounts = useMemo(() => {
-    const counts = new Map<string, number>()
-    for (const entry of selectedEntries) {
-      const draft = columnDrafts[entry.column]
-      const finalName = (draft?.value ?? entry.column).trim()
-      if (!finalName) continue
-      counts.set(finalName, (counts.get(finalName) || 0) + 1)
-    }
-    return counts
-  }, [columnDrafts, selectedEntries])
 
   const toggle = (source: string, column: string) => {
     const key = selectionKey(source, column)

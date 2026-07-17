@@ -24,14 +24,20 @@ type DatasetBuilderProps = {
   }) => void
 }
 
-function normalizeMolId(v: any): string {
+function molIdStem(v: any): string {
   return String(v ?? '')
     .trim()
     .split(/[\\/]/)
     .pop()!
     .replace(/\.xyz$/i, '')
     .trim()
-    .toUpperCase()
+}
+
+// Uppercased form is used for case-insensitive match scoring only; the
+// dataset keeps original-case IDs so later case-sensitive lookups
+// (backend cache, folder files) still resolve.
+function normalizeMolId(v: any): string {
+  return molIdStem(v).toUpperCase()
 }
 
 function pickBestIdColumn(parsed: Dataset, xyzMap: Map<string, File>): string[] {
@@ -41,21 +47,23 @@ function pickBestIdColumn(parsed: Dataset, xyzMap: Map<string, File>): string[] 
       .filter(Boolean)
   )
 
-  let bestIds = parsed.ids.map(normalizeMolId)
-  let bestScore = bestIds.filter(id => xyzStems.has(id)).length
+  const scoreOf = (values: any[]) =>
+    values.filter(v => xyzStems.has(normalizeMolId(v))).length
+
+  let bestValues: any[] = parsed.ids
+  let bestScore = scoreOf(parsed.ids)
 
   for (const [, values] of Object.entries(parsed.columns)) {
     const arr = Array.from(values as any[])
-    const candidate = arr.map(normalizeMolId)
-    const score = candidate.filter(v => xyzStems.has(v)).length
+    const score = scoreOf(arr)
 
     if (score > bestScore) {
       bestScore = score
-      bestIds = candidate
+      bestValues = arr
     }
   }
 
-  return bestIds
+  return bestValues.map(molIdStem)
 }
 
 function addDefaultDataSource(ds: Dataset, label: string): Dataset {
@@ -333,6 +341,10 @@ export default function DatasetBuilder({ onRegisterSource, onRegisterAndCompile 
         }
       } else if (e.data.type === 'parsed') {
         updateOverlay('Finalizing dataset…', 'Matching molecule IDs.', 97)
+
+        if (Array.isArray(e.data.warnings)) {
+          for (const w of e.data.warnings) pushToast(String(w), 'warning')
+        }
 
         const parsed: Dataset = {
           ids: e.data.ids,

@@ -742,25 +742,32 @@ select {
     var(--color-panel-raised);
 }
 
-/* tab active underline indicator */
-.tab-btn::after {
-  content: "";
+/* Shared sliding glow indicator — one bead that travels between tabs.
+   Position driven by --tab-ind-left/--tab-ind-width set in App.tsx. */
+.tab-indicator {
   position: absolute;
-  bottom: -1px;
-  left: 10px;
-  right: 10px;
-  height: 2px;
-  border-radius: 2px 2px 0 0;
-  background: var(--color-accent);
-  box-shadow: 0 0 8px var(--color-accent-glow);
-  transform: scaleX(0);
-  transform-origin: center;
-  transition: transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+  bottom: 4px;
+  left: 0;
+  height: 3px;
+  width: var(--tab-ind-width, 0);
+  transform: translateX(var(--tab-ind-left, 0));
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-accent) 18%,
+    color-mix(in srgb, var(--color-accent) 60%, #ffffff) 50%,
+    var(--color-accent) 82%,
+    transparent
+  );
+  box-shadow:
+    0 0 8px var(--color-accent-glow),
+    0 0 18px var(--color-accent-soft);
+  transition:
+    transform 0.34s cubic-bezier(0.34, 1.4, 0.5, 1),
+    width 0.34s cubic-bezier(0.34, 1.4, 0.5, 1);
   pointer-events: none;
-}
-
-.tab-btn.active::after {
-  transform: scaleX(1);
+  z-index: 1;
 }
 
 .tab-description {
@@ -4710,6 +4717,44 @@ button.btn {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* ── Animated conic gradient border (active / live surfaces) ── */
+@property --gb-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes gbSpin {
+  to { --gb-angle: 360deg; }
+}
+
+.glow-border::before,
+.viewer-pane-active::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--gb-angle),
+    transparent 0deg,
+    var(--color-accent) 70deg,
+    color-mix(in srgb, var(--color-accent) 55%, #ffffff) 110deg,
+    transparent 180deg,
+    var(--color-accent) 250deg,
+    transparent 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: gbSpin 4.5s linear infinite;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.glow-border { position: relative; }
 
 /* ── TopBar logo ── */
 @keyframes brandGlow {

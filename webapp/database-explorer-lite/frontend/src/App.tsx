@@ -99,13 +99,15 @@ function extractToolErrors(data: any): string[] {
 export default function App() {
   const hasDataset = useStore(s => s.dataset != null)
 
+  // Select scalars only — returning fresh arrays (slice) here defeats
+  // `shallow` and re-renders the whole app on every store update.
   const datasetSummary = useStore(
     s => ({
       moleculeCount: s.dataset?.ids.length ?? 0,
       numericCount: s.dataset?.meta.numericColumns.length ?? 0,
       firstNumeric: s.dataset?.meta.numericColumns[0] ?? null,
-      firstTwoNumeric: s.dataset?.meta.numericColumns.slice(0, 2) ?? [],
-      firstThreeNumeric: s.dataset?.meta.numericColumns.slice(0, 3) ?? [],
+      secondNumeric: s.dataset?.meta.numericColumns[1] ?? null,
+      thirdNumeric: s.dataset?.meta.numericColumns[2] ?? null,
     }),
     shallow
   )
@@ -132,6 +134,16 @@ export default function App() {
   const pushToast = useUIStore(s => s.pushToast)
 
   const [tab, setTab] = useState('management')
+  const tabBarRef = useRef<HTMLDivElement>(null)
+
+  // Position the single sliding tab indicator under the active tab.
+  useEffect(() => {
+    const bar = tabBarRef.current
+    const active = bar?.querySelector<HTMLElement>('.tab-btn.active')
+    if (!bar || !active) return
+    bar.style.setProperty('--tab-ind-left', `${active.offsetLeft}px`)
+    bar.style.setProperty('--tab-ind-width', `${active.offsetWidth}px`)
+  }, [tab])
   const [tools, setTools] = useState<ToolSpec[]>([])
   const [toolErrors, setToolErrors] = useState<string[]>([])
   const [loadingTools, setLoadingTools] = useState(false)
@@ -223,7 +235,7 @@ export default function App() {
   }, [])
 
   const addScatter = () => {
-    const [x, y] = datasetSummary.firstTwoNumeric
+    const { firstNumeric: x, secondNumeric: y } = datasetSummary
 
     if (!x || !y) {
       pushToast('Need at least two numeric columns', 'warning')
@@ -242,7 +254,7 @@ export default function App() {
   }
 
   const addScatter3D = () => {
-    const [x, y, z] = datasetSummary.firstThreeNumeric
+    const { firstNumeric: x, secondNumeric: y, thirdNumeric: z } = datasetSummary
 
     if (!x || !y || !z) {
       pushToast('Need at least three numeric columns', 'warning')
@@ -283,7 +295,8 @@ export default function App() {
     <div className="container">
       <TopBar />
 
-      <div className="tab-bar">
+      <div className="tab-bar" ref={tabBarRef}>
+        <span className="tab-indicator" aria-hidden />
         <button
           className={`tab-btn${tab === 'visualization' ? ' active' : ''}`}
           onClick={() => setTab('visualization')}
@@ -582,9 +595,9 @@ export default function App() {
             <div className="modal-title">Reset workspace?</div>
 
             <div className="legend" style={{ marginBottom: 14, lineHeight: 1.6 }}>
-              This will erase the current dataset, descriptors, computed columns, filters,
-              selections, plots, and source information from the current session. This action
-              cannot be undone.
+              This will erase the current dataset, staged sources, descriptors, computed columns,
+              filters, selections, plots, and source information from the current session. This
+              action cannot be undone.
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
@@ -594,6 +607,8 @@ export default function App() {
                 className="btn-danger"
                 onClick={() => {
                   resetWorkspace()
+                  setStagedSources([])
+                  setPendingRef(null)
                   setConfirmResetOpen(false)
                   setTab('visualization')
                 }}

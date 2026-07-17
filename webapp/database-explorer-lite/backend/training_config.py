@@ -221,7 +221,11 @@ def validate_payload(payload: dict[str, Any]) -> None:
 
     if category in ("diffusion", "flow_matching"):
         steps = payload.get("diffusion_steps", 0)
-        if not steps or int(steps) <= 0:
+        try:
+            steps_int = int(steps) if steps else 0
+        except (TypeError, ValueError):
+            raise ValidationError("diffusion_steps must be an integer greater than 0.")
+        if steps_int <= 0:
             raise ValidationError("diffusion_steps must be greater than 0.")
 
     if category == "ssl3d":

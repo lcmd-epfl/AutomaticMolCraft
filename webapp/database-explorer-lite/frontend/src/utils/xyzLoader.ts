@@ -22,24 +22,50 @@ function asFileMap(files: any): Map<string, File> {
   return new Map()
 }
 
+// Lowercase-keyed index per files object, so IDs and filenames match
+// regardless of casing (built lazily, once per source).
+const folderLowerIndex = new WeakMap<object, Map<string, File>>()
+
+function lowerFileMap(files: any): Map<string, File> {
+  const obj = files as object
+  if (!obj || typeof obj !== 'object') return new Map()
+  let index = folderLowerIndex.get(obj)
+  if (!index) {
+    index = new Map()
+    for (const [key, file] of asFileMap(files)) {
+      const lower = key.toLowerCase()
+      if (!index.has(lower)) index.set(lower, file)
+    }
+    folderLowerIndex.set(obj, index)
+  }
+  return index
+}
+
 type ResolveXyzOptions = {
   concurrency?: number
   onProgress?: (resolved: number, total: number) => void
 }
 
+// Cache entries are namespaced per source object so two sources that share
+// molecule IDs can never serve each other's geometry (or mask a missing one).
+const sourceTokens = new WeakMap<object, string>()
+let nextSourceToken = 1
+
 function cacheKey(src: DatasetSource, id: string) {
-  if (src.mode === 'base') return `base:${src.baseUrl}:${id}`
-  if (src.mode === 'mixed') return `mixed:${id}`
-  return `folder:${id}`
+  let token = sourceTokens.get(src)
+  if (!token) {
+    token = `src${nextSourceToken++}`
+    sourceTokens.set(src, token)
+  }
+  return `${token}:${id}`
 }
 
 function setCached(src: DatasetSource, id: string, xyz: string) {
-  cache.set(id, xyz)
   cache.set(cacheKey(src, id), xyz)
 }
 
 function getCached(src: DatasetSource, id: string) {
-  return cache.get(cacheKey(src, id)) || cache.get(id)
+  return cache.get(cacheKey(src, id))
 }
 
 export async function getXYZ(id: string, src: DatasetSource): Promise<string> {
@@ -63,6 +89,7 @@ export async function getXYZ(id: string, src: DatasetSource): Promise<string> {
 
   if (src.mode === 'folder') {
     const files = asFileMap(src.files)
+    const lowerFiles = lowerFileMap(src.files)
     const lowerStem = stem.toLowerCase()
     const lowerCleanId = cleanId.toLowerCase()
 
@@ -71,10 +98,10 @@ export async function getXYZ(id: string, src: DatasetSource): Promise<string> {
       files.get(cleanId) ||
       files.get(`${stem}.xyz`) ||
       files.get(`${cleanId}.xyz`) ||
-      files.get(lowerStem) ||
-      files.get(lowerCleanId) ||
-      files.get(`${lowerStem}.xyz`) ||
-      files.get(`${lowerCleanId}.xyz`)
+      lowerFiles.get(lowerStem) ||
+      lowerFiles.get(lowerCleanId) ||
+      lowerFiles.get(`${lowerStem}.xyz`) ||
+      lowerFiles.get(`${lowerCleanId}.xyz`)
 
     if (!f) throw new Error(`XYZ not found for "${cleanId}"`)
 

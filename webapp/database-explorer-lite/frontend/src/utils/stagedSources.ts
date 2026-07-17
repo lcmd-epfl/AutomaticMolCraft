@@ -258,7 +258,7 @@ function materializeComputedColumns(source: StagedSource): StagedSource {
   }
 }
 
-function getXyz(xyzById: Record<string, string> | undefined, id: string) {
+export function lookupXyz(xyzById: Record<string, string> | undefined, id: string) {
   if (!xyzById) return ''
   const stem = String(id).trim().replace(/\.xyz$/i, '')
   return xyzById[id] || xyzById[stem] || xyzById[`${stem}.xyz`] || ''
@@ -447,9 +447,12 @@ export function compileStagedSources(
     const n = source.subsampleN
     if (n == null || n >= source.dataset.ids.length) return materializeComputedColumns(source)
     const sampledDataset = subsampleDataset(source.dataset, n, source.subsampleSeed)
-    const sampledIdSet = new Set(sampledDataset.ids)
     const sampledXyzById = source.xyzById
-      ? Object.fromEntries(Object.entries(source.xyzById).filter(([id]) => sampledIdSet.has(id)))
+      ? Object.fromEntries(
+          sampledDataset.ids
+            .map(id => [String(id), lookupXyz(source.xyzById, String(id))] as const)
+            .filter(([, xyz]) => Boolean(xyz))
+        )
       : source.xyzById
     return materializeComputedColumns({ ...source, dataset: sampledDataset, xyzById: sampledXyzById })
   })
@@ -576,6 +579,12 @@ export function compileStagedSources(
     const originalSourceValues = source.locked
       ? sourceValues(source.dataset, sourceLabel)
       : source.dataset.ids.map(() => sourceLabel)
+    // Hoisted out of the row loop: these are invariant per source.
+    const includedColumns = source.columns.filter(c => c.included)
+    const descriptorRecords = Object.values(source.dataset.descriptors || {})
+    const molecularVectorRecords = Object.values(source.dataset.molecularVectors || {})
+    const atomPropertyRecords = Object.values(source.dataset.atomProperties || {})
+    let missingXyzCount = 0
 
     for (let row = 0; row < source.dataset.ids.length; row++) {
       const originalId = String(source.dataset.ids[row])
@@ -597,7 +606,7 @@ export function compileStagedSources(
 
       for (const name of finalColumns) outValues.get(name)!.push(null)
 
-      for (const column of source.columns.filter(c => c.included)) {
+      for (const column of includedColumns) {
         const finalName = finalColumnFor.get(`${source.id}:${column.original}`)!
         const values = outValues.get(finalName)!
         if (isVector(source.dataset, column.original) && !Object.prototype.hasOwnProperty.call(source.dataset.columns, column.original)) {
@@ -610,19 +619,23 @@ export function compileStagedSources(
         }
       }
 
-      const xyz = getXyz(source.xyzById, originalId)
+      const xyz = lookupXyz(source.xyzById, originalId)
       if (xyz) xyzById[finalId] = xyz
-      else warnings.push(`No XYZ found for molecule '${originalId}'.`)
+      else missingXyzCount++
 
-      for (const record of Object.values(source.dataset.descriptors || {})) {
+      for (const record of descriptorRecords) {
         copyVectorRecord(descriptors, source.id, record, originalId, finalId)
       }
-      for (const record of Object.values(source.dataset.molecularVectors || {})) {
+      for (const record of molecularVectorRecords) {
         copyVectorRecord(molecularVectors, source.id, record, originalId, finalId)
       }
-      for (const record of Object.values(source.dataset.atomProperties || {})) {
+      for (const record of atomPropertyRecords) {
         copyVectorRecord(atomProperties, source.id, record, originalId, finalId)
       }
+    }
+
+    if (missingXyzCount > 0) {
+      warnings.push(`No XYZ found for ${missingXyzCount.toLocaleString()} molecule(s) in source '${sourceLabel}'.`)
     }
   }
 

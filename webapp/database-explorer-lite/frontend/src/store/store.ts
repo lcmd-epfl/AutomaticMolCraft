@@ -31,6 +31,14 @@ type RegisterOptimizedGeometryOptions = {
 let selRaf: number | null = null
 let pendingSel: Int32Array | null = null
 
+function cancelPendingSelection() {
+  if (selRaf != null) {
+    cancelAnimationFrame(selRaf)
+    selRaf = null
+  }
+  pendingSel = null
+}
+
 function makeVectorLabelColumn(ids: string[], valuesById: Record<string, number[]>, dim?: number | null): string[] {
   const fallbackDim = dim || Object.values(valuesById).find(Array.isArray)?.length || 0
   const label = fallbackDim > 0 ? `vec[${fallbackDim}]` : 'vec'
@@ -114,21 +122,19 @@ function matchesFilter(value: any, filter: FilterSpec): boolean {
 
 type CachedRow = { mol: OCL.Molecule | null; index: number[] | null }
 type StructureColumnCache = { byRow: Map<number, CachedRow> }
-const STRUCTURE_CACHE: WeakMap<Dataset, Map<string, StructureColumnCache>> = new WeakMap()
+// Keyed by the SMILES column array itself so spread-mutations of the Dataset
+// object that don't touch the column keep the parsed-molecule cache.
+const STRUCTURE_CACHE: WeakMap<object, StructureColumnCache> = new WeakMap()
 let lastDatasetRef: Dataset | null = null
 let smartsParser: OCL.SmilesParser | null = null
 const similarityIndexer = new OCL.SSSearcherWithIndex()
 
 function getStructureColumnCache(dataset: Dataset, smilesColumn: string): StructureColumnCache {
-  let dsCache = STRUCTURE_CACHE.get(dataset)
-  if (!dsCache) {
-    dsCache = new Map()
-    STRUCTURE_CACHE.set(dataset, dsCache)
-  }
-  let colCache = dsCache.get(smilesColumn)
+  const colArr = dataset.columns[smilesColumn] as unknown as object
+  let colCache = STRUCTURE_CACHE.get(colArr)
   if (!colCache) {
     colCache = { byRow: new Map() }
-    dsCache.set(smilesColumn, colCache)
+    STRUCTURE_CACHE.set(colArr, colCache)
   }
   return colCache
 }
@@ -266,6 +272,9 @@ type FilterWorkerResponse =
   | { type: 'progress'; version: number; jobId: number; scanned: number; total: number }
   | { type: 'result'; version: number; jobId: number; visibleIndices: Uint32Array | null; count: number }
   | { type: 'error'; version: number; jobId: number; message: string }
+  | { type: 'superseded'; version: number; jobId: number }
+
+let liveFilterJobInFlight = false
 
 function getFilterWorker(): Worker {
   if (filterWorker) return filterWorker
@@ -276,14 +285,27 @@ function getFilterWorker(): Worker {
 function ensureFilterWorkerDataset(dataset: Dataset) {
   const worker = getFilterWorker()
   if (filterWorkerDatasetVersion === filterDatasetVersion) return
+  // Clone numeric columns and transfer the clones so the worker init avoids a
+  // second structured-clone copy of every typed array.
+  const columns: Record<string, any> = {}
+  const transfers: ArrayBuffer[] = []
+  for (const [name, values] of Object.entries(dataset.columns)) {
+    if (ArrayBuffer.isView(values)) {
+      const copy = (values as any).slice()
+      columns[name] = copy
+      transfers.push(copy.buffer)
+    } else {
+      columns[name] = values
+    }
+  }
   worker.postMessage({
     type: 'init',
     version: filterDatasetVersion,
     dataset: {
       ids: dataset.ids,
-      columns: dataset.columns
+      columns
     }
-  })
+  }, transfers)
   filterWorkerDatasetVersion = filterDatasetVersion
 }
 
@@ -293,124 +315,7 @@ function cancelLiveFilterWork() {
     liveFilterTimer = null
   }
   liveFilterRunId++
-}
-
-function computeVisibleIndicesChunked(
-  dataset: Dataset,
-  filters: Filters,
-  runId: number,
-  done: (result: { vis: Uint32Array | null; mask: Uint8Array | null; count: number } | null) => void
-) {
-  const cols = Object.keys(filters)
-  const n = dataset.ids.length
-  if (cols.length === 0 || n < 25000) {
-    done(runId === liveFilterRunId ? computeVisibleIndices(dataset, filters) : null)
-    return
-  }
-
-  const columns = dataset.columns as Record<string, any>
-  const structurePredicates = new Map<string, (row: number) => boolean>()
-  for (const c of cols) {
-    const f = filters[c]
-    if (f.kind === 'smarts' || f.kind === 'similarity') {
-      const pred = makeStructurePredicate(dataset, f)
-      if (pred) structurePredicates.set(c, pred)
-    }
-  }
-  const out = new Uint32Array(n)
-  let outCount = 0
-  let i = 0
-  const chunkSize = 12000
-
-  const step = () => {
-    if (runId !== liveFilterRunId) {
-      done(null)
-      return
-    }
-
-    const end = Math.min(n, i + chunkSize)
-    outer: for (; i < end; i++) {
-      for (const c of cols) {
-        const f = filters[c]
-        if (f.kind === 'smarts' || f.kind === 'similarity') {
-          const pred = structurePredicates.get(c)
-          if (!pred) continue
-          if (!pred(i)) continue outer
-          continue
-        }
-        const arr = columns[c]
-        if (!arr) continue
-        const v = arr[i]
-        if (!matchesFilter(v, f)) continue outer
-      }
-      out[outCount++] = i
-    }
-
-    if (i < n) {
-      setTimeout(step, 0)
-      return
-    }
-
-    if (outCount === n) {
-      done({ vis: null, mask: makeAllVisibleMask(n), count: n })
-      return
-    }
-
-    const vis = out.slice(0, outCount)
-    done({ vis, mask: makeVisibleMask(n, vis), count: outCount })
-  }
-
-  step()
-}
-
-function applyFiltersSnapshot(
-  get: () => StoreState,
-  set: (partial: Partial<StoreState>) => void,
-  options: { clearSelection: boolean }
-) {
-  const { fullDataset, pendingFilters } = get()
-  if (!fullDataset) return
-  perfMarkStart('filter_apply')
-
-  const cols = Object.keys(pendingFilters)
-
-  if (cols.length === 0) {
-    set({
-      dataset: fullDataset,
-      activeFilters: {},
-      pendingFilters: {},
-      visibleIndices: null,
-      visibleMask: null,
-      visibleCount: fullDataset.ids.length,
-      ...(options.clearSelection
-        ? {
-            selectedIndices: new Int32Array(0),
-            pickedIndices: new Int32Array(0),
-            displayedPickedIndices: new Int32Array(0)
-          }
-        : {})
-    })
-    perfMarkEnd('filter_apply', 'filter_apply_ms')
-    return
-  }
-
-  const { vis, mask, count } = computeVisibleIndices(fullDataset, pendingFilters)
-
-  set({
-    dataset: fullDataset,
-    activeFilters: { ...pendingFilters },
-    visibleIndices: vis,
-    visibleMask: mask,
-    visibleCount: count,
-    ...(options.clearSelection
-      ? {
-          selectedIndices: new Int32Array(0),
-          pickedIndices: new Int32Array(0),
-          displayedPickedIndices: new Int32Array(0)
-        }
-      : {})
-  })
-  perfMarkEnd('filter_apply', 'filter_apply_ms')
+  liveFilterJobInFlight = false
 }
 
 function scheduleLiveFilterApply(get: () => StoreState, set: (partial: Partial<StoreState>) => void) {
@@ -429,9 +334,17 @@ function scheduleLiveFilterApply(get: () => StoreState, set: (partial: Partial<S
 
     const onMessage = (ev: MessageEvent<FilterWorkerResponse>) => {
       const msg = ev.data
-      if (msg.jobId !== runId || msg.version !== filterDatasetVersion || runId !== liveFilterRunId) return
-      if (msg.type === 'result') {
+      if (msg.jobId !== runId) return
+      // Any terminal message for this job (including 'superseded' from an
+      // aborted run) must detach the listener, or listeners leak on the
+      // shared worker.
+      if (msg.type === 'result' || msg.type === 'error' || msg.type === 'superseded') {
         worker.removeEventListener('message', onMessage as EventListener)
+        if (runId === liveFilterRunId) liveFilterJobInFlight = false
+      }
+      if (msg.type === 'superseded') return
+      if (msg.version !== filterDatasetVersion || runId !== liveFilterRunId) return
+      if (msg.type === 'result') {
         set({
           dataset: fullDataset,
           activeFilters: { ...filters },
@@ -441,12 +354,12 @@ function scheduleLiveFilterApply(get: () => StoreState, set: (partial: Partial<S
         })
         perfMarkEnd('filter_apply', 'filter_apply_ms')
       } else if (msg.type === 'error') {
-        worker.removeEventListener('message', onMessage as EventListener)
         perfMarkEnd('filter_apply', 'filter_apply_ms')
       }
     }
 
     worker.addEventListener('message', onMessage as EventListener)
+    liveFilterJobInFlight = true
     worker.postMessage({
       type: 'run',
       version: filterDatasetVersion,
@@ -588,6 +501,47 @@ function cloneColumnValue(value: any) {
   if (value == null) return value
   if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') return value
   return value
+}
+
+// Adds a molecular-vector or atom-property record AND its `vec[N]` presence
+// column + meta/columnOrder bookkeeping, mirroring addDescriptor so the column
+// is visible and consistent in tables, pickers, and compile/export.
+function applyVectorRecordToDataset(
+  base: Dataset,
+  kind: 'molecularVectors' | 'atomProperties',
+  descriptor: any
+): { dataset: Dataset; missingIds: string[] } {
+  const name = String(descriptor.name)
+  const valuesById = descriptor.valuesById || {}
+  const dim = Object.values(valuesById).find(Array.isArray)?.length ?? null
+  const missingIds = base.ids.filter(id => !Array.isArray(valuesById[id]))
+  const presence = makeVectorLabelColumn(base.ids, valuesById, dim)
+
+  const records = { ...((base as any)[kind] || {}) }
+  records[name] = { name, valuesById, dtype: descriptor.dtype || 'float32', missingIds, source: descriptor.source }
+
+  const nextColumns: Dataset['columns'] = { ...base.columns, [name]: presence }
+  const nextNumeric = (base.meta.numericColumns || []).filter(c => c !== name)
+  const nextCategorical = (base.meta.categoricalColumns || []).filter(c => c !== name)
+  const nextVector = Array.from(new Set([...(base.meta.vectorColumns || []), name]))
+  const baseOrder = base.columnOrder && base.columnOrder.length ? base.columnOrder : Object.keys(base.columns)
+  const nextOrder = baseOrder.includes(name) ? [...baseOrder] : [...baseOrder, name]
+
+  return {
+    dataset: {
+      ...base,
+      columns: nextColumns,
+      [kind]: records,
+      meta: {
+        ...base.meta,
+        numericColumns: nextNumeric,
+        categoricalColumns: nextCategorical,
+        vectorColumns: nextVector,
+      },
+      columnOrder: nextOrder,
+    } as Dataset,
+    missingIds,
+  }
 }
 
 function rebuildNumericRanges(dataset: Dataset): Dataset['stats'] {
@@ -866,6 +820,7 @@ export const useStore = create<StoreState>((set, get) => ({
 
   setDataset: (d) => {
     cancelLiveFilterWork()
+    cancelPendingSelection()
     filterDatasetVersion++
     filterWorkerDatasetVersion = -1
     if (lastDatasetRef !== d) {
@@ -902,6 +857,7 @@ export const useStore = create<StoreState>((set, get) => ({
 
   resetWorkspace: () => {
     cancelLiveFilterWork()
+    cancelPendingSelection()
     filterDatasetVersion++
     filterWorkerDatasetVersion = -1
     set({
@@ -1398,7 +1354,10 @@ export const useStore = create<StoreState>((set, get) => ({
               ? base.ids.map(String)
               : (full && values.length === full.ids.length ? full.ids.map(String) : null)
           )
-          if (!sourceIds) continue
+          if (!sourceIds) {
+            console.warn(`addColumns: skipped column '${name}' (${values.length} values do not match ${base.ids.length} rows and no ids were provided)`)
+            continue
+          }
           const valueById = new Map<string, number | string | null>()
           sourceIds.forEach((id, index) => valueById.set(id, values[index]))
           const rowValues = base.ids.map(id => valueById.get(String(id)) ?? null)
@@ -1457,7 +1416,7 @@ export const useStore = create<StoreState>((set, get) => ({
       }
     
       const nextDataset = applyAddColumns(ds)
-      const nextFullDataset = full ? applyAddColumns(full) : nextDataset
+      const nextFullDataset = full && full !== ds ? applyAddColumns(full) : nextDataset
       filterDatasetVersion++
       filterWorkerDatasetVersion = -1
     
@@ -1493,57 +1452,53 @@ export const useStore = create<StoreState>((set, get) => ({
 
   addMolecularVector: (descriptor: any) => {
     const ds = get().dataset
+    const full = get().fullDataset
     if (!ds) return { name: descriptor.name, warning: 'No dataset loaded' }
 
     const name = descriptor.name
-    const valuesById = descriptor.valuesById || {}
-    const missingIds = ds.ids.filter(id => !Array.isArray(valuesById[id]))
+    const apply = (base: Dataset) => applyVectorRecordToDataset(base, 'molecularVectors', descriptor)
+    const out = apply(ds)
+    const outFull = full ? apply(full) : out
 
-    const nextDataset: Dataset = {
-      ...ds,
-      molecularVectors: {
-        ...((ds as any).molecularVectors || {}),
-        [name]: {
-          name,
-          valuesById,
-          dtype: descriptor.dtype || 'float32',
-          missingIds,
-          source: descriptor.source,
-        },
-      } as any,
-    } as Dataset
+    filterDatasetVersion++
+    filterWorkerDatasetVersion = -1
+    const { vis, mask, count } = computeVisibleIndices(out.dataset, get().activeFilters)
+    set({
+      dataset: out.dataset,
+      fullDataset: outFull.dataset,
+      visibleIndices: vis,
+      visibleMask: mask,
+      visibleCount: count,
+    })
 
-    set({ dataset: nextDataset, fullDataset: nextDataset })
-    return missingIds.length
-      ? { name, warning: `${missingIds.length.toLocaleString()} molecules are missing molecular vector '${name}'.` }
+    return out.missingIds.length
+      ? { name, warning: `${out.missingIds.length.toLocaleString()} molecules are missing molecular vector '${name}'.` }
       : { name }
   },
 
   addAtomProperty: (descriptor: any) => {
     const ds = get().dataset
+    const full = get().fullDataset
     if (!ds) return { name: descriptor.name, warning: 'No dataset loaded' }
 
     const name = descriptor.name
-    const valuesById = descriptor.valuesById || {}
-    const missingIds = ds.ids.filter(id => !Array.isArray(valuesById[id]))
+    const apply = (base: Dataset) => applyVectorRecordToDataset(base, 'atomProperties', descriptor)
+    const out = apply(ds)
+    const outFull = full ? apply(full) : out
 
-    const nextDataset: Dataset = {
-      ...ds,
-      atomProperties: {
-        ...((ds as any).atomProperties || {}),
-        [name]: {
-          name,
-          valuesById,
-          dtype: descriptor.dtype || 'float32',
-          missingIds,
-          source: descriptor.source,
-        },
-      } as any,
-    } as Dataset
+    filterDatasetVersion++
+    filterWorkerDatasetVersion = -1
+    const { vis, mask, count } = computeVisibleIndices(out.dataset, get().activeFilters)
+    set({
+      dataset: out.dataset,
+      fullDataset: outFull.dataset,
+      visibleIndices: vis,
+      visibleMask: mask,
+      visibleCount: count,
+    })
 
-    set({ dataset: nextDataset, fullDataset: nextDataset })
-    return missingIds.length
-      ? { name, warning: `${missingIds.length.toLocaleString()} molecules are missing atom property '${name}'.` }
+    return out.missingIds.length
+      ? { name, warning: `${out.missingIds.length.toLocaleString()} molecules are missing atom property '${name}'.` }
       : { name }
   },
 
@@ -1663,11 +1618,16 @@ export const useStore = create<StoreState>((set, get) => ({
   },
 
   applyFiltersToDataset: () => {
-    const { fullDataset, activeFilters, source, visibleIndices, visibleCount } = get()
+    const { fullDataset, activeFilters, pendingFilters, source, visibleIndices, visibleCount } = get()
     if (!fullDataset) return
+    // If a live filter run is still debounced or in-flight, visibleIndices is
+    // stale; recompute synchronously from the filters that run would apply.
+    const hadLiveWork = liveFilterTimer != null || liveFilterJobInFlight
     cancelLiveFilterWork()
 
-    const computed = visibleIndices
+    const computed = hadLiveWork
+      ? computeVisibleIndices(fullDataset, pendingFilters)
+      : visibleIndices
       ? { vis: visibleIndices, count: visibleIndices.length }
       : Object.keys(activeFilters).length > 0
         ? computeVisibleIndices(fullDataset, activeFilters)
@@ -1725,19 +1685,21 @@ export const useStore = create<StoreState>((set, get) => ({
           }
         : base.stats
   
-      const nextDescriptors = base.descriptors
-        ? Object.fromEntries(
-            Object.entries(base.descriptors).filter(([name]) => !toRemove.has(name))
-          )
-        : base.descriptors
-  
+      const stripRecords = <T,>(records: Record<string, T> | undefined): Record<string, T> | undefined => (
+        records
+          ? Object.fromEntries(Object.entries(records).filter(([name]) => !toRemove.has(name)))
+          : records
+      )
+
       return {
         ...base,
         columns: nextColumns,
         meta: { ...base.meta, numericColumns: nextNumeric, categoricalColumns: nextCategorical, vectorColumns: nextVector },
         columnOrder: nextOrder,
         stats: nextStats,
-        descriptors: nextDescriptors
+        descriptors: stripRecords(base.descriptors),
+        molecularVectors: stripRecords((base as any).molecularVectors) as any,
+        atomProperties: stripRecords((base as any).atomProperties) as any,
       }
     }
   
@@ -1749,13 +1711,15 @@ export const useStore = create<StoreState>((set, get) => ({
     const nextPlots = get().plots
       .filter(p => {
         if (p.type === 'hist1d') return !toRemove.has(p.x)
+        // A scatter that loses one of its required axes (x/y, or z for 3D) is dropped.
         if (toRemove.has(p.x) || toRemove.has((p as any).y)) return false
+        if (p.type === 'scatter3d' && toRemove.has((p as any).z)) return false
         return true
       })
       .map(p => {
         if (p.type === 'hist1d') return p
         const settings = (p as any).scatterSettings
-        if (!settings && !p.colorBy && !p.sizeBy) return p
+        if (!settings && !p.colorBy && !p.sizeBy && !(p as any).shapeBy) return p
         const nextSettings = settings ? { ...settings } : undefined
         if (nextSettings?.sizeBy && toRemove.has(nextSettings.sizeBy)) delete nextSettings.sizeBy
         if (nextSettings?.colorBy && toRemove.has(nextSettings.colorBy)) delete nextSettings.colorBy
@@ -1764,6 +1728,7 @@ export const useStore = create<StoreState>((set, get) => ({
           ...p,
           sizeBy: p.sizeBy && toRemove.has(p.sizeBy) ? undefined : p.sizeBy,
           colorBy: p.colorBy && toRemove.has(p.colorBy) ? undefined : p.colorBy,
+          shapeBy: (p as any).shapeBy && toRemove.has((p as any).shapeBy) ? undefined : (p as any).shapeBy,
           scatterSettings: nextSettings
         }
       })

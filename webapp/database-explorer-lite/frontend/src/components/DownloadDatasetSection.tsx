@@ -107,6 +107,71 @@ function preferLegacyDataSouceForExport(ds: Dataset): Dataset {
   }
 }
 
+// Vector records (descriptors / molecular vectors / atom properties) live in
+// `valuesById` maps and only show a `vec[N]` placeholder string in `columns`.
+// For export we expand each into real numeric columns `name_0..name_{dim-1}`
+// so the data isn't lost as placeholder text.
+function expandVectorRecordsForExport(ds: Dataset): Dataset {
+  const records: Array<{ name: string; valuesById: Record<string, number[]>; dim?: number | null }> = [
+    ...Object.values(ds.descriptors || {}),
+    ...Object.values(ds.molecularVectors || {}),
+    ...Object.values(ds.atomProperties || {}),
+  ]
+  if (records.length === 0) return ds
+
+  const recordByName = new Map(records.map(r => [r.name, r]))
+  const columns: Dataset['columns'] = {}
+  const numericColumns = [...(ds.meta.numericColumns || [])]
+  const baseOrder = ds.columnOrder?.length ? ds.columnOrder : Object.keys(ds.columns)
+  const nextOrder: string[] = []
+
+  const expandOne = (record: { name: string; valuesById: Record<string, number[]>; dim?: number | null }) => {
+    const dim = record.dim
+      ?? Object.values(record.valuesById).find(Array.isArray)?.length
+      ?? 0
+    for (let d = 0; d < dim; d++) {
+      const colName = `${record.name}_${d}`
+      const arr = new Float32Array(ds.ids.length)
+      for (let i = 0; i < ds.ids.length; i++) {
+        const vec = record.valuesById[ds.ids[i]]
+        arr[i] = Array.isArray(vec) && Number.isFinite(vec[d]) ? vec[d] : NaN
+      }
+      columns[colName] = arr
+      numericColumns.push(colName)
+      nextOrder.push(colName)
+    }
+  }
+
+  const expandedNames = new Set<string>()
+  for (const name of baseOrder) {
+    const record = recordByName.get(name)
+    if (record) {
+      expandOne(record)            // replace placeholder column with expanded numeric columns
+      expandedNames.add(name)
+    } else if (name in ds.columns) {
+      columns[name] = ds.columns[name]
+      nextOrder.push(name)
+    }
+  }
+  // Records with no placeholder column in columnOrder but a real column entry
+  // (legacy molecular vectors / atom properties) still get expanded; deselected
+  // vectors are absent from `ds.columns` after column filtering and stay excluded.
+  for (const record of records) {
+    if (expandedNames.has(record.name)) continue
+    if (record.name in ds.columns) expandOne(record)
+  }
+
+  return {
+    ...ds,
+    columns,
+    columnOrder: nextOrder,
+    meta: { ...ds.meta, numericColumns, vectorColumns: [] },
+    descriptors: undefined,
+    molecularVectors: undefined,
+    atomProperties: undefined,
+  }
+}
+
 function datasetToCsv(ds: Dataset) {
   const columns = ds.columnOrder?.length ? ds.columnOrder : Object.keys(ds.columns)
   const header = ['id', ...columns]
@@ -188,7 +253,7 @@ export default function DownloadDatasetSection() {
       includedCols === null || includedCols.size === allColNames.length
         ? base
         : filterDatasetColumns(base, effectiveIncluded)
-    return preferLegacyDataSouceForExport(filtered)
+    return expandVectorRecordsForExport(preferLegacyDataSouceForExport(filtered))
   }
 
   const scopeSuffix =
@@ -201,7 +266,13 @@ export default function DownloadDatasetSection() {
     return `${p}_${suffix}`
   }
 
-  const exportRowCount = getBaseDataset().ids.length
+  // Row count only — mirrors getBaseDataset() without deep-copying the dataset per render.
+  const exportRowCount =
+    selectedScope === 'selected'
+      ? (selectedIndices && selectedIndices.length > 0 ? selectedIndices.length : fullDataset.ids.length)
+      : selectedScope === 'filtered'
+        ? (visibleIndices ? visibleIndices.length : dataset.ids.length)
+        : fullDataset.ids.length
   const overZipLimit = exportRowCount > MAX_ZIP_ROWS
 
   const collectXyz = async (ds: Dataset) => {

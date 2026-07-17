@@ -35,13 +35,19 @@ export async function exportHostCanvasesToPng(options: {
   drawAxisOverlay({ host, ctx, rect, scale })
   drawColorbarOverlay({ host, ctx, rect, scale })
 
-  const url = out.toDataURL('image/png')
+  // toBlob avoids the giant base64 data-URL string of toDataURL.
+  // Note: WebGL source canvases may capture blank unless created with
+  // preserveDrawingBuffer (drawImage above reads their front buffer).
+  const blob = await new Promise<Blob | null>(resolve => out.toBlob(resolve, 'image/png'))
+  if (!blob) throw new Error('Unable to encode PNG')
+  const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
   a.download = filename.endsWith('.png') ? filename : `${filename}.png`
   document.body.appendChild(a)
   a.click()
   a.remove()
+  URL.revokeObjectURL(url)
 }
 
 function drawAxisOverlay(options: {
