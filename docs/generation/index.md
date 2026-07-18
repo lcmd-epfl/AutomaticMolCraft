@@ -79,7 +79,7 @@ With a molecule selected in a pane, click **→ Use as ref** to load that XYZ di
 | Parameter | Default | Range | Chemical meaning |
 |---|---|---|---|
 | **Total molecules** | 1 | ≥ 1 | Number of independent XYZ files produced in this job |
-| **Batch size** | 1 | 1–256 | How many molecules are sampled in a single forward pass through the diffusion model. Larger batches are faster per molecule but use more GPU memory. Must be less than Total molecules |
+| **Batch size** | 1 | 1–256 | How many molecules are sampled in a single forward pass through the diffusion model. Larger batches are faster per molecule but use more GPU memory. Must not exceed Total molecules |
 | **Frames** | 1 | 1–100 | Number of trajectory snapshots captured during denoising. Set to 1 to save only the final structure (fastest). Set > 1 to enable step-by-step denoising playback |
 | **Diffusion steps** | 50 | 2–1 000 | Number of denoising steps. More steps produce smoother, higher-quality geometries at the cost of run time. For quick exploration 20–50 is sufficient; for final structures 100–200 is typical |
 | **Seed** | 86 | 0–999 999 | Random seed for reproducibility. Change it to sample a different region of chemical space with the same settings |

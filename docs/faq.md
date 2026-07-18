@@ -57,7 +57,7 @@ Then restart `./dev.sh`. Alternatively, use `FRONTEND_DEV=1 ./dev.sh` to run Vit
 
 ---
 
-## An analysis job completes but "Apply" produces no new columns
+## An analysis job completes but "Apply results" produces no new columns
 
 The runner may have returned an empty result (e.g. all molecules timed out). Check the job log by clicking the terminal icon next to the job in the queue. Common causes:
 
@@ -69,4 +69,4 @@ The runner may have returned an empty result (e.g. all molecules timed out). Che
 
 ## Dataset is loaded but Visualization shows no plots
 
-Panels must be added manually. Click **Add panel** in the Visualization toolbar and select a plot type, then configure its axis bindings.
+Panels must be added manually. In the Visualization action bar, click **2D Scatter**, **3D Scatter**, or **Histogram** to add a plot panel, then click its axis labels to change the column bindings.

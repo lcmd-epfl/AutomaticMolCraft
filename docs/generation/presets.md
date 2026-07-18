@@ -1,6 +1,6 @@
 # Configuration Presets
 
-Both generation tabs (**3D molecule generation** and **Structure-directed generation**) include a **Presets** bar that lets you save and restore named parameter configurations. Presets are stored as JSON files on disk and survive server restarts.
+The **3D molecule generation**, **Structure-directed generation**, and **Model training** tabs include a **Presets** bar that lets you save and restore named parameter configurations. Presets are stored as JSON files on disk and survive server restarts.
 
 
 ## Saving a preset
@@ -17,5 +17,5 @@ Click a preset name in the Presets bar. All parameters are restored to the saved
 
 ## Notes
 
-- Presets are per-page: generation presets do not appear in the structure-guided tab and vice versa.
+- Presets are per-page: each tab keeps its own preset list; presets saved on one tab do not appear on the others.
 - Scaffold XYZ content is embedded in the preset; the original file path is not stored.

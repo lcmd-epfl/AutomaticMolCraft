@@ -5,15 +5,15 @@
 
 ## What it covers
 
-| Module | What you can do |
+| Tab | What you can do |
 |---|---|
-| **3D Generation** | Run pretrained diffusion models to generate novel 3D molecules from scratch |
+| **3D molecule generation** | Run pretrained diffusion models to generate novel 3D molecules from scratch |
 | **Structure-directed generation** | Extend or complete an existing structure using a reference scaffold |
-| **Data Manager** | Load, stage, merge, compute derived columns, and export multi-source molecular datasets |
-| **Analysis Tools** | Enrich datasets with quantum-chemistry calculations, fingerprints, and 2D coordinates |
+| **Management** | Load, stage, merge, compute derived columns, and export multi-source molecular datasets |
+| **Analysis tools** | Enrich datasets with quantum-chemistry calculations, fingerprints, and 2D coordinates |
 | **Visualization** | Explore chemical space in linked scatter plots, histograms, and a 3D structure viewer |
-| **Model Training** | Configure and queue MolCraftDiffusion training and fine-tuning jobs from the browser |
-| **Plug-in Tools** | Connect external property predictors without touching backend code |
+| **Model training** | Configure and queue MolCraftDiffusion training and fine-tuning jobs from the browser |
+| **Plug-in tools** | Connect external property predictors without touching backend code |
 
 ## System architecture
 
@@ -54,7 +54,7 @@ Unconstrained generation samples freely from the learned distribution. Three com
 ## Get started
 
 → [Installation](installation.md) — set up the environment and download model weights  
-→ [Quick Start](quickstart.md) — generate your first molecule in ~10 minutes  
+→ [Quick Start](quickstart.md) — generate your first molecule in ~15 minutes  
 → [UI Overview](ui-overview.md) — map of all 7 tabs and controls
 
 ## Citation

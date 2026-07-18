@@ -887,7 +887,7 @@ export default function GenerationPage({
               </div>
               {selectedModelIsStructureCompletion && (
                 <div className="generation-warning">
-                  This model was trained for structure completion, recommend to use strcutrue-direct gen tab (outpaint)
+                  This model was trained for structure completion — use the Structure-directed generation tab (outpaint) instead.
                 </div>
               )}
             </>

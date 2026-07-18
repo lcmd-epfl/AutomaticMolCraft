@@ -7,7 +7,7 @@ The **Visualization** tab is a multi-panel workspace for exploring a compiled da
 *Linked plots, filters, sortable tables, and molecular viewers share the same molecule-selection state, allowing property trends and structural subsets to be inspected within a single interface.*
 
 !!! note
-    A dataset must be loaded via the [Data Manager](data-manager.md) before any panels can be used.
+    A dataset must be loaded before any panels can be used — either via the [Data Manager](data-manager.md), or directly from the toolbar above the tab: select a CSV file + XYZ folder (or an ASE `.db` file) and click **Build Dataset**.
 
 ---
 

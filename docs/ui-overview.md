@@ -2,7 +2,7 @@
 
 ## Tab bar
 
-The tab bar runs across the top. Each tab is a self-contained workspace.
+The tab bar runs across the top. Each tab is a self-contained workspace. The app opens on the **Management** tab; the order below is the tab-bar order.
 
 | Tab | Purpose |
 |---|---|
@@ -34,8 +34,8 @@ flowchart LR
 
     subgraph GENERATE["Generate"]
         MT("Model training")
-        GEN("3D generation")
-        SG("Structure-guided")
+        GEN("3D molecule generation")
+        SG("Structure-directed generation")
     end
 
     subgraph CURATE["Curate"]
@@ -56,8 +56,8 @@ flowchart LR
     MG -- "compiled dataset" --> AT
     MG -- "compiled dataset" --> PT
     MG -- "compiled dataset" --> VIZ
-    AT -- "Apply result" --> MG
-    PT -- "Apply result" --> MG
+    AT -- "Apply results" --> MG
+    PT -- "Apply results" --> MG
 
     class MT,GEN,SG gen
     class MG cur
@@ -67,6 +67,17 @@ flowchart LR
 The central hub is **Management**: generation outputs flow into it, analysis tools enrich it, and Visualization reads from it. Model training produces the checkpoint files that power both generation tabs.
 
 ---
+
+## Keyboard shortcuts
+
+| Key | Action |
+|---|---|
+| `1`–`7` | Switch to the corresponding tab (tab-bar order above) |
+| `?` | Show / hide the keyboard-shortcuts overlay |
+| `Esc` | Close dialogs and overlays |
+| `Shift+Enter` | Submit a generation job (generation tabs only) |
+
+Number shortcuts are ignored while a text field is focused.
 
 ## Top bar
 

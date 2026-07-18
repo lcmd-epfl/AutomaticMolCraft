@@ -59,7 +59,7 @@ All variables are optional; the defaults assume you run from the repository root
 | `MOLCRAFT_ANALYSIS_WORK_DIR` | `<repo>/analysis_jobs` | Storage for async analysis jobs |
 | `MOLCRAFT_PRESETS_DIR` | `<repo>/presets` | Persistent parameter presets |
 | `MOLCRAFT_CMD` | `MolCraftDiff` | CLI command name for the diffusion runner |
-| `MOLCRAFT_UNLOCK_PASSWORD` | *(unset)* | Set to enable the Model Training tab |
+| `MOLCRAFT_UNLOCK_PASSWORD` | *(unset)* | Password for unlocking extended task families in the Model training tab (public families are always available) |
 
 ## 6. Build the frontend
 
@@ -89,5 +89,7 @@ Then open `http://localhost:8000` in your browser.
 | `FRONTEND_DEV=1 ./dev.sh` | Also starts Vite hot-reload server on `:5173` |
 | `BACKEND_RELOAD=1 ./dev.sh` | Auto-restarts backend on Python file changes |
 | `BACKEND_HOST=0.0.0.0 ./dev.sh` | Expose backend to the local network |
+| `BACKEND_PORT=9000 ./dev.sh` | Run the backend on a different port (default `8000`) |
+| `BACKEND_PYTHON=/path/to/python ./dev.sh` | Use a specific Python interpreter for the backend |
 
 `dev.sh` auto-detects the Python interpreter from `$VIRTUAL_ENV`, `$CONDA_PREFIX`, or common `.venv`/`venv` paths.

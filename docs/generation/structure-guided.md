@@ -99,7 +99,7 @@ Identical to [de-novo generation](index.md#conditional-targets-cfg-models-only):
 
 ## Advanced: Adjustment Panel
 
-Click **Show Adjustment Panel** in the **Structure Settings** section to reveal low-level controls. These are hidden by default because incorrect values can produce geometrically invalid outputs. Only adjust these if you understand the model's geometry constraints.
+Click **Show Adjustment Panel** in the **Structure Guidance Settings** section to reveal low-level controls. These are hidden by default because incorrect values can produce geometrically invalid outputs. Only adjust these if you understand the model's geometry constraints.
 
 ### Sample guidance mode *(unconditional models only)*
 

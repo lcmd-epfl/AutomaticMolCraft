@@ -1,6 +1,9 @@
 # Model Training
 
-The **Model Training** tab exposes the full MolCraftDiffusion training pipeline from the browser.
+The **Model training** tab exposes the full MolCraftDiffusion training pipeline from the browser.
+
+!!! note "Extended task families"
+    Some task families are hidden by default. If the server sets `MOLCRAFT_UNLOCK_PASSWORD` (see [Installation](installation.md)), an unlock field appears above the form — enter the password and click **Unlock** to reveal the extended families ("Extended models unlocked" is shown on success). The public families work without unlocking.
 
 ## Layout
 
@@ -39,10 +42,10 @@ The **Task family** dropdown selects the learning objective. It controls which f
 
 ## Run mode
 
-| Mode | Effect |
-|---|---|
-| **Run** | Queues a real training job; the backend launches the training process and streams logs |
-| **Dry** | Generates and validates the YAML configuration only — no training runs. The YAML is shown inline with a **Copy command** button and a **Download YAML** button |
+| Mode | Submit button | Effect |
+|---|---|---|
+| **Run** | **Queue training job** | Queues a real training job; the backend launches the training process and streams logs |
+| **Dry** | **Generate YAML** | Generates and validates the YAML configuration only — no training runs. The YAML is shown inline with a **Copy command** button and a **Download YAML** button |
 
 Use **Dry** to inspect or share the configuration before committing compute.
 

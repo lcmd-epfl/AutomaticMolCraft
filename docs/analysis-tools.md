@@ -10,16 +10,15 @@ The **Analysis tools** tab enriches the loaded dataset by running computations a
 
 ## General workflow
 
-1. **Select a tool** from the list on the left.
-2. **Configure parameters** in the panel on the right.
-3. Click **Run** to queue the job. Jobs execute one at a time in a background queue; you can navigate to other tabs while waiting.
-4. When the status changes to `completed`, click **Apply** to merge the result into the active dataset.
-5. Optionally click **Register as new source** to add the result as a staged source in the Data Manager (useful for geometry optimization outputs or featurizations you want to export separately).
+The tab is organized around a step queue:
 
-Each job in the queue shows its tool name, status badge (`queued / running / completed / failed / cancelled`), and a log/terminal button to inspect the raw output.
+1. **`1` Settings** — pick the **Analysis tool** and the **Analysis source** (which dataset/staged source to run on).
+2. **`2` Parameters** — configure the tool's parameters, then click **Add to queue**. Repeat to chain several steps (e.g. XYZ to SMILES → validity → xTB).
+3. Each queued step has a **Post action**: **No post-action**, **Apply results** (merge new columns into the dataset when the step completes), or **Register optimized set** (add the result as a staged source in the Data Manager — used for geometry optimization outputs).
+4. In the **Workflow** panel, click **Run**. Steps execute one at a time as background jobs; you can navigate to other tabs while waiting. **Pause**, **Cancel active**, and **Clear workflow** control the run; a paused or failed workflow shows **Resume** instead of Run.
+5. Completed jobs appear in the **Analysis queue** panel with a status badge (`queued / running / completed / failed / cancelled`) and a log/terminal button to inspect the raw output. If a step ran without a post action, you can still click **Apply results** (or **Apply all results**) or **Register optimized set** there afterwards.
 
-
-**Cancelling**: click the stop button on a running job to cancel it. Queued jobs can be removed before they start.
+**Cancelling**: click **Cancel** on a queued or running job. **Clear queue** removes finished jobs from the list.
 
 ---
 
@@ -28,7 +27,7 @@ Each job in the queue shows its tool name, status badge (`queued / running / com
 Many tools depend on outputs from earlier ones:
 
 1. **XYZ to SMILES** — produces the `smiles` column required by validity checks and similarity filters.
-2. **Validity and connectivity** — use SMILES + XYZ to flag bad geometries; filter these out before expensive calculations.
+2. **Validity and connectivity metrics** — use SMILES + XYZ to flag bad geometries; filter these out before expensive calculations.
 3. **XTB geometry optimization** *(optional)* — replace raw geometries with optimized ones before running single-point calculations.
 4. **XTB electronic properties** — single-point calculations on the (optionally optimized) geometries.
 5. **Featurize** — compute SOAP or UMA vectors.
@@ -134,8 +133,8 @@ Relaxes each molecule's geometry to a local energy minimum. The output either re
 | Covalent radii scale factor | 1.3 | float | Scale applied to covalent radii when assigning bonds from XYZ coordinates. Increase (e.g. to 1.5) if bonds between distant atoms are being missed |
 
 After the job completes, choose:
-- **Replace in-place** — overwrites the current XYZ geometries for those molecule IDs.
-- **Register as new source** — keeps the original geometries and adds optimized ones as a separate source with a new label.
+- **Apply results** — overwrites the current XYZ geometries for those molecule IDs in-place.
+- **Register optimized set** — keeps the original geometries and adds optimized ones as a separate staged source with a new label.
 
 ---
 
