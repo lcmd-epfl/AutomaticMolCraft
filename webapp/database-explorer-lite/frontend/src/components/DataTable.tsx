@@ -173,6 +173,9 @@ function DataTable() {
   const clearPicked = useStore(s => s.clearPicked)
   const setPickedIndices = useStore(s => s.setPickedIndices)
   const activeViewerPane = useStore(s => s.activeViewerPane)
+  const parsing = useStore(s => s.parsing)
+  const filtering = useStore(s => s.filtering)
+  const clearFilters = useStore(s => s.clearFilters)
   const replaceMoleculeInDisplay = useStore(s => s.replaceMoleculeInDisplay)
 
   const [page, setPage] = useState(0)
@@ -375,13 +378,40 @@ function DataTable() {
             </tr>
           </thead>
 
-          <TableBody
-            rowIndices={pageRowIndices}
-            cells={pageCells}
-            selected0={selected0}
-            pickedIndices={pickedIndices}
-            onRowClick={onRowClick}
-          />
+          {parsing || filtering ? (
+            <tbody>
+              {Array.from({ length: 8 }, (_, r) => (
+                <tr key={r}>
+                  {columnsToShow.map(col => (
+                    <td key={col} style={styles.td}>
+                      <div className="skeleton skeleton-text" />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          ) : shownCount === 0 ? (
+            <tbody>
+              <tr>
+                <td colSpan={columnsToShow.length} className="table-empty-cell">
+                  <div className="table-empty">
+                    <span>No rows match the current filters</span>
+                    <button type="button" onClick={() => clearFilters()}>
+                      Clear filters
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          ) : (
+            <TableBody
+              rowIndices={pageRowIndices}
+              cells={pageCells}
+              selected0={selected0}
+              pickedIndices={pickedIndices}
+              onRowClick={onRowClick}
+            />
+          )}
         </table>
       </div>
 

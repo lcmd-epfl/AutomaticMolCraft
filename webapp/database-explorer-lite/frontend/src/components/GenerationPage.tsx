@@ -870,7 +870,7 @@ export default function GenerationPage({
         <section className="generation-section">
           <div className="generation-section-title collapsible" onClick={() => setShowBasicParams(v => !v)}>
             <ChevronDown size={13} style={{ transform: showBasicParams ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
-            Basic Parameters
+            <span className="step-badge">1</span> Basic Parameters
           </div>
           {showBasicParams && (
             <>
@@ -897,7 +897,7 @@ export default function GenerationPage({
         <section className="generation-section">
           <div className="generation-section-title collapsible" onClick={() => setShowMolecularSize(v => !v)}>
             <ChevronDown size={13} style={{ transform: showMolecularSize ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
-            Molecular Size
+            <span className="step-badge">2</span> Molecular Size
           </div>
           {showMolecularSize && (
             <>
@@ -923,7 +923,7 @@ export default function GenerationPage({
           <section className="generation-section">
             <div className="generation-section-title collapsible" onClick={() => setShowTargets(v => !v)}>
               <ChevronDown size={13} style={{ transform: showTargets ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
-              Conditional Targets
+              <span className="step-badge">3</span> Conditional Targets
             </div>
             {showTargets && (
               <>
@@ -977,7 +977,7 @@ export default function GenerationPage({
           <section className="generation-section">
             <div className="generation-section-title collapsible" onClick={() => setShowTargets(v => !v)}>
               <ChevronDown size={13} style={{ transform: showTargets ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
-              Mode
+              <span className="step-badge">3</span> Mode
             </div>
             {showTargets && (
               <div className="generation-mode"><Wand2 size={15} /> Unconditional generation</div>

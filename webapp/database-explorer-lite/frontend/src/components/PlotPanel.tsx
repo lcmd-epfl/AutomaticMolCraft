@@ -58,6 +58,7 @@ function PlotPanel({ plotId }: { plotId: string }) {
   const categoricalColumns = useStore(s => s.dataset?.meta.categoricalColumns || [], shallow)
   const updatePlot = useStore(s => s.updatePlot)
   const removePlot = useStore(s => s.removePlot)
+  const filtering = useStore(s => s.filtering)
   const setActivePlotId = useUIStore(s => s.setActivePlotId)
   const pushToast = useUIStore(s => s.pushToast)
 
@@ -163,7 +164,7 @@ function PlotPanel({ plotId }: { plotId: string }) {
             {!isHist && (
               <button
                 onClick={() => setSettingsOpen(true)}
-                title="Scatter settings"
+                data-tip="Scatter settings"
                 aria-label="Scatter settings"
                 className="btn-icon"
                 style={{ width: 24, height: 24, padding: 0 }}
@@ -174,7 +175,7 @@ function PlotPanel({ plotId }: { plotId: string }) {
             {isHist && (
               <button
                 onClick={() => setSettingsOpen(true)}
-                title="Histogram settings"
+                data-tip="Histogram settings"
                 aria-label="Histogram settings"
                 className="btn-icon"
                 style={{ width: 24, height: 24, padding: 0 }}
@@ -184,7 +185,7 @@ function PlotPanel({ plotId }: { plotId: string }) {
             )}
             <button
               onClick={() => setExportNonce(n => n + 1)}
-              title="Download PNG"
+              data-tip="Download PNG"
               aria-label="Download PNG"
               className="btn-icon"
               style={{ width: 24, height: 24, padding: 0 }}
@@ -193,7 +194,7 @@ function PlotPanel({ plotId }: { plotId: string }) {
             </button>
             <button
               onClick={onRemove}
-              title="Delete plot"
+              data-tip="Delete plot"
               aria-label="Delete plot"
               className="btn-close"
             >
@@ -208,6 +209,11 @@ function PlotPanel({ plotId }: { plotId: string }) {
             : (isScatter3D
               ? <ScatterPlot3D spec={spec} exportNonce={exportNonce} onExportError={(m) => pushToast(m, 'warning')} />
               : <ScatterPlot spec={spec} exportNonce={exportNonce} onExportError={(m) => pushToast(m, 'warning')} />)}
+          {filtering && (
+            <div className="plot-busy-overlay" aria-hidden="true">
+              <div className="skeleton skeleton-block" />
+            </div>
+          )}
         </div>
       </div>
 

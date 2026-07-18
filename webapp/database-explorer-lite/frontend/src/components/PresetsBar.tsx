@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { BACKEND } from '../config'
 import { downloadTextFile } from '../utils/download'
+import { useUIStore } from '../store/uiStore'
 
 type Preset = {
   id: string
@@ -24,6 +25,7 @@ export default function PresetsBar({ page, currentConfig, onLoad }: PresetsBarPr
   const [saveName, setSaveName] = useState('')
   const [busy, setBusy] = useState(false)
   const [conflicting, setConflicting] = useState<Preset | null>(null)
+  const pushToast = useUIStore(s => s.pushToast)
 
   const selectedPreset = presets.find(p => p.id === selectedId) ?? null
 
@@ -84,16 +86,38 @@ export default function PresetsBar({ page, currentConfig, onLoad }: PresetsBarPr
     downloadTextFile(`${selectedPreset.name}.json`, JSON.stringify(selectedPreset, null, 2))
   }
 
+  const restorePreset = async (deleted: Preset) => {
+    try {
+      const resp = await fetch(api(`/presets/${page}`), {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name: deleted.name, config: deleted.config }),
+      })
+      if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`)
+      const preset: Preset = await resp.json()
+      setPresets(prev => prev.concat(preset))
+    } catch (err: any) {
+      console.error('Failed to restore preset:', err)
+      pushToast(`Failed to restore preset '${deleted.name}'`, 'error')
+    }
+  }
+
   const handleDelete = async () => {
     if (!selectedPreset || busy) return
+    const deleted = selectedPreset
     setBusy(true)
     try {
-      const resp = await fetch(api(`/presets/${page}/${selectedPreset.id}`), { method: 'DELETE' })
+      const resp = await fetch(api(`/presets/${page}/${deleted.id}`), { method: 'DELETE' })
       if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`)
-      setPresets(prev => prev.filter(p => p.id !== selectedPreset.id))
+      setPresets(prev => prev.filter(p => p.id !== deleted.id))
       setSelectedId('')
+      pushToast(`Deleted preset '${deleted.name}'`, 'info', {
+        label: 'Undo',
+        onAction: () => { void restorePreset(deleted) },
+      })
     } catch (err: any) {
       console.error('Failed to delete preset:', err)
+      pushToast(`Failed to delete preset '${deleted.name}'`, 'error')
     } finally {
       setBusy(false)
     }

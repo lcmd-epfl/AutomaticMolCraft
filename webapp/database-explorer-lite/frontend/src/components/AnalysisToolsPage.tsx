@@ -2566,7 +2566,7 @@ export default function AnalysisToolsPage({ stagedSources, setStagedSources }: A
 
       <div className="card analysis-settings-card">
         <section className="generation-section analysis-selection-section">
-          <div className="generation-section-title">Settings</div>
+          <div className="generation-section-title"><span className="step-badge">1</span> Settings</div>
           <div className="analysis-selection-grid">
             <label className="generation-field">
               <span>Analysis tool</span>
@@ -2601,7 +2601,7 @@ export default function AnalysisToolsPage({ stagedSources, setStagedSources }: A
             </div>
 
             <section className="generation-section">
-              <div className="generation-section-title">Parameters</div>
+              <div className="generation-section-title"><span className="step-badge">2</span> Parameters</div>
               <div className="analysis-parameter-grid">
                 {visibleInputsForValues(selectedTool, formValues).map(field => (
                   <AnalysisField

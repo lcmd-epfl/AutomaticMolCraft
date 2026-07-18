@@ -341,6 +341,7 @@ function scheduleLiveFilterApply(get: () => StoreState, set: (partial: Partial<S
       if (msg.type === 'result' || msg.type === 'error' || msg.type === 'superseded') {
         worker.removeEventListener('message', onMessage as EventListener)
         if (runId === liveFilterRunId) liveFilterJobInFlight = false
+        if (!liveFilterJobInFlight) set({ filtering: false })
       }
       if (msg.type === 'superseded') return
       if (msg.version !== filterDatasetVersion || runId !== liveFilterRunId) return
@@ -360,6 +361,7 @@ function scheduleLiveFilterApply(get: () => StoreState, set: (partial: Partial<S
 
     worker.addEventListener('message', onMessage as EventListener)
     liveFilterJobInFlight = true
+    set({ filtering: true })
     worker.postMessage({
       type: 'run',
       version: filterDatasetVersion,
@@ -376,6 +378,7 @@ interface StoreState {
 
   parsing: boolean
   progress: number
+  filtering: boolean
 
   plots: PlotSpec[]
 
@@ -803,6 +806,7 @@ export const useStore = create<StoreState>((set, get) => ({
 
   parsing: false,
   progress: 0,
+  filtering: false,
 
   plots: [],
 

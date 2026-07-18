@@ -138,6 +138,7 @@ export default function ExternalToolPage({ tool }: { tool: ToolSpec }) {
   const [runBusy, setRunBusy] = useState(false);
   const [runMessage, setRunMessage] = useState("");
   const [runError, setRunError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [runWarnings, setRunWarnings] = useState<string[]>([]);
   const [runStats, setRunStats] = useState<Record<string, any> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -159,6 +160,7 @@ export default function ExternalToolPage({ tool }: { tool: ToolSpec }) {
       else next[field.key] = "";
     }
     setFormValues(next);
+    setFieldErrors({});
     setRunMessage("");
     setRunError("");
     setRunWarnings([]);
@@ -174,40 +176,44 @@ export default function ExternalToolPage({ tool }: { tool: ToolSpec }) {
       if (Object.is(prev[key], value)) return prev;
       return { ...prev, [key]: value };
     });
+    setFieldErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
   }, []);
 
   const runTool = async () => {
     if (!ds) return;
 
     // VALIDATION
+    const errors: Record<string, string> = {};
     for (const field of tool.inputs || []) {
       const value = formValues[field.key];
 
-      if (field.required) {
-        if (
-          value === undefined ||
+      if (
+        field.required &&
+        (value === undefined ||
           value === null ||
           value === "" ||
-          (Array.isArray(value) && value.length === 0)
-        ) {
-          setRunMessage(`Missing required field: ${field.label || field.key}`);
-          return;
-        }
-      }
-
-      if (
+          (Array.isArray(value) && value.length === 0))
+      ) {
+        errors[field.key] = "This field is required";
+      } else if (
         field.type === "integer" &&
         value !== "" &&
         !Number.isInteger(Number(value))
       ) {
-        setRunMessage(`Field ${field.label || field.key} must be an integer`);
-        return;
+        errors[field.key] = "Must be an integer";
+      } else if (field.type === "float" && value !== "" && isNaN(Number(value))) {
+        errors[field.key] = "Must be a number";
       }
-
-      if (field.type === "float" && value !== "" && isNaN(Number(value))) {
-        setRunMessage(`Field ${field.label || field.key} must be a number`);
-        return;
-      }
+    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      setRunMessage("Fix the highlighted fields before running.");
+      return;
     }
 
     setRunBusy(true);
@@ -344,15 +350,24 @@ export default function ExternalToolPage({ tool }: { tool: ToolSpec }) {
         <div> &nbsp; </div>
         <div style={{ display: "grid", gap: 10 }}>
           {tool.inputs.map((field) => (
-            <FieldRow
+            <div
               key={field.key}
-              field={field}
-              value={formValues[field.key]}
-              allColumns={allColumns}
-              numericColumns={numericColumns}
-              categoricalColumns={categoricalColumns}
-              setFieldValue={setFieldValue}
-            />
+              className={fieldErrors[field.key] ? "field-invalid" : undefined}
+            >
+              <FieldRow
+                field={field}
+                value={formValues[field.key]}
+                allColumns={allColumns}
+                numericColumns={numericColumns}
+                categoricalColumns={categoricalColumns}
+                setFieldValue={setFieldValue}
+              />
+              {fieldErrors[field.key] && (
+                <div className="field-error" role="alert">
+                  {fieldErrors[field.key]}
+                </div>
+              )}
+            </div>
           ))}
         </div>
 

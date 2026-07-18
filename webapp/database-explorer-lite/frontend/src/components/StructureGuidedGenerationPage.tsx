@@ -1083,7 +1083,7 @@ export default function StructureGuidedGenerationPage({
         <section className="generation-section">
           <div className="generation-section-title collapsible" onClick={() => setShowBasicParams(v => !v)}>
             <ChevronDown size={13} style={{ transform: showBasicParams ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
-            Basic Parameters
+            <span className="step-badge">1</span> Basic Parameters
           </div>
           {showBasicParams && (
             <div className="generation-form-grid">
@@ -1106,7 +1106,7 @@ export default function StructureGuidedGenerationPage({
           <div className="generation-section-head">
             <div className="generation-section-title collapsible" onClick={() => setShowInputStructure(v => !v)}>
               <ChevronDown size={13} style={{ transform: showInputStructure ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
-              Input Structure
+              <span className="step-badge">2</span> Input Structure
             </div>
             {selectedModelHasCheckpointScaffold && (
               <button type="button" onClick={loadCheckpointScaffold} disabled={loadingScaffold}>
@@ -1218,7 +1218,7 @@ export default function StructureGuidedGenerationPage({
         <section className="generation-section">
           <div className="generation-section-title collapsible" onClick={() => setShowMolecularSize(v => !v)}>
             <ChevronDown size={13} style={{ transform: showMolecularSize ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
-            Molecular Size
+            <span className="step-badge">3</span> Molecular Size
           </div>
           {showMolecularSize && (
             <>
@@ -1244,7 +1244,7 @@ export default function StructureGuidedGenerationPage({
           <section className="generation-section">
             <div className="generation-section-title collapsible" onClick={() => setShowConditionalTargets(v => !v)}>
               <ChevronDown size={13} style={{ transform: showConditionalTargets ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
-              Conditional Targets
+              <span className="step-badge">4</span> Conditional Targets
             </div>
             {showConditionalTargets && (
               <>
@@ -1297,7 +1297,7 @@ export default function StructureGuidedGenerationPage({
         <section className="generation-section">
           <div className="generation-section-title collapsible" onClick={() => setShowStructureSettings(v => !v)}>
             <ChevronDown size={13} style={{ transform: showStructureSettings ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
-            Structure Guidance Settings
+            <span className="step-badge">5</span> Structure Guidance Settings
           </div>
           {structureMode === 'inpaint' && (
             <div className="generation-form-grid compact">

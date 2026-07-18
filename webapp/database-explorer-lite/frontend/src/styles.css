@@ -140,15 +140,15 @@
   --color-border-strong: #8ea4bc;
   --color-text: #1a2332;
   --color-text-dim: #374f68;
-  --color-text-muted: #6b849e;
-  --color-accent: #0284c7;
+  --color-text-muted: #48607b;
+  --color-accent: #075985;
   --color-accent-soft: rgba(2, 132, 199, 0.12);
   --color-accent-glow: rgba(2, 132, 199, 0.22);
-  --color-success: #059669;
+  --color-success: #065f46;
   --color-success-soft: rgba(5, 150, 105, 0.13);
-  --color-warning: #b7791f;
+  --color-warning: #854d0e;
   --color-warning-soft: rgba(183, 121, 31, 0.14);
-  --color-danger: #dc2626;
+  --color-danger: #b91c1c;
   --color-danger-soft: rgba(220, 38, 38, 0.12);
   --color-control-hover: #cdd6e4;
   --color-control-active: #c2ccdb;
@@ -248,12 +248,12 @@
   --color-text: #111111;
   --color-text-dim: #343434;
   --color-text-muted: #6b6b66;
-  --color-accent: #ff0000;
+  --color-accent: #c00000;
   --color-accent-soft: rgba(255, 0, 0, 0.1);
   --color-accent-glow: rgba(255, 0, 0, 0.2);
-  --color-success: #15803d;
+  --color-success: #166534;
   --color-success-soft: rgba(21, 128, 61, 0.12);
-  --color-warning: #c77700;
+  --color-warning: #8a5300;
   --color-warning-soft: rgba(199, 119, 0, 0.14);
   --color-danger: #d40000;
   --color-danger-soft: rgba(212, 0, 0, 0.12);
@@ -442,9 +442,20 @@ button:disabled {
   cursor: not-allowed;
 }
 
-input:focus, select:focus {
+input:focus, select:focus, textarea:focus {
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+/* Keyboard focus ring for everything that isn't a form control (those get the
+   box-shadow ring above). */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: none;
 }
 
 select {
@@ -1118,6 +1129,23 @@ select {
   height: 100%;
   position: relative;
   overflow: hidden;
+}
+
+/* Busy overlay while the filter worker recomputes; fades in after a delay so
+   fast recomputes never flash it. */
+.plot-busy-overlay {
+  position: absolute;
+  inset: 0;
+  padding: 12px;
+  background: color-mix(in srgb, var(--color-panel) 55%, transparent);
+  opacity: 0;
+  animation: plotBusyFadeIn 0.2s ease-out 0.3s forwards;
+  pointer-events: none;
+}
+.plot-busy-overlay .skeleton-block { height: 100%; }
+
+@keyframes plotBusyFadeIn {
+  to { opacity: 1; }
 }
 
 .selects {
@@ -2003,6 +2031,109 @@ select {
   flex-shrink: 0;
 }
 .toast-close:hover { background: var(--color-border); color: var(--color-text); }
+
+.toast-action {
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-strong);
+  background: transparent;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+.toast-action:hover { border-color: var(--color-accent); }
+
+/* CSS-only tooltip: shows on hover AND keyboard focus, unlike native title. */
+[data-tip] { position: relative; }
+[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-panel-raised);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  box-shadow: var(--shadow-sm);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease-in 0.15s;
+  z-index: 60;
+}
+[data-tip]:hover::after,
+[data-tip]:focus-visible::after {
+  opacity: 1;
+}
+
+.tool-warnings-banner {
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 12px;
+}
+.tool-warnings-title {
+  font-weight: 600;
+  color: var(--amber);
+  margin-right: 8px;
+}
+.tool-warnings-list {
+  display: grid;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Numbered workflow-step badge for section titles */
+.step-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  flex-shrink: 0;
+}
+
+/* Field-level validation */
+.field-invalid input,
+.field-invalid select,
+.field-invalid textarea {
+  border-color: var(--color-danger);
+}
+.field-error {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-danger);
+}
+
+.shortcuts-table { border-collapse: collapse; width: 100%; }
+.shortcuts-table td { padding: 5px 10px 5px 0; font-size: 13px; }
+.shortcuts-table kbd {
+  display: inline-block;
+  min-width: 22px;
+  padding: 2px 6px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--color-panel-raised);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-inner-line);
+}
 
 /* ── Modals ── */
 .modal-overlay {
@@ -4689,6 +4820,16 @@ button.btn {
 }
 
 .skeleton-text  { height: 13px; margin-bottom: 4px; }
+
+.table-empty-cell { padding: 32px 12px; }
+.table-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
 .skeleton-sm    { height: 11px; width: 60%; margin-bottom: 4px; }
 .skeleton-block { height: 80px; width: 100%; }
 
@@ -4771,7 +4912,3 @@ button.btn {
   animation: brandGlow 4s ease-in-out infinite;
 }
 
-[data-theme="epfl"] .topbar-brand-logo {
-  animation: none;
-  filter: drop-shadow(0 2px 6px rgba(255,0,0,0.2));
-}

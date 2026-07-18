@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Check, ChevronDown, Palette } from 'lucide-react'
 import { useUIStore, type Theme } from '../store/uiStore'
+import BrandLogo from './BrandLogo'
 
 const THEMES: Array<{ id: Theme; label: string; dot: string }> = [
   { id: 'cosmos', label: 'Cosmos', dot: '#38bdf8' },
@@ -34,7 +35,7 @@ export default function TopBar() {
   return (
     <div className="topbar">
       <div className="topbar-brand">
-        <img src="/logo-mark.svg" className="topbar-brand-logo" width={28} height={28} alt="" />
+        <BrandLogo className="topbar-brand-logo" />
         <span>AutomaticMolCraft</span>
       </div>
       <div className="topbar-actions" ref={menuRef}>

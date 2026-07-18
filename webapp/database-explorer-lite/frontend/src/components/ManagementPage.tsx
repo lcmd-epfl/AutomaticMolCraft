@@ -355,7 +355,7 @@ function ManagementPage({ stagedSources, setStagedSources }: ManagementPageProps
   const [computedDrafts, setComputedDrafts] = useState<Record<string, ComputedColumnDraft | null>>({})
   const [compiledComputedDraft, setCompiledComputedDraft] = useState<ComputedColumnDraft | null>(null)
 
-  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<{ message: string; onConfirm: () => void } | null>(null)
   const [mergeError, setMergeError] = useState('')
   const [mergeOpen, setMergeOpen] = useState(false)
   const [mergeName, setMergeName] = useState('')
@@ -1024,17 +1024,6 @@ function ManagementPage({ stagedSources, setStagedSources }: ManagementPageProps
     }
   }
 
-  const openConfirm = () => {
-    if (selectedCount === 0) return
-    setConfirmOpen(true)
-  }
-
-  const doDelete = () => {
-    removeColumns(selectedUniqueColumns)
-    setConfirmOpen(false)
-    setSelected(new Set())
-  }
-
   const openMerge = () => {
     setMergeError('')
 
@@ -1392,6 +1381,7 @@ function ManagementPage({ stagedSources, setStagedSources }: ManagementPageProps
                       onChange={e => updateStagedSource(staged.id, { label: e.target.value })}
                       onBlur={() => bumpStagedSourceLabel(staged.id)}
                       className={`dataset-name-input${!staged.label.trim() ? ' has-warning' : ''}`}
+                      aria-invalid={!staged.label.trim()}
                       title={staged.label}
                       aria-label={`Dataset name for ${staged.label}`}
                     />
@@ -1407,7 +1397,10 @@ function ManagementPage({ stagedSources, setStagedSources }: ManagementPageProps
                     {!staged.locked ? (
                       <button
                         className="btn btn-icon btn-ghost"
-                        onClick={() => setStagedSources(prev => prev.filter(s => s.id !== staged.id))}
+                        onClick={() => setConfirmAction({
+                          message: `Remove staged source '${staged.label}' (${staged.dataset.ids.length.toLocaleString()} rows)? This cannot be undone.`,
+                          onConfirm: () => setStagedSources(prev => prev.filter(s => s.id !== staged.id)),
+                        })}
                         title="Remove staged source"
                         aria-label={`Remove ${staged.label}`}
                       >
@@ -1606,7 +1599,10 @@ function ManagementPage({ stagedSources, setStagedSources }: ManagementPageProps
                           {isComputed ? (
                             <button
                               className="col-expand-btn"
-                              onClick={() => removeComputedColumn(staged.id, column.original)}
+                              onClick={() => setConfirmAction({
+                                message: `Remove computed column '${column.draftName}' from '${staged.label}'? This cannot be undone.`,
+                                onConfirm: () => removeComputedColumn(staged.id, column.original),
+                              })}
                               aria-label={`remove computed column ${column.draftName}`}
                               title="Remove computed column"
                             >
@@ -1782,6 +1778,30 @@ function ManagementPage({ stagedSources, setStagedSources }: ManagementPageProps
                     Cancel
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        ) : null}
+
+        {confirmAction ? createPortal(
+          <div className="modal-overlay" onMouseDown={() => setConfirmAction(null)}>
+            <div className="modal-card" onMouseDown={e => e.stopPropagation()}>
+              <div className="modal-title">Confirm removal</div>
+              <div className="legend" style={{ marginBottom: 14, lineHeight: 1.6 }}>
+                {confirmAction.message}
+              </div>
+              <div className="modal-actions">
+                <button onClick={() => setConfirmAction(null)}>Cancel</button>
+                <button
+                  className="btn-danger"
+                  onClick={() => {
+                    confirmAction.onConfirm()
+                    setConfirmAction(null)
+                  }}
+                >
+                  Remove
+                </button>
               </div>
             </div>
           </div>,

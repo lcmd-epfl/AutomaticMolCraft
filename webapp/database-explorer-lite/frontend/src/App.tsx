@@ -43,6 +43,23 @@ const tabDescriptions = {
     'Run custom external tools such as docking, QSAR, or scoring workflows from local plug-in manifests.',
 } as const
 
+const TABS = [
+  { id: 'visualization', label: 'Visualization', Icon: BarChart2 },
+  { id: 'management', label: 'Management', Icon: Layers },
+  { id: 'generation', label: '3D molecule generation', Icon: Sparkles },
+  { id: 'structure-generation', label: 'Structure-directed generation', Icon: Sparkles },
+  { id: 'analysis', label: 'Analysis tools', Icon: Atom },
+  { id: 'training', label: 'Model training', Icon: BrainCircuit },
+  { id: 'plugins', label: 'Plug-in tools', Icon: Wrench },
+] as const
+
+type TabId = (typeof TABS)[number]['id']
+
+function tabFromHash(): TabId {
+  const h = window.location.hash.slice(1)
+  return TABS.some(t => t.id === h) ? (h as TabId) : 'management'
+}
+
 const localToolManifestModules = {
   ...import.meta.glob('../../backend/tools/*/manifest.json', { eager: true }),
 }
@@ -133,8 +150,39 @@ export default function App() {
 
   const pushToast = useUIStore(s => s.pushToast)
 
-  const [tab, setTab] = useState('management')
+  const [tab, setTab] = useState<TabId>(tabFromHash)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const tabBarRef = useRef<HTMLDivElement>(null)
+
+  // Keep the active tab in the URL hash so refresh/back/forward preserve it.
+  useEffect(() => {
+    if (window.location.hash.slice(1) !== tab) window.location.hash = tab
+  }, [tab])
+
+  useEffect(() => {
+    const onHash = () => setTab(tabFromHash())
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  // Global shortcuts: 1-7 switch tabs, ? toggles the shortcut overlay.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null
+      if (el?.closest('input, textarea, select, [contenteditable="true"]')) return
+      if (e.ctrlKey || e.metaKey || e.altKey) return
+      const n = Number(e.key)
+      if (n >= 1 && n <= TABS.length && !e.shiftKey) {
+        setTab(TABS[n - 1].id)
+      } else if (e.key === '?') {
+        setShortcutsOpen(o => !o)
+      } else if (e.key === 'Escape') {
+        setShortcutsOpen(false)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   // Position the single sliding tab indicator under the active tab.
   useEffect(() => {
@@ -297,60 +345,17 @@ export default function App() {
 
       <div className="tab-bar" ref={tabBarRef}>
         <span className="tab-indicator" aria-hidden />
-        <button
-          className={`tab-btn${tab === 'visualization' ? ' active' : ''}`}
-          onClick={() => setTab('visualization')}
-        >
-          <BarChart2 size={14} />
-          Visualization
-        </button>
-
-        <button
-          className={`tab-btn${tab === 'management' ? ' active' : ''}`}
-          onClick={() => setTab('management')}
-        >
-          <Layers size={14} />
-          Management
-        </button>
-        <button
-          className={`tab-btn${tab === 'generation' ? ' active' : ''}`}
-          onClick={() => setTab('generation')}
-        >
-          <Sparkles size={14} />
-          3D molecule generation
-        </button>
-
-        <button
-          className={`tab-btn${tab === 'structure-generation' ? ' active' : ''}`}
-          onClick={() => setTab('structure-generation')}
-        >
-          <Sparkles size={14} />
-          Structure-directed generation
-        </button>
-
-        <button
-          className={`tab-btn${tab === 'analysis' ? ' active' : ''}`}
-          onClick={() => setTab('analysis')}
-        >
-          <Atom size={14} />
-          Analysis tools
-        </button>
-
-        <button
-          className={`tab-btn${tab === 'training' ? ' active' : ''}`}
-          onClick={() => setTab('training')}
-        >
-          <BrainCircuit size={14} />
-          Model training
-        </button>
-
-        <button
-          className={`tab-btn${tab === 'plugins' ? ' active' : ''}`}
-          onClick={() => setTab('plugins')}
-        >
-          <Wrench size={14} />
-          Plug-in tools
-        </button>
+        {TABS.map(({ id, label, Icon }, i) => (
+          <button
+            key={id}
+            className={`tab-btn${tab === id ? ' active' : ''}`}
+            onClick={() => setTab(id)}
+            data-tip={`${label} — press ${i + 1}`}
+          >
+            <Icon size={14} />
+            {label}
+          </button>
+        ))}
 
         {loadingTools && (
           <span className="legend" style={{ marginLeft: 8 }}>
@@ -390,19 +395,10 @@ export default function App() {
       )}
 
       {toolErrors.length > 0 && (
-        <div
-          style={{
-            padding: '6px 14px',
-            borderBottom: '1px solid var(--border)',
-            background: 'var(--surface)',
-            fontSize: 12,
-          }}
-        >
-          <span style={{ fontWeight: 600, color: 'var(--amber)', marginRight: 8 }}>
-            Tool warnings
-          </span>
+        <div className="tool-warnings-banner">
+          <span className="tool-warnings-title">Tool warnings</span>
 
-          <div style={{ display: 'grid', gap: 4, marginTop: 4 }}>
+          <div className="tool-warnings-list">
             {toolErrors.map(err => (
               <span key={err} className="legend">
                 {err}
@@ -600,7 +596,7 @@ export default function App() {
               action cannot be undone.
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <div className="modal-actions">
               <button onClick={() => setConfirmResetOpen(false)}>Cancel</button>
 
               <button
@@ -616,6 +612,32 @@ export default function App() {
                 Yes, reset
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {shortcutsOpen && (
+        <div className="modal-overlay" onMouseDown={() => setShortcutsOpen(false)}>
+          <div className="modal-card" onMouseDown={e => e.stopPropagation()}>
+            <div className="modal-title">Keyboard shortcuts</div>
+            <table className="shortcuts-table">
+              <tbody>
+                {TABS.map(({ id, label }, i) => (
+                  <tr key={id}>
+                    <td><kbd>{i + 1}</kbd></td>
+                    <td>{label}</td>
+                  </tr>
+                ))}
+                <tr>
+                  <td><kbd>?</kbd></td>
+                  <td>Show / hide this overlay</td>
+                </tr>
+                <tr>
+                  <td><kbd>Esc</kbd></td>
+                  <td>Close dialogs</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       )}

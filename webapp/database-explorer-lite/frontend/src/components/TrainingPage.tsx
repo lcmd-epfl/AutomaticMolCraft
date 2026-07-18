@@ -461,7 +461,7 @@ function CheckInput({
   )
 }
 
-function SectionHeader({ title, open, onToggle }: { title: string; open: boolean; onToggle: () => void }) {
+function SectionHeader({ title, open, onToggle, step }: { title: string; open: boolean; onToggle: () => void; step?: number }) {
   return (
     <button
       onClick={onToggle}
@@ -485,6 +485,7 @@ function SectionHeader({ title, open, onToggle }: { title: string; open: boolean
       }}
     >
       {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+      {step != null && <span className="step-badge">{step}</span>}
       {title}
     </button>
   )
@@ -1227,7 +1228,7 @@ export default function TrainingPage() {
           </FieldRow>
 
           {/* Data section */}
-          <SectionHeader title="Data" open={openSections.data} onToggle={() => toggleSection('data')} />
+          <SectionHeader step={1} title="Data" open={openSections.data} onToggle={() => toggleSection('data')} />
           {openSections.data && (
             <>
               <FieldRow label="Dataset name" hint="unique cache key">
@@ -1269,7 +1270,7 @@ export default function TrainingPage() {
           )}
 
           {/* Model section */}
-          <SectionHeader title="Model" open={openSections.model} onToggle={() => toggleSection('model')} />
+          <SectionHeader step={2} title="Model" open={openSections.model} onToggle={() => toggleSection('model')} />
           {openSections.model && (
             <>
               <FieldRow label="Hidden size">
@@ -1305,7 +1306,7 @@ export default function TrainingPage() {
           {/* Diffusion / Flow-matching */}
           {(category === 'diffusion' || category === 'flow_matching') && (
             <>
-              <SectionHeader title="Diffusion settings" open={openSections.diffusion} onToggle={() => toggleSection('diffusion')} />
+              <SectionHeader step={3} title="Diffusion settings" open={openSections.diffusion} onToggle={() => toggleSection('diffusion')} />
               {openSections.diffusion && (
                 <>
                   <FieldRow label="Diffusion steps">
@@ -1445,7 +1446,7 @@ export default function TrainingPage() {
           {/* Regression */}
           {category === 'regression' && (
             <>
-              <SectionHeader title="Regression settings" open={openSections.regression} onToggle={() => toggleSection('regression')} />
+              <SectionHeader step={3} title="Regression settings" open={openSections.regression} onToggle={() => toggleSection('regression')} />
               {openSections.regression && (
                 <>
                   <FieldRow label="Target columns" hint="comma-separated property names">
@@ -1489,7 +1490,7 @@ export default function TrainingPage() {
           {/* SSL3D */}
           {category === 'ssl3d' && (
             <>
-              <SectionHeader title="SSL-3D settings" open={openSections.ssl3d} onToggle={() => toggleSection('ssl3d')} />
+              <SectionHeader step={3} title="SSL-3D settings" open={openSections.ssl3d} onToggle={() => toggleSection('ssl3d')} />
               {openSections.ssl3d && (
                 <>
                   <FieldRow label="Denoise weight">
@@ -1525,7 +1526,7 @@ export default function TrainingPage() {
           {/* VAE */}
           {category === 'vae' && (
             <>
-              <SectionHeader title="VAE settings" open={openSections.vae} onToggle={() => toggleSection('vae')} />
+              <SectionHeader step={3} title="VAE settings" open={openSections.vae} onToggle={() => toggleSection('vae')} />
               {openSections.vae && (
                 <>
                   <FieldRow label="Latent dim">
@@ -1543,7 +1544,7 @@ export default function TrainingPage() {
           )}
 
           {/* Trainer */}
-          <SectionHeader title="Trainer" open={openSections.trainer} onToggle={() => toggleSection('trainer')} />
+          <SectionHeader step={4} title="Trainer" open={openSections.trainer} onToggle={() => toggleSection('trainer')} />
           {openSections.trainer && (
             <>
               <FieldRow label="Optimizer">
@@ -1633,7 +1634,7 @@ export default function TrainingPage() {
           )}
 
           {/* Logger */}
-          <SectionHeader title="Logger" open={openSections.logger} onToggle={() => toggleSection('logger')} />
+          <SectionHeader step={5} title="Logger" open={openSections.logger} onToggle={() => toggleSection('logger')} />
           {openSections.logger && (
             <>
               <FieldRow label="Backend">
@@ -1666,7 +1667,7 @@ export default function TrainingPage() {
           )}
 
           {/* Engine */}
-          <SectionHeader title="Engine" open={openSections.engine} onToggle={() => toggleSection('engine')} />
+          <SectionHeader step={6} title="Engine" open={openSections.engine} onToggle={() => toggleSection('engine')} />
           {openSections.engine && (
             <>
               <FieldRow label="Engine type">

@@ -13,17 +13,23 @@ const VALID_THEMES = new Set<Theme>([
   'arcane-study',
 ])
 
+export type ToastAction = {
+  label: string
+  onAction: () => void
+}
+
 export type ToastItem = {
   id: string
   message: string
   type: ToastType
+  action?: ToastAction
 }
 
 type UIState = {
   theme: Theme
   setTheme: (theme: Theme) => void
   toasts: ToastItem[]
-  pushToast: (message: string, type?: ToastType) => void
+  pushToast: (message: string, type?: ToastType, action?: ToastAction) => void
   dismissToast: (id: string) => void
   activePlotId: string | null
   setActivePlotId: (id: string | null) => void
@@ -35,7 +41,8 @@ function makeToastId() {
 
 function getInitialTheme(): Theme {
   const stored = localStorage.getItem(THEME_STORAGE_KEY)
-  return VALID_THEMES.has(stored as Theme) ? (stored as Theme) : 'cosmos'
+  if (VALID_THEMES.has(stored as Theme)) return stored as Theme
+  return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'arctic' : 'cosmos'
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -45,9 +52,9 @@ export const useUIStore = create<UIState>((set) => ({
     set({ theme })
   },
   toasts: [],
-  pushToast: (message, type = 'info') =>
+  pushToast: (message, type = 'info', action) =>
     set((s) => ({
-      toasts: [...s.toasts, { id: makeToastId(), message, type }]
+      toasts: [...s.toasts, { id: makeToastId(), message, type, action }]
     })),
   dismissToast: (id) =>
     set((s) => ({
