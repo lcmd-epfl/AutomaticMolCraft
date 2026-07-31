@@ -8,6 +8,15 @@ from typing import Any
 # ---------------------------------------------------------------------------
 # Task family registry
 # ---------------------------------------------------------------------------
+#
+# Every `tasks_config` here MUST name a real file in the installed package's
+# configs/tasks/ directory — Hydra raises MissingConfigException at job start
+# otherwise. This registry was originally written against MolCraftDiffusion_dev/,
+# which carries task groups the shipped package does not; those entries are gone.
+#
+# Deliberately still absent, because they need a `data:` group other than the
+# mol_dataset that build_yaml_dict hardcodes: diffusion_{adit,difflinker,diffpharma,
+# diffsmol,extraf,flowmol,geoldm,gfmdiff,pmdm}, vae_geoldm.
 
 TASK_FAMILIES: dict[str, dict[str, Any]] = {
     "diffusion": {
@@ -16,9 +25,9 @@ TASK_FAMILIES: dict[str, dict[str, Any]] = {
         "trainer_config": "default",
         "category": "diffusion",
     },
-    "diffusion_pyg_egcl": {
-        "label": "Diffusion PyG (EGCL)",
-        "tasks_config": "diffusion_pyg_egcl",
+    "diffusion_pretrained": {
+        "label": "Diffusion (EGCL, pretrained defaults)",
+        "tasks_config": "diffusion_pretrained",
         "trainer_config": "default",
         "category": "diffusion",
     },
@@ -27,42 +36,6 @@ TASK_FAMILIES: dict[str, dict[str, Any]] = {
         "tasks_config": "diffusion_egt",
         "trainer_config": "default",
         "category": "diffusion",
-    },
-    "diffusion_esen": {
-        "label": "Diffusion (eSEN)",
-        "tasks_config": "diffusion_esen",
-        "trainer_config": "default",
-        "category": "diffusion",
-    },
-    "diffusion_pyg_esen": {
-        "label": "Diffusion PyG (eSEN)",
-        "tasks_config": "diffusion_pyg_esen",
-        "trainer_config": "default",
-        "category": "diffusion",
-    },
-    "diffusion_fm_egcl": {
-        "label": "Flow Matching (EGCL)",
-        "tasks_config": "diffusion_fm_egcl",
-        "trainer_config": "default",
-        "category": "flow_matching",
-    },
-    "diffusion_fm_egt": {
-        "label": "Flow Matching (EGT)",
-        "tasks_config": "diffusion_fm_egt",
-        "trainer_config": "default",
-        "category": "flow_matching",
-    },
-    "diffusion_fm_esen": {
-        "label": "Flow Matching (eSEN)",
-        "tasks_config": "diffusion_fm_esen",
-        "trainer_config": "default",
-        "category": "flow_matching",
-    },
-    "diffusion_fm_equiformer": {
-        "label": "Flow Matching (Equiformer)",
-        "tasks_config": "diffusion_fm_equiformer",
-        "trainer_config": "default",
-        "category": "flow_matching",
     },
     "diffusion_tabasco": {
         "label": "Tabasco (Flow)",
@@ -80,6 +53,13 @@ TASK_FAMILIES: dict[str, dict[str, Any]] = {
     "regression_esen": {
         "label": "Regression (eSEN)",
         "tasks_config": "regression_esen",
+        "trainer_config": "regression",
+        "category": "regression",
+        "data_type": "pyg",
+    },
+    "regression_equiformer": {
+        "label": "Regression (EquiformerV2)",
+        "tasks_config": "regression_equiformer",
         "trainer_config": "regression",
         "category": "regression",
         "data_type": "pyg",
@@ -108,12 +88,6 @@ TASK_FAMILIES: dict[str, dict[str, Any]] = {
         "trainer_config": "default",
         "category": "ssl3d",
     },
-    "vae_esen": {
-        "label": "VAE (eSEN)",
-        "tasks_config": "vae_esen",
-        "trainer_config": "default",
-        "category": "vae",
-    },
     "vae_equiformer": {
         "label": "VAE (Equiformer)",
         "tasks_config": "vae_equiformer",
@@ -138,39 +112,26 @@ TASK_FAMILIES: dict[str, dict[str, Any]] = {
         "trainer_config": "default",
         "category": "guidance",
     },
-    "guidance_pc": {
-        "label": "Guidance (Point Cloud)",
-        "tasks_config": "guidance_pc",
-        "trainer_config": "default",
-        "category": "guidance",
-    },
-    "pharmacophore_generative": {
-        "label": "Pharmacophore Generative",
-        "tasks_config": "pharmacophore_generative",
-        "trainer_config": "default",
-        "category": "pharmacophore",
-    },
 }
 
 # Families exposed in public / open-source mode (MOLCRAFT_ALL_FAMILIES unset).
 # Set MOLCRAFT_ALL_FAMILIES=1 to unlock the full list.
 PUBLIC_TASK_FAMILIES: frozenset[str] = frozenset({
     "diffusion",
+    "diffusion_pretrained",
     "diffusion_egt",
     "diffusion_tabasco",
     "regression",
     "regression_esen",
+    "regression_equiformer",
     "ssl3d_egcl",
     "ssl3d_egt",
     "ssl3d_esen",
     "ssl3d_equiformer",
-    "vae_esen",
     "vae_equiformer",
     "vae_transformer",
     "guidance",
     "guidance_esen",
-    "guidance_pc",
-    "pharmacophore_generative",
 })
 
 

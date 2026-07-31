@@ -1,32 +1,94 @@
-webapp/database-explorer-lite/backend/_ase_tmp/
-*.db
-*.venv
+# ---------------------------------------------------------------------------
+# Secrets and local configuration
+# ---------------------------------------------------------------------------
+# .env.example is the committed template and stays tracked — the patterns below
+# deliberately do not match it.
 .env
+.env.local
+.env.*.local
 **/.env
-*.swp
-__pycache__/
-*.pyc
+**/.env.local
+**/.env.*.local
 
-# Local data, models, and generated runtime outputs
+# Local predict base config. The backend falls back to its built-in defaults
+# when this is absent (_default_predict_config in backend/main.py).
+/predict.yaml
+
+# ---------------------------------------------------------------------------
+# Runtime data written at the repository root
+# ---------------------------------------------------------------------------
+# Defaults for the MOLCRAFT_* env vars; see docs/installation.md step 5.
 /data/
 /models/
 /outputs/
 /generated/
 /analysis_jobs/
 /training_outputs/
+/presets/
+/xyz/
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# ---------------------------------------------------------------------------
+# Node / frontend build artifacts
+# ---------------------------------------------------------------------------
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*
+
+# ---------------------------------------------------------------------------
+# Databases, checkpoints and other binaries
+# ---------------------------------------------------------------------------
+# Covers backend/training_jobs.db and any ASE .db dropped into the tree. To
+# commit a small fixture anyway, force it: git add -f path/to.db
+*.db
+*.db-journal
+*.ckpt
+*.pt
+*.pth
+*.pkl
+*.npy
+*.npz
 *.mol
 
-# Documentation build artifacts and local bundles
-site/
+# Root-level papers and scratch notes. Scoped to the root so docs/ can carry a
+# PDF if one is ever needed.
+/*.pdf
+
+# ---------------------------------------------------------------------------
+# Docs build
+# ---------------------------------------------------------------------------
+/site/
 docs.zip
 
-# Frontend build/cache artifacts
-webapp/database-explorer-lite/frontend/dist/
-webapp/database-explorer-lite/frontend/tsconfig.tsbuildinfo
-
-# Local assistant/editor metadata
+# ---------------------------------------------------------------------------
+# Assistant, editor and OS noise
+# ---------------------------------------------------------------------------
+.claude/
+.codex/
+.agents/
 AGENTS.md
 CLAUDE.md
-
-# Large local papers or notes
-*.pdf
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+core
+core.*

@@ -139,6 +139,53 @@ PREDICT_CONFIG_PATH = Path(
 MOLCRAFT_CMD = os.environ.get("MOLCRAFT_CMD", "MolCraftDiff")
 ACTIVE_GENERATION_PROCS: Dict[str, subprocess.Popen] = {}
 
+# Minimum MolCraftDiffusion release this backend is written against. Bump it whenever a
+# change here starts depending on new upstream behaviour. The Hydra group tables —
+# TASK_TYPE_TO_TASKS_CONFIG below and TASK_FAMILIES in training_config.py — are the parts
+# that fail on an older package, and they fail minutes into a job rather than at startup.
+MOLCRAFT_MIN_VERSION = "1.6.0"
+
+
+def _molcraft_version() -> str | None:
+    """Installed molcraftdiffusion version, or None when it is not importable.
+
+    Reads the backend interpreter's package metadata rather than shelling out to
+    `MolCraftDiff --version`, which would cost a subprocess per health check. The two can
+    disagree if BACKEND_PYTHON points somewhere other than the environment owning
+    MOLCRAFT_CMD on PATH; dev.sh picks both from the same env.
+    """
+    try:
+        from importlib.metadata import version
+
+        return version("molcraftdiffusion")
+    except Exception:
+        return None
+
+
+def _version_tuple(value: str | None) -> tuple[int, ...]:
+    """Leading numeric components of a version string; () when unparseable."""
+    parts: list[int] = []
+    for chunk in str(value or "").split("."):
+        digits = ""
+        for ch in chunk:
+            if not ch.isdigit():
+                break
+            digits += ch
+        if not digits:
+            break
+        parts.append(int(digits))
+    return tuple(parts)
+
+
+def _version_at_least(have: str | None, want: str) -> bool | None:
+    """Whether `have` >= `want`; None when `have` is missing or unparseable."""
+    a = _version_tuple(have)
+    if not a:
+        return None
+    b = _version_tuple(want)
+    width = max(len(a), len(b))
+    return a + (0,) * (width - len(a)) >= b + (0,) * (width - len(b))
+
 # -------------------------------------------------------------------
 # MolCraftDiffusion training mode
 # -------------------------------------------------------------------
@@ -842,6 +889,41 @@ def _atom_vocab_from_checkpoint(payload: Any) -> list[str]:
     return values or DEFAULT_ATOM_VOCAB
 
 
+# Maps a checkpoint's trained task_type onto the Hydra `tasks` config group used at
+# generation time. cli/generate.py:_validate_task_type raises when the two disagree, so a
+# checkpoint trained as anything other than plain EGCL diffusion needs its own group.
+# Where several groups share one task_type (diffusion: egt / extraf / gfmdiff /
+# pretrained), the base group validates fine and matches the previous hardcoded value.
+TASK_TYPE_TO_TASKS_CONFIG = {
+    "diffusion": "diffusion",
+    "diffusion_adit": "diffusion_adit",
+    "diffusion_difflinker": "diffusion_difflinker",
+    "diffusion_diffpharma": "diffusion_diffpharma",
+    "diffusion_diffsmol": "diffusion_diffsmol",
+    "diffusion_flowmol": "diffusion_flowmol",
+    "diffusion_geoldm": "diffusion_geoldm",
+    "diffusion_pharmacophore": "pharmacophore",
+    "diffusion_pmdm": "diffusion_pmdm",
+    "diffusion_tabasco": "diffusion_tabasco",
+}
+
+
+def _tasks_config_from_checkpoint(payload: Any) -> str:
+    """Hydra `tasks` group matching the checkpoint's trained task_type.
+
+    Falls back to "diffusion" for checkpoints that carry no task_type — those skip
+    validation upstream anyway, so the old behaviour is preserved for them.
+    """
+    hparams = _mapping_get(payload, "hyperparameters", {})
+    task_type = _coerce_string(_mapping_get(hparams, "task_type"))
+    if not task_type:
+        hparams = _mapping_get(payload, "hyper_parameters", {})
+        task_type = _coerce_string(_mapping_get(hparams, "task_type"))
+    if not task_type:
+        task_type = _coerce_string(_mapping_get(payload, "task_type"))
+    return TASK_TYPE_TO_TASKS_CONFIG.get(task_type or "", "diffusion")
+
+
 def _extract_structure_capabilities(payload: Any) -> dict[str, Any]:
     if payload is None:
         return {
@@ -1225,6 +1307,8 @@ def _discover_generation_models_uncached() -> list[dict[str, Any]]:
             "name": sidecar.get("name") or model_dir.name,
             "description": sidecar.get("description") or "",
             "task_type": sidecar.get("task_type") or ("cfg" if properties else "unconditional"),
+            "tasks_config": sidecar.get("tasks_config") or _tasks_config_from_checkpoint(checkpoint),
+            "atom_vocab": _atom_vocab_from_checkpoint(checkpoint),
             "path": str(model_dir),
             "has_stat": (model_dir / "edm_stat.pkl").exists(),
             "properties": properties,
@@ -1395,6 +1479,10 @@ class GenerationJobRequest(BaseModel):
     min_size: int | None = Field(default=None, ge=1, le=1000)
     max_size: int = Field(default=100, ge=1, le=1000)
     cfg_scale: float = Field(default=1.0, ge=0, le=1000)
+    # null = the model's own constant scale; the rest ramp it over the schedule.
+    cfg_scale_schedule: Literal["linear", "exponential", "cosine"] | None = None
+    # DDIM is unavailable on the CFG and gradient-guidance paths (see gen_cfg.yaml).
+    sampling_mode: Literal["ddpm", "ddim"] = "ddpm"
     property_targets: list[GenerationPropertyTarget] = []
     structure_guidance: dict[str, Any] | None = None
 
@@ -1442,7 +1530,7 @@ def _generation_config(model: dict[str, Any], payload: GenerationJobRequest, out
     interference: dict[str, Any] = {
         "_target_": "MolecularDiffusion.runmodes.generate.GenerativeFactory",
         "task_type": "cfg" if use_cfg else "unconditional",
-        "sampling_mode": "ddpm",
+        "sampling_mode": payload.sampling_mode,
         "num_generate": payload.num_generate,
         "batch_size": payload.batch_size,
         "n_frames": payload.n_frames,
@@ -1457,7 +1545,10 @@ def _generation_config(model: dict[str, Any], payload: GenerationJobRequest, out
     if payload.n_frames > 1:
         interference["save_xyzrender_figures"] = True
     if use_cfg:
-        interference["condition_configs"] = {"cfg_scale": payload.cfg_scale}
+        interference["condition_configs"] = {
+            "cfg_scale": payload.cfg_scale,
+            "cfg_scale_schedule": payload.cfg_scale_schedule,
+        }
 
     hydra_interference = structure_guidance.get(
         "hydra_interference",
@@ -1465,12 +1556,12 @@ def _generation_config(model: dict[str, Any], payload: GenerationJobRequest, out
     )
     config = {
         "defaults": [
-            {"tasks": "diffusion"},
+            {"tasks": model.get("tasks_config") or "diffusion"},
             {"interference": hydra_interference},
             "_self_",
         ],
         "chkpt_directory": model["path"],
-        "atom_vocab": DEFAULT_ATOM_VOCAB,
+        "atom_vocab": model.get("atom_vocab") or DEFAULT_ATOM_VOCAB,
         "diffusion_steps": payload.diffusion_steps,
         "interference": interference,
     }
@@ -1480,6 +1571,103 @@ def _generation_config(model: dict[str, Any], payload: GenerationJobRequest, out
         condition_configs.update(structure_guidance.get("condition_configs") or {})
         interference["condition_configs"] = condition_configs
     return config
+
+
+# Extra-node placement, consumed by en_diffusion via
+# utils/geom_constraint.build_extra_node_template. Which knobs actually do anything
+# depends on init_method (and, for spread, on skeleton_type) — see _placement_cfgs.
+PLACEMENT_INIT_METHODS = ("skeleton", "fragment", "seed")
+PLACEMENT_SKELETON_TYPES = (
+    "random_walk",
+    "globular",
+    "aliphatic_chain",
+    "aliphatic_branched",
+    "aliphatic_ring",
+    "aromatic_ring",
+    "aromatic_fused",
+    "cage",
+    "ring_tail",
+    "mixed",
+    "auto",
+)
+PLACEMENT_FORWARD_NOISE = ("jitter", "schedule", "off")
+DEFAULT_JITTER_SCALE = 1.0
+
+
+def _sg_float(sg: dict[str, Any], name: str, fallback: float, minimum: float | None = None) -> float:
+    raw = sg.get(name, fallback)
+    if raw is None:
+        raw = fallback
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail=f"{name} must be a number")
+    if minimum is not None and value < minimum:
+        raise HTTPException(status_code=400, detail=f"{name} must be >= {minimum}")
+    return value
+
+
+def _sg_int(sg: dict[str, Any], name: str, fallback: int, minimum: int = 0) -> int:
+    raw = sg.get(name, fallback)
+    if raw is None:
+        raw = fallback
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail=f"{name} must be an integer")
+    if value < minimum:
+        raise HTTPException(status_code=400, detail=f"{name} must be >= {minimum}")
+    return value
+
+
+def _sg_choice(sg: dict[str, Any], name: str, choices: tuple[str, ...], fallback: str) -> str:
+    value = str(sg.get(name) or fallback).strip().lower()
+    if value not in choices:
+        raise HTTPException(
+            status_code=400,
+            detail=f"{name} must be one of: {', '.join(choices)}",
+        )
+    return value
+
+
+def _placement_cfgs(sg: dict[str, Any]) -> dict[str, Any]:
+    """Extra-node placement knobs, filtered to the ones the chosen init_method reads.
+
+    en_diffusion applies this block identically to outpaint and to extended inpaint
+    (target size > scaffold), so both callers use it. Inapplicable knobs are ignored
+    upstream rather than rejected; filtering them out here keeps the emitted config
+    honest about what the user actually controlled.
+    """
+    init_method = _sg_choice(sg, "init_method", PLACEMENT_INIT_METHODS, "skeleton")
+    cfgs: dict[str, Any] = {
+        "init_method": init_method,
+        "seed_dist": _sg_float(sg, "seed_dist", 2.0, minimum=0.0),
+        "min_dist": _sg_float(sg, "min_dist", 1.0, minimum=0.0),
+    }
+
+    if init_method == "seed":
+        # Legacy blob placement: spread is a Gaussian position std dev here, not an
+        # angle. skeleton_type and bond_len are unread, and the model forces forward
+        # noise off, so jitter_scale is not required.
+        cfgs["spread"] = _sg_float(sg, "spread", 1.0, minimum=0.0)
+        cfgs["n_bq_atom"] = _sg_int(sg, "n_bq_atom", 0)
+        return cfgs
+
+    skeleton_type = _sg_choice(sg, "skeleton_type", PLACEMENT_SKELETON_TYPES, "random_walk")
+    cfgs["skeleton_type"] = skeleton_type
+    cfgs["bond_len"] = _sg_float(sg, "bond_len", 1.5, minimum=0.0)
+    if skeleton_type == "random_walk":
+        # Angular dispersion of the walk. Every other builder drops it on the floor,
+        # and "fragment" rewrites random_walk away, so it only reaches skeleton here.
+        cfgs["spread"] = _sg_float(sg, "spread", 1.0, minimum=0.0)
+
+    forward_noise = _sg_choice(sg, "forward_noise", PLACEMENT_FORWARD_NOISE, "jitter")
+    cfgs["forward_noise"] = forward_noise
+    if forward_noise == "jitter":
+        # Mandatory: _resolve_jitter_scale raises instead of defaulting, so omitting
+        # this fails every sampling batch.
+        cfgs["jitter_scale"] = _sg_float(sg, "jitter_scale", DEFAULT_JITTER_SCALE, minimum=0.0)
+    return cfgs
 
 
 def _validate_structure_guidance(
@@ -1492,8 +1680,10 @@ def _validate_structure_guidance(
     atom_count = _parse_xyz_atom_count(xyz)
     mode = str(sg.get("mode") or "").lower()
     sampling_mode = str(sg.get("sampling_mode") or "sample")
-    if mode not in {"inpaint", "outpaint"}:
-        raise HTTPException(status_code=400, detail="Structure mode must be inpaint or outpaint")
+    if mode not in {"inpaint", "outpaint", "outpaintft"}:
+        raise HTTPException(
+            status_code=400, detail="Structure mode must be inpaint, outpaint or outpaintft"
+        )
     if sampling_mode not in {"sample", "sample_hybrid"}:
         raise HTTPException(status_code=400, detail="Sampling mode must be sample or sample_hybrid")
     if sampling_mode == "sample_hybrid" and not model.get("properties"):
@@ -1501,18 +1691,31 @@ def _validate_structure_guidance(
             status_code=400,
             detail=f"Model {model['id']} has no conditional properties and must use sample",
         )
+    if sampling_mode == "sample_hybrid" and mode == "outpaintft":
+        # GenerativeFactory.run dispatches hybrid on {inpaint,outpaint}_cfg only.
+        raise HTTPException(
+            status_code=400, detail="outpaintft does not support hybrid sampling"
+        )
     try:
         selected = [int(v) for v in (sg.get("selected_indices") or [])]
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"Invalid selected atom index: {exc}")
     if any(i < 0 or i >= atom_count for i in selected):
         raise HTTPException(status_code=400, detail="Selected atom indices out of range")
+
+    placement = _placement_cfgs(sg)
     final_size = (payload.fixed_size or payload.max_size) if payload.size_mode == "fixed" else payload.max_size
-    if mode == "inpaint" and final_size < atom_count:
-        raise HTTPException(status_code=400, detail="Inpaint final size must be >= reference atom count")
-    if mode == "outpaint":
-        if not selected:
-            raise HTTPException(status_code=400, detail="Outpaint requires at least one selected atom")
+    # No lower bound for inpaint: the model snaps mol_size up to the scaffold size.
+    if mode in {"outpaint", "outpaintft"}:
+        # The model only tolerates zero connectors when seed placement supplies its own
+        # anchors via phantom atoms.
+        if not selected and not (
+            placement["init_method"] == "seed" and placement.get("n_bq_atom", 0) > 0
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Outpaint requires at least one selected atom, or init_method 'seed' with n_bq_atom > 0",
+            )
         if final_size <= atom_count:
             raise HTTPException(status_code=400, detail="Outpaint final size must be > reference atom count")
 
@@ -1546,13 +1749,12 @@ def _validate_structure_guidance(
     if sampling_mode == "sample_hybrid":
         condition_configs.update({"cfg_scale": payload.cfg_scale, "guidance_ver": "cfg"})
     if mode == "inpaint":
-        inpaint_cfgs: dict[str, Any] = {"mask_node_index": selected}
-        for key in (
-            "scale_factor",
-            "t_start",
-        ):
-            if key in sg:
-                inpaint_cfgs[key] = sg[key]
+        # The placement block also applies to inpaint: en_diffusion reads the same keys
+        # off inpaint_cfgs for extended inpainting (target size > scaffold), and reads
+        # jitter_scale unconditionally.
+        inpaint_cfgs: dict[str, Any] = {"mask_node_index": selected, **placement}
+        if "scale_factor" in sg:
+            inpaint_cfgs["scale_factor"] = sg["scale_factor"]
         inpaint_cfgs["denoising_strength"] = denoising_strength
         inpaint_cfgs["constraint_strength"] = constraint_strength
         inpaint_cfgs["noise_initial_mask"] = noise_initial_mask
@@ -1560,21 +1762,22 @@ def _validate_structure_guidance(
     else:
         bonds = sg.get("connector_bonds") or {}
         connector_indices = [int(i) for i in selected]
-        connectors = {idx: [int(bonds.get(str(idx), 1))] for idx in connector_indices}
+        # Canonical spec is `connectors: {atom_index: [n_bonds]}`; connector_indices and
+        # connector_dicts still resolve but are deprecated aliases (utils/geom_constraint).
+        # outpaintft applies no bonding constraint and ignores the degree, so send 0.
         outpaint_cfgs: dict[str, Any] = {
-            "connector_indices": connector_indices,
-            "connector_dicts": connectors,
+            "connectors": {
+                idx: [0 if mode == "outpaintft" else int(bonds.get(str(idx), 1))]
+                for idx in connector_indices
+            },
+            **placement,
         }
-        for key in (
-            "t_start",
-            "scale_factor",
-            "seed_dist",
-            "min_dist",
-            "spread",
-            "n_bq_atom",
-        ):
+        for key in ("t_start", "scale_factor"):
             if key in sg:
                 outpaint_cfgs[key] = sg[key]
+        if mode == "outpaintft":
+            # Fraction of the schedule below which the scaffold coordinates are released.
+            outpaint_cfgs["t_critical"] = _unit_float("t_critical", 0.05)
         outpaint_cfgs["constraint_strength"] = constraint_strength
         condition_configs["outpaint_cfgs"] = outpaint_cfgs
     for key in (
@@ -1590,7 +1793,7 @@ def _validate_structure_guidance(
             n_retrys = max(0, int(raw_retries))
         except (TypeError, ValueError):
             raise HTTPException(status_code=400, detail="n_retrys must be a non-negative integer")
-        if mode == "outpaint" and n_retrys > 0:
+        if mode in {"outpaint", "outpaintft"} and n_retrys > 0:
             # Current MolecularDiffusion outpaint retry path is unstable and can fail
             # with internal indexing/state errors; run outpaint without retries.
             n_retrys = 0
@@ -2282,6 +2485,13 @@ def create_generation_job(payload: GenerationJobRequest):
         bad = [t.name for t in payload.property_targets if t.name not in valid_props]
         if bad:
             raise HTTPException(status_code=400, detail=f"Unknown conditional properties: {', '.join(bad)}")
+
+    if payload.sampling_mode == "ddim" and payload.property_targets:
+        # gen_cfg.yaml: "ddim not available for CFG and GG".
+        raise HTTPException(
+            status_code=400,
+            detail="DDIM sampling is not available with property targets; use DDPM.",
+        )
 
     structure_cfg, reference_xyz = _validate_structure_guidance(payload, model)
     job_id = uuid.uuid4().hex[:12]
@@ -4638,9 +4848,12 @@ def _analysis_cmd_for_tool(tool_id: str, params: dict[str, Any], xyz_dir: Path, 
                         status_code=400,
                         detail=f"UMA model path does not exist: {model_path}",
                     )
-                cmd += ["--model-path", str(model_path)]
+                cmd += ["--checkpoint", str(model_path)]
+            device = str(params.get("device") or "").strip()
+            # CLI accepts cuda|cpu only; omitting the flag is its auto-detect path.
+            if device in {"cpu", "cuda"}:
+                cmd += ["--device", device]
             cmd += [
-                "--device", str(params.get("device") or "cpu"),
                 "--batch-size", str(int(params.get("batch_size") or 8)),
                 "--pooling", str(params.get("pooling") or "mean"),
             ]
@@ -6341,6 +6554,7 @@ def healthz():
             for p in GEN_MODELS_DIR.iterdir()
             if p.is_dir() and (p / "edm_chem.pkl").exists()
         )
+    molcraft_version = _molcraft_version()
     return {
         "ok": True,
         "ase_cached": len(ASE_XYZ),
@@ -6348,6 +6562,10 @@ def healthz():
         "tool_errors": len(errors),
         "generation_models": model_count,
         "molcraft_available": shutil.which(MOLCRAFT_CMD) is not None,
+        "molcraft_version": molcraft_version,
+        "molcraft_min_version": MOLCRAFT_MIN_VERSION,
+        # None when the version could not be determined — unknown, not "too old".
+        "molcraft_version_ok": _version_at_least(molcraft_version, MOLCRAFT_MIN_VERSION),
     }
 
 

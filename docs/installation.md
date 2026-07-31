@@ -17,17 +17,23 @@ conda install -c conda-forge xtb==6.7.1 openbabel -y
 
 ## 2. Install MolCraftDiffusion
 
+**Requires MolCraftDiffusion >= 1.6.0.** The app names Hydra config groups (`tasks`,
+`interference`) and CLI options that older releases do not ship; on an older package a
+generation or training job fails partway through with a `MissingConfigException` rather
+than failing at startup. After installing, `curl localhost:8000/healthz` reports
+`molcraft_version` and `molcraft_version_ok`.
+
 **GPU (CUDA 12.4, PyTorch 2.6):**
 
 ```bash
-pip install molcraftdiffusion[gpu] \
+pip install 'molcraftdiffusion[gpu]>=1.6.0' \
     --find-links https://data.pyg.org/whl/torch-2.6.0+cu124.html
 ```
 
 **CPU-only:**
 
 ```bash
-pip install molcraftdiffusion[cpu] \
+pip install 'molcraftdiffusion[cpu]>=1.6.0' \
     --extra-index-url https://download.pytorch.org/whl/cpu \
     --find-links https://data.pyg.org/whl/torch-2.6.0+cpu.html
 ```

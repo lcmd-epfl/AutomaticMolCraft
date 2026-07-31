@@ -83,9 +83,14 @@ type StructureGuidedConfig = {
   referenceName: string
   selectedAtoms: number[]
   connectorBonds: Record<string, number>
-  structureMode: 'inpaint' | 'outpaint'
+  structureMode: StructureMode
   constraintStrength: number
   scaleFactor: number
+  initMethod: InitMethod
+  skeletonType: SkeletonType
+  forwardNoise: ForwardNoise
+  jitterScale: number
+  bondLen: number
   seedDist: number
   minDist: number
   spread: number
@@ -95,10 +100,48 @@ type StructureGuidedConfig = {
   tRetry: number
   denoisingStrength: number
   tStart: number
+  tCritical: number
 }
 
 const api = (path: string) => `${BACKEND}${path}`
 const splitOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+const STRUCTURE_MODES = ['inpaint', 'outpaint', 'outpaintft'] as const
+// Extra-node placement. Which of the knobs below are live depends on the method:
+// "seed" reads spread (as a position std dev) and BQ atoms; "skeleton"/"fragment" read
+// skeleton type, bond length and the forward-noise pair, and only random_walk reads
+// spread (as an angle). The UI hides whatever the chosen method ignores.
+const INIT_METHODS = ['skeleton', 'fragment', 'seed'] as const
+const SKELETON_TYPES = [
+  'random_walk', 'globular', 'aliphatic_chain', 'aliphatic_branched', 'aliphatic_ring',
+  'aromatic_ring', 'aromatic_fused', 'cage', 'ring_tail', 'mixed', 'auto',
+] as const
+const FORWARD_NOISE_MODES = ['jitter', 'schedule', 'off'] as const
+
+type InitMethod = (typeof INIT_METHODS)[number]
+type SkeletonType = (typeof SKELETON_TYPES)[number]
+type ForwardNoise = (typeof FORWARD_NOISE_MODES)[number]
+type StructureMode = (typeof STRUCTURE_MODES)[number]
+
+function SelectField<T extends string>({
+  label, value, setValue, options,
+}: {
+  label: string
+  value: T
+  setValue: React.Dispatch<React.SetStateAction<T>>
+  options: readonly T[]
+}) {
+  return (
+    <label className="generation-field">
+      <span>{label}</span>
+      <select value={value} onChange={event => setValue(event.target.value as T)}>
+        {options.map(option => (
+          <option key={option} value={option}>{option}</option>
+        ))}
+      </select>
+    </label>
+  )
+}
 
 async function downloadUrl(path: string, filename?: string) {
   const resp = await fetch(api(path))
@@ -199,7 +242,7 @@ export default function StructureGuidedGenerationPage({
   const [xyzPathInput, setXyzPathInput] = useState('')
   const [isReferenceDragOver, setIsReferenceDragOver] = useState(false)
   const [selectedAtoms, setSelectedAtoms] = useState<number[]>([])
-  const [structureMode, setStructureMode] = useState<'inpaint' | 'outpaint'>('inpaint')
+  const [structureMode, setStructureMode] = useState<StructureMode>('inpaint')
   const [connectorBonds, setConnectorBonds] = useState<Record<number, number>>({})
 
   const [numGenerate, setNumGenerate] = useState(1)
@@ -217,10 +260,16 @@ export default function StructureGuidedGenerationPage({
   const [negativeTargetDrafts, setNegativeTargetDrafts] = useState<Record<string, string>>({})
   const [constraintStrength, setConstraintStrength] = useState(0.8)
   const [scaleFactor, setScaleFactor] = useState(1.2)
+  const [initMethod, setInitMethod] = useState<InitMethod>('skeleton')
+  const [skeletonType, setSkeletonType] = useState<SkeletonType>('random_walk')
+  const [forwardNoise, setForwardNoise] = useState<ForwardNoise>('jitter')
+  const [jitterScale, setJitterScale] = useState(1)
+  const [bondLen, setBondLen] = useState(1.5)
   const [seedDist, setSeedDist] = useState(1.5)
   const [minDist, setMinDist] = useState(1)
   const [spread, setSpread] = useState(1)
   const [nBqAtom, setNBqAtom] = useState(0)
+  const [tCritical, setTCritical] = useState(0.05)
   const [noiseInitialMask, setNoiseInitialMask] = useState(true)
   const [nRetrys, setNRetrys] = useState(0)
   const [tRetry, setTRetry] = useState(10)
@@ -288,18 +337,22 @@ export default function StructureGuidedGenerationPage({
       referenceXyz, referenceName, selectedAtoms,
       connectorBonds: Object.fromEntries(Object.entries(connectorBonds).map(([k, v]) => [String(k), v])),
       structureMode,
-      constraintStrength, scaleFactor, seedDist, minDist, spread,
+      constraintStrength, scaleFactor,
+      initMethod, skeletonType, forwardNoise, jitterScale, bondLen,
+      seedDist, minDist, spread,
       nBqAtom, noiseInitialMask, nRetrys, tRetry,
-      denoisingStrength, tStart,
+      denoisingStrength, tStart, tCritical,
     }),
     [numGenerate, batchSize, nFrames, diffusionSteps, seed,
      sizeMode, fixedSize, minSize, maxSize, cfgScale,
      targets, negativeTargets,
      referenceXyz, referenceName, selectedAtoms, connectorBonds,
      structureMode,
-     constraintStrength, scaleFactor, seedDist, minDist, spread,
+     constraintStrength, scaleFactor,
+     initMethod, skeletonType, forwardNoise, jitterScale, bondLen,
+     seedDist, minDist, spread,
      nBqAtom, noiseInitialMask, nRetrys, tRetry,
-     denoisingStrength, tStart]
+     denoisingStrength, tStart, tCritical]
   )
 
   const loadPreset = (config: Record<string, unknown>) => {
@@ -336,10 +389,18 @@ export default function StructureGuidedGenerationPage({
       }
       setConnectorBonds(converted)
     }
-    if (config.structureMode === 'inpaint' || config.structureMode === 'outpaint')
-      setStructureMode(config.structureMode)
+    if (STRUCTURE_MODES.includes(config.structureMode as StructureMode))
+      setStructureMode(config.structureMode as StructureMode)
     if (typeof config.constraintStrength === 'number') setConstraintStrength(config.constraintStrength)
     if (typeof config.scaleFactor === 'number') setScaleFactor(config.scaleFactor)
+    if (INIT_METHODS.includes(config.initMethod as InitMethod)) setInitMethod(config.initMethod as InitMethod)
+    if (SKELETON_TYPES.includes(config.skeletonType as SkeletonType))
+      setSkeletonType(config.skeletonType as SkeletonType)
+    if (FORWARD_NOISE_MODES.includes(config.forwardNoise as ForwardNoise))
+      setForwardNoise(config.forwardNoise as ForwardNoise)
+    if (typeof config.jitterScale === 'number') setJitterScale(config.jitterScale)
+    if (typeof config.bondLen === 'number') setBondLen(config.bondLen)
+    if (typeof config.tCritical === 'number') setTCritical(config.tCritical)
     if (typeof config.seedDist === 'number') setSeedDist(config.seedDist)
     if (typeof config.minDist === 'number') setMinDist(config.minDist)
     if (typeof config.spread === 'number') setSpread(config.spread)
@@ -388,7 +449,7 @@ export default function StructureGuidedGenerationPage({
     setReferenceXyz(text)
     setXyzPathInput('')
     setSelectedAtoms([])
-    const defaultAtomCount = parsed.atomCount + (structureMode === 'outpaint' ? 1 : 0)
+    const defaultAtomCount = parsed.atomCount + (structureMode !== 'inpaint' ? 1 : 0)
     setFixedSize(defaultAtomCount)
     setMinSize(parsed.atomCount)
     setMaxSize(defaultAtomCount)
@@ -433,7 +494,7 @@ export default function StructureGuidedGenerationPage({
       setReferenceName(data.name)
       setReferenceXyz(text)
       setSelectedAtoms([])
-      const defaultAtomCount = parsed.atomCount + (structureMode === 'outpaint' ? 1 : 0)
+      const defaultAtomCount = parsed.atomCount + (structureMode !== 'inpaint' ? 1 : 0)
       setFixedSize(defaultAtomCount)
       setMinSize(parsed.atomCount)
       setMaxSize(defaultAtomCount)
@@ -752,8 +813,17 @@ export default function StructureGuidedGenerationPage({
       setJob({ job_id: '', status: 'failed', output_dir: '', config_path: '', error: xyzValidation.error || 'Upload a valid XYZ reference.' })
       return
     }
-    if (structureMode === 'outpaint' && selectedAtoms.length === 0) {
-      setJob({ job_id: '', status: 'failed', output_dir: '', config_path: '', error: 'Outpaint requires at least one selected atom.' })
+    // Seed placement can anchor on its own phantom atoms instead of connectors.
+    if (
+      structureMode !== 'inpaint' &&
+      selectedAtoms.length === 0 &&
+      !(initMethod === 'seed' && nBqAtom > 0)
+    ) {
+      setJob({ job_id: '', status: 'failed', output_dir: '', config_path: '', error: 'Outpaint requires at least one selected atom, or init method "seed" with BQ atoms > 0.' })
+      return
+    }
+    if (structureMode === 'outpaintft' && samplingMode === 'sample_hybrid') {
+      setJob({ job_id: '', status: 'failed', output_dir: '', config_path: '', error: 'outpaintft does not support hybrid sampling.' })
       return
     }
 
@@ -797,21 +867,33 @@ export default function StructureGuidedGenerationPage({
         target: Number(targets[name] ?? 0),
         negative_target: negativeTargets[name] == null ? null : Number(negativeTargets[name]),
       }))
+      // Extra-node placement. Mirrors the backend's _placement_cfgs gating so the
+      // request only carries knobs the chosen init_method actually reads.
+      const placement: Record<string, any> = {
+        init_method: initMethod,
+        seed_dist: seedDist,
+        min_dist: minDist,
+        ...(initMethod === 'seed'
+          ? { spread, n_bq_atom: nBqAtom }
+          : {
+              skeleton_type: skeletonType,
+              bond_len: bondLen,
+              ...(skeletonType === 'random_walk' ? { spread } : {}),
+              forward_noise: forwardNoise,
+              // Required upstream when forward_noise is jitter; it raises rather
+              // than defaulting.
+              ...(forwardNoise === 'jitter' ? { jitter_scale: jitterScale } : {}),
+            }),
+      }
       const controls: Record<string, any> = {
+        ...placement,
         ...(structureMode === 'inpaint' ? { denoising_strength: nextDenoisingStrength } : {}),
-        ...(structureMode === 'outpaint'
-          ? {
-              seed_dist: seedDist,
-              min_dist: minDist,
-              spread,
-              t_start: tStart,
-            }
-          : {}),
+        ...(structureMode !== 'inpaint' ? { t_start: tStart } : {}),
+        ...(structureMode === 'outpaintft' ? { t_critical: tCritical } : {}),
         ...(samplingMode === 'sample'
           ? {
               constraint_strength: nextConstraintStrength,
               scale_factor: scaleFactor,
-              n_bq_atom: nBqAtom,
               ...(structureMode === 'inpaint' ? { noise_initial_mask: noiseInitialMask } : {}),
               n_retrys: nRetrys,
               t_retry: tRetry,
@@ -1119,7 +1201,7 @@ export default function StructureGuidedGenerationPage({
             <>
               {scaffoldError && <div className="generation-error">{scaffoldError}</div>}
               <div className="segmented">
-                {(['inpaint', 'outpaint'] as const).map(mode => (
+                {STRUCTURE_MODES.map(mode => (
                   <button key={mode} className={structureMode === mode ? 'active' : ''} onClick={() => setStructureMode(mode)}>
                     {mode}
                   </button>
@@ -1323,9 +1405,7 @@ export default function StructureGuidedGenerationPage({
                       <div className="generation-form-grid compact">
                         <NumberField label="Constraint strength" value={constraintStrength} setValue={setConstraintStrength} min={0} max={1} step={0.05} />
                         <NumberField label="Scale factor" value={scaleFactor} setValue={setScaleFactor} min={0} max={20} step={0.1} />
-                        <NumberField label="BQ atoms" value={nBqAtom} setValue={setNBqAtom} min={0} max={512} />
                         <NumberField label="Retries" value={nRetrys} setValue={setNRetrys} min={0} max={100} />
-                        <NumberField label="Retry t" value={tRetry} setValue={setTRetry} min={0} max={1000} />
                         {structureMode === 'inpaint' && (
                           <div className="generation-checkbox-field">
                             <span>Initial mask noise</span>
@@ -1343,16 +1423,54 @@ export default function StructureGuidedGenerationPage({
                     </>
                   )}
 
-                  {structureMode === 'outpaint' && (
+                  {/* Extra-node placement. Applies to outpaint and to inpaint that
+                      grows past the scaffold; the visible knobs follow init method. */}
+                  <div className="generation-mode"><Wand2 size={15} /> new-atom placement</div>
+                  <div className="generation-form-grid compact">
+                    <SelectField label="Init method" value={initMethod} setValue={setInitMethod} options={INIT_METHODS} />
+                    {initMethod !== 'seed' && (
+                      <SelectField label="Skeleton type" value={skeletonType} setValue={setSkeletonType} options={SKELETON_TYPES} />
+                    )}
+                    <NumberField label="Seed dist" value={seedDist} setValue={setSeedDist} min={0} max={20} step={0.1} />
+                    <NumberField label="Min dist" value={minDist} setValue={setMinDist} min={0} max={20} step={0.1} />
+                    {initMethod !== 'seed' && (
+                      <NumberField label="Bond length" value={bondLen} setValue={setBondLen} min={0} max={10} step={0.1} />
+                    )}
+                    {/* Ignored by every builder except random_walk, and it means
+                        something different under seed, so label it per method. */}
+                    {(initMethod === 'seed' || skeletonType === 'random_walk') && (
+                      <NumberField
+                        label={initMethod === 'seed' ? 'Seed spread (σ)' : 'Walk spread (angle)'}
+                        value={spread}
+                        setValue={setSpread}
+                        min={0}
+                        max={20}
+                        step={0.1}
+                      />
+                    )}
+                    {initMethod === 'seed' && (
+                      <NumberField label="BQ atoms" value={nBqAtom} setValue={setNBqAtom} min={0} max={512} />
+                    )}
+                    {initMethod !== 'seed' && (
+                      <SelectField label="Forward noise" value={forwardNoise} setValue={setForwardNoise} options={FORWARD_NOISE_MODES} />
+                    )}
+                    {initMethod !== 'seed' && forwardNoise === 'jitter' && (
+                      <NumberField label="Jitter scale" value={jitterScale} setValue={setJitterScale} min={0} max={10} step={0.05} />
+                    )}
+                  </div>
+
+                  {structureMode !== 'inpaint' && (
                     <>
-                      <div className="generation-mode"><Wand2 size={15} /> outpaint initialization</div>
+                      <div className="generation-mode"><Wand2 size={15} /> {structureMode} schedule</div>
                       <div className="generation-form-grid compact">
-                        <NumberField label="Seed dist" value={seedDist} setValue={setSeedDist} min={0} max={20} step={0.1} />
-                        <NumberField label="Min dist" value={minDist} setValue={setMinDist} min={0} max={20} step={0.1} />
-                        <NumberField label="Spread" value={spread} setValue={setSpread} min={0} max={20} step={0.1} />
                         <NumberField label="t_start" value={tStart} setValue={setTStart} min={0} max={1} step={0.05} />
+                        {structureMode === 'outpaintft' && (
+                          <NumberField label="t_critical" value={tCritical} setValue={setTCritical} min={0} max={1} step={0.01} />
+                        )}
                       </div>
-                      {selectedAtoms.length > 0 && (
+                      {/* outpaintft applies no bonding constraint, so the degree is
+                          ignored there and the fields would be misleading. */}
+                      {structureMode === 'outpaint' && selectedAtoms.length > 0 && (
                         <div className="generation-form-grid compact">
                           {selectedAtoms.map(idx => (
                             <NumberField

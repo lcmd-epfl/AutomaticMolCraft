@@ -68,9 +68,20 @@ type GenerationConfig = {
   minSize: number
   maxSize: number
   cfgScale: number
+  cfgScaleSchedule: CfgScaleSchedule
+  samplingMode: SamplingMode
   targets: Record<string, number>
   negativeTargets: Record<string, number | null>
 }
+
+// "constant" maps to a null schedule upstream — the model keeps cfg_scale fixed.
+const CFG_SCALE_SCHEDULES = ['constant', 'linear', 'exponential', 'cosine'] as const
+// DDIM is unavailable on the CFG/gradient-guidance paths, so it is hidden once the
+// model has conditional properties (see gen_cfg.yaml).
+const SAMPLING_MODES = ['ddpm', 'ddim'] as const
+
+type CfgScaleSchedule = (typeof CFG_SCALE_SCHEDULES)[number]
+type SamplingMode = (typeof SAMPLING_MODES)[number]
 
 const api = (path: string) => `${BACKEND}${path}`
 const splitOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -191,6 +202,8 @@ export default function GenerationPage({
   const [minSize, setMinSize] = useState(16)
   const [maxSize, setMaxSize] = useState(100)
   const [cfgScale, setCfgScale] = useState(1)
+  const [cfgScaleSchedule, setCfgScaleSchedule] = useState<CfgScaleSchedule>('constant')
+  const [samplingMode, setSamplingMode] = useState<SamplingMode>('ddpm')
   const [targets, setTargets] = useState<Record<string, number>>({})
   const [negativeTargets, setNegativeTargets] = useState<Record<string, number | null>>({})
   const [negativeTargetDrafts, setNegativeTargetDrafts] = useState<Record<string, string>>({})
@@ -232,10 +245,11 @@ export default function GenerationPage({
 
   const currentConfig = useMemo<Record<string, unknown>>(
     () => ({ numGenerate, batchSize, nFrames, diffusionSteps, seed,
-             sizeMode, fixedSize, minSize, maxSize, cfgScale,
-             targets, negativeTargets }),
+             sizeMode, fixedSize, minSize, maxSize, cfgScale, cfgScaleSchedule,
+             samplingMode, targets, negativeTargets }),
     [numGenerate, batchSize, nFrames, diffusionSteps, seed,
-     sizeMode, fixedSize, minSize, maxSize, cfgScale, targets, negativeTargets]
+     sizeMode, fixedSize, minSize, maxSize, cfgScale, cfgScaleSchedule,
+     samplingMode, targets, negativeTargets]
   )
 
   const loadPreset = (config: Record<string, unknown>) => {
@@ -250,6 +264,10 @@ export default function GenerationPage({
     if (typeof config.minSize === 'number') setMinSize(config.minSize)
     if (typeof config.maxSize === 'number') setMaxSize(config.maxSize)
     if (typeof config.cfgScale === 'number') setCfgScale(config.cfgScale)
+    if (CFG_SCALE_SCHEDULES.includes(config.cfgScaleSchedule as CfgScaleSchedule))
+      setCfgScaleSchedule(config.cfgScaleSchedule as CfgScaleSchedule)
+    if (SAMPLING_MODES.includes(config.samplingMode as SamplingMode))
+      setSamplingMode(config.samplingMode as SamplingMode)
     if (config.targets !== null && typeof config.targets === 'object' && !Array.isArray(config.targets))
       setTargets(config.targets as Record<string, number>)
     if (config.negativeTargets !== null && typeof config.negativeTargets === 'object' && !Array.isArray(config.negativeTargets)) {
@@ -631,6 +649,9 @@ export default function GenerationPage({
           min_size: minSize,
           max_size: maxSize,
           cfg_scale: cfgScale,
+          cfg_scale_schedule: cfgScaleSchedule === 'constant' ? null : cfgScaleSchedule,
+          // CFG rejects DDIM upstream, so never send it alongside targets.
+          sampling_mode: selectedModel.properties.length ? 'ddpm' : samplingMode,
           property_targets: selectedModel.properties.length ? propertyTargets : [],
         }),
       })
@@ -881,6 +902,21 @@ export default function GenerationPage({
                 <NumberField label="Diffusion steps" value={diffusionSteps} setValue={setDiffusionSteps} min={1} max={1000} />
                 <NumberField label="Seed" value={seed} setValue={setSeed} min={0} max={999999} />
                 <NumberField label="Max size" value={maxSize} setValue={setMaxSize} min={1} max={512} />
+                {/* Conditional models are forced onto the CFG path, which has no
+                    DDIM sampler, so there is nothing to choose. */}
+                {!selectedModel?.properties?.length && (
+                  <label className="generation-field">
+                    <span>Sampler</span>
+                    <select
+                      value={samplingMode}
+                      onChange={event => setSamplingMode(event.target.value as SamplingMode)}
+                    >
+                      {SAMPLING_MODES.map(option => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                  </label>
+                )}
               </div>
               <div className="generation-help">
                 Batch size is the number of molecules sampled per diffusion pass. Total molecules controls how many XYZ files are produced.
@@ -928,6 +964,17 @@ export default function GenerationPage({
             {showTargets && (
               <>
                 <NumberField label="CFG scale" value={cfgScale} setValue={setCfgScale} min={0} max={5} step={0.1} />
+                <label className="generation-field">
+                  <span>CFG scale schedule</span>
+                  <select
+                    value={cfgScaleSchedule}
+                    onChange={event => setCfgScaleSchedule(event.target.value as CfgScaleSchedule)}
+                  >
+                    {CFG_SCALE_SCHEDULES.map(option => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </label>
                 {selectedModel.properties.map(prop => (
                   <div className="generation-property-row" key={prop}>
                     <div className="generation-property-name">{selectedModel.property_labels?.[prop] || prop}</div>
