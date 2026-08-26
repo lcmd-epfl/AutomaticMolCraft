@@ -17,26 +17,39 @@ conda install -c conda-forge xtb==6.7.1 openbabel -y
 
 ## 2. Install MolCraftDiffusion
 
-**Requires MolCraftDiffusion >= 1.6.0.** The app names Hydra config groups (`tasks`,
-`interference`) and CLI options that older releases do not ship; on an older package a
-generation or training job fails partway through with a `MissingConfigException` rather
-than failing at startup. After installing, `curl localhost:8000/healthz` reports
-`molcraft_version` and `molcraft_version_ok`.
+**Pinned to commit `b79e8aadc85f7047fbd9a70d1c41ea3aba0fc0a7` (version 1.12.0)** — an exact
+pin, not a minimum. The app names Hydra config groups (`tasks`, `interference`) and
+`analyze` CLI flags that shift across upstream commits (flags get renamed or moved to a
+different subcommand, not just added); a package that's ahead of or behind the pin can
+fail a job partway through with a `MissingConfigException` or `no such option` rather than
+failing at startup. This pin is **not on PyPI** — `pypi.org/project/molcraftdiffusion`
+lags the pin by several releases, so install from the exact commit via git instead:
+
+```bash
+MOLCRAFT_REF=b79e8aadc85f7047fbd9a70d1c41ea3aba0fc0a7
+```
 
 **GPU (CUDA 12.4, PyTorch 2.6):**
 
 ```bash
-pip install 'molcraftdiffusion[gpu]>=1.6.0' \
+pip install "molcraftdiffusion[gpu] @ git+https://github.com/pregHosh/MolCraftDiffusion@${MOLCRAFT_REF}" \
     --find-links https://data.pyg.org/whl/torch-2.6.0+cu124.html
 ```
 
 **CPU-only:**
 
 ```bash
-pip install 'molcraftdiffusion[cpu]>=1.6.0' \
+pip install "molcraftdiffusion[cpu] @ git+https://github.com/pregHosh/MolCraftDiffusion@${MOLCRAFT_REF}" \
     --extra-index-url https://download.pytorch.org/whl/cpu \
     --find-links https://data.pyg.org/whl/torch-2.6.0+cpu.html
 ```
+
+After installing, `curl localhost:8000/healthz` reports `molcraft_version`,
+`molcraft_commit`, and `molcraft_version_ok`/`molcraft_commit_ok` against this pin. The
+pin lives in `webapp/database-explorer-lite/backend/main.py`
+(`MOLCRAFT_PINNED_VERSION` / `MOLCRAFT_PINNED_COMMIT`) — this doc must match those
+constants; bump both together and re-verify `TASK_FAMILIES` /
+`TASK_TYPE_TO_TASKS_CONFIG` / the `analyze` CLI flags before moving the pin forward.
 
 ## 3. Install the web app backend
 

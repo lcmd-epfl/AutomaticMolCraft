@@ -243,8 +243,7 @@ const FALLBACK_ANALYSIS_TOOLS: AnalysisToolSpec[] = [
     inputs: [
       { key: 'metrics', label: 'Metric set', type: 'select', default: 'posebuster', required: true, options: ['core', 'posebuster', 'geom_revised'] },
       { key: 'recheck_topo', label: 'Recheck topology with RDKit', type: 'boolean', default: false },
-      { key: 'check_strain', label: 'Check strain via XTB optimization', type: 'boolean', default: false },
-      { key: 'mol_converter', label: 'Molecule converter', type: 'select', default: 'xyz2mol', options: ['xyz2mol', 'rdkit'] },
+      { key: 'mol_converter', label: 'Molecule converter', type: 'select', default: 'xyz2mol', options: ['xyz2mol', 'openbabel'] },
     ],
   },
   {
@@ -433,7 +432,7 @@ function isFieldVisibleForValues(
   if (!tool) return true
   if (
     tool.id === 'validity_connectivity' &&
-    (field.key === 'recheck_topo' || field.key === 'check_strain')
+    field.key === 'recheck_topo'
   ) {
     return String(values.metrics ?? 'core') === 'core'
   }

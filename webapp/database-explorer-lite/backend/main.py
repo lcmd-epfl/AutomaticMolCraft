@@ -139,11 +139,14 @@ PREDICT_CONFIG_PATH = Path(
 MOLCRAFT_CMD = os.environ.get("MOLCRAFT_CMD", "MolCraftDiff")
 ACTIVE_GENERATION_PROCS: Dict[str, subprocess.Popen] = {}
 
-# Minimum MolCraftDiffusion release this backend is written against. Bump it whenever a
-# change here starts depending on new upstream behaviour. The Hydra group tables —
-# TASK_TYPE_TO_TASKS_CONFIG below and TASK_FAMILIES in training_config.py — are the parts
-# that fail on an older package, and they fail minutes into a job rather than at startup.
-MOLCRAFT_MIN_VERSION = "1.6.0"
+# Exact MolCraftDiffusion commit this backend is written against — a pin, not a floor.
+# The Hydra group tables (TASK_TYPE_TO_TASKS_CONFIG below, TASK_FAMILIES in
+# training_config.py) and the `analyze` CLI flags built in _analysis_cmd_for_tool drift
+# from upstream silently and fail minutes into a job rather than at startup, so an older
+# *or newer* installed package is equally suspect. Bump both constants together only
+# after re-checking those two integration points against the new commit.
+MOLCRAFT_PINNED_VERSION = "1.12.0"
+MOLCRAFT_PINNED_COMMIT = "b79e8aadc85f7047fbd9a70d1c41ea3aba0fc0a7"  # pregHosh/MolCraftDiffusion@main
 
 
 def _molcraft_version() -> str | None:
@@ -158,6 +161,25 @@ def _molcraft_version() -> str | None:
         from importlib.metadata import version
 
         return version("molcraftdiffusion")
+    except Exception:
+        return None
+
+
+def _molcraft_commit() -> str | None:
+    """Git commit the installed molcraftdiffusion was built from, or None when unknown.
+
+    Only populated when the package was installed from a VCS URL (`pip install
+    git+...@<sha>`) — `direct_url.json` carries no commit info for a plain local-path or
+    PyPI build, so a version match is the only signal available in that case.
+    """
+    try:
+        import json
+        from importlib.metadata import distribution
+
+        raw = distribution("molcraftdiffusion").read_text("direct_url.json")
+        if not raw:
+            return None
+        return (json.loads(raw).get("vcs_info") or {}).get("commit_id")
     except Exception:
         return None
 
@@ -3073,17 +3095,11 @@ ANALYSIS_TOOLS: dict[str, dict[str, Any]] = {
                 "default": False,
             },
             {
-                "key": "check_strain",
-                "label": "Check strain via XTB optimization",
-                "type": "boolean",
-                "default": False,
-            },
-            {
                 "key": "mol_converter",
                 "label": "Molecule converter",
                 "type": "select",
                 "default": "xyz2mol",
-                "options": ["xyz2mol", "rdkit"],
+                "options": ["xyz2mol", "openbabel"],
             },
         ],
         "output": {"kind": "add_columns"},
@@ -4777,8 +4793,6 @@ def _analysis_cmd_for_tool(tool_id: str, params: dict[str, Any], xyz_dir: Path, 
         cmd += ["metrics", str(xyz_dir), "--metrics", str(params.get("metrics") or "posebuster"), "-o", str(output_csv)]
         if params.get("recheck_topo"):
             cmd.append("--recheck-topo")
-        if params.get("check_strain"):
-            cmd.append("--check-strain")
         if params.get("mol_converter"):
             cmd += ["--mol-converter", str(params.get("mol_converter"))]
 
@@ -6555,6 +6569,7 @@ def healthz():
             if p.is_dir() and (p / "edm_chem.pkl").exists()
         )
     molcraft_version = _molcraft_version()
+    molcraft_commit = _molcraft_commit()
     return {
         "ok": True,
         "ase_cached": len(ASE_XYZ),
@@ -6563,9 +6578,21 @@ def healthz():
         "generation_models": model_count,
         "molcraft_available": shutil.which(MOLCRAFT_CMD) is not None,
         "molcraft_version": molcraft_version,
-        "molcraft_min_version": MOLCRAFT_MIN_VERSION,
-        # None when the version could not be determined — unknown, not "too old".
-        "molcraft_version_ok": _version_at_least(molcraft_version, MOLCRAFT_MIN_VERSION),
+        "molcraft_pinned_version": MOLCRAFT_PINNED_VERSION,
+        "molcraft_commit": molcraft_commit,
+        "molcraft_pinned_commit": MOLCRAFT_PINNED_COMMIT,
+        # True only on an exact version match; None when the installed version is
+        # unknown — never conflated with a confirmed mismatch. Commit is the stronger
+        # signal when available (only set for a VCS-URL install); version is the fallback.
+        "molcraft_version_ok": (
+            None if molcraft_version is None else molcraft_version == MOLCRAFT_PINNED_VERSION
+        ),
+        "molcraft_commit_ok": (
+            None if molcraft_commit is None else molcraft_commit == MOLCRAFT_PINNED_COMMIT
+        ),
+        # Directional hint when molcraft_version_ok is False: combine with it to tell
+        # older (False here) from newer (True here) than the pin; None when unparseable.
+        "molcraft_version_at_least_pin": _version_at_least(molcraft_version, MOLCRAFT_PINNED_VERSION),
     }
 
 

@@ -447,6 +447,18 @@ export default function DatasetBuilder({ onRegisterSource, onRegisterAndCompile 
     setProgress(5)
     updateOverlay('Uploading ASE database…', aseFile.name, 5)
 
+    // The backend parses every row and converts it to XYZ before responding — there is
+    // no progress signal for that phase, so once the upload's own byte-progress caps out
+    // the bar creeps toward (but never reaches) 100% instead of sitting frozen, which
+    // otherwise reads as "stuck" for large databases that take a while to parse.
+    let trickleInterval: number | null = null
+    const stopTrickle = () => {
+      if (trickleInterval !== null) {
+        window.clearInterval(trickleInterval)
+        trickleInterval = null
+      }
+    }
+
     try {
       const fd = new FormData()
       fd.append('file', aseFile)
@@ -473,7 +485,23 @@ export default function DatasetBuilder({ onRegisterSource, onRegisterAndCompile 
           }
         }
 
+        xhr.upload.onload = () => {
+          let trickleValue = 50
+          const tick = () => {
+            trickleValue += (92 - trickleValue) * 0.08
+            setProgress(trickleValue)
+            updateOverlay(
+              'Processing ASE database…',
+              'Parsing entries on the backend — large databases can take a while here.',
+              trickleValue
+            )
+          }
+          tick()
+          trickleInterval = window.setInterval(tick, 400)
+        }
+
         xhr.onload = () => {
+          stopTrickle()
           if (xhr.status >= 200 && xhr.status < 300) {
             resolve(xhr.responseText)
           } else {
@@ -481,11 +509,14 @@ export default function DatasetBuilder({ onRegisterSource, onRegisterAndCompile 
           }
         }
 
-        xhr.onerror = () => reject(new Error('Network error while uploading ASE database'))
+        xhr.onerror = () => {
+          stopTrickle()
+          reject(new Error('Network error while uploading ASE database'))
+        }
         xhr.send(fd)
       })
 
-      updateOverlay('Processing ASE database…', 'Reading backend response.', 75)
+      updateOverlay('Processing ASE database…', 'Reading backend response.', 96)
 
       const data = JSON.parse(responseText)
 
@@ -529,6 +560,7 @@ export default function DatasetBuilder({ onRegisterSource, onRegisterAndCompile 
       pushToast(`Failed to load ASE DB: ${err?.message || String(err)}`, 'error')
       hideOverlay()
     } finally {
+      stopTrickle()
       setParsing(false)
     }
   }

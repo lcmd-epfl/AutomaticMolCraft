@@ -83,16 +83,29 @@ def main() -> int:
     assert backend._version_at_least("1.4.0", "1.6.0") is False
     assert backend._version_at_least(None, "1.6.0") is None
 
-    # Last, so the group checks above still report when the package is behind.
+    # Last, so the group checks above still report when the package is off-pin. This is a
+    # pin, not a floor: an exact mismatch fails loudly instead of a silent NOTE, because
+    # "ahead of the pin" is exactly the state (task-family drift, removed CLI flags) that
+    # broke this backend before the pin existed — see MOLCRAFT_PINNED_VERSION's docstring.
     found = backend._molcraft_version()
-    assert backend._version_at_least(found, backend.MOLCRAFT_MIN_VERSION) is not False, (
-        f"molcraftdiffusion {found} is older than the required "
-        f"{backend.MOLCRAFT_MIN_VERSION}; reinstall from the current source tree"
-    )
+    pin = backend.MOLCRAFT_PINNED_VERSION
     if found is None:
         print("NOTE: molcraftdiffusion not importable from this interpreter; version unchecked")
     else:
-        print(f"OK: molcraftdiffusion {found} >= {backend.MOLCRAFT_MIN_VERSION}")
+        direction = "" if found == pin else (" (newer)" if backend._version_at_least(found, pin) else " (older)")
+        assert found == pin, (
+            f"molcraftdiffusion {found}{direction} != pinned {pin} "
+            f"({backend.MOLCRAFT_PINNED_COMMIT}). Reinstall the pinned commit, or if this "
+            f"is an intentional upgrade, re-verify TASK_FAMILIES/TASK_TYPE_TO_TASKS_CONFIG "
+            f"and the analyze CLI flags in main.py before bumping MOLCRAFT_PINNED_VERSION."
+        )
+        print(f"OK: molcraftdiffusion {found} == pinned {pin}")
+
+    commit = backend._molcraft_commit()
+    if commit is not None:
+        assert commit == backend.MOLCRAFT_PINNED_COMMIT, (
+            f"installed commit {commit} != pinned {backend.MOLCRAFT_PINNED_COMMIT}"
+        )
     return 0
 
 
