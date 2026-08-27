@@ -8,7 +8,7 @@ This page describes common end-to-end usage patterns. Each workflow links to the
 
 The most common workflow: produce a batch of molecules, enrich them with properties, then explore the chemical space.
 
-1. **[3D Generation](../generation/index.md)** — run a de-novo job and inspect the generated XYZ files in the Results panel.
+1. **[3D molecule generation](../generation/index.md)** — run a de-novo job and inspect the generated XYZ files in the Results panel.
 2. **[Data Manager](../data-manager.md)** — use **Add generated molecules**, click **Register generated molecules**, then **Compile dataset**.
 3. **[Analysis tools](../analysis-tools.md)** — run **XYZ to SMILES** (required first), then **XTB electronic properties** or **Predict properties**.
 4. Apply results to the dataset.
@@ -21,9 +21,9 @@ The most common workflow: produce a batch of molecules, enrich them with propert
 
 Generate molecules steered toward a specific property value using CFG.
 
-1. Choose a **CFG** model in [3D Generation](../generation/index.md) (labelled "CFG" in the model list).
+1. Choose a **CFG** model in [3D molecule generation](../generation/index.md) (labelled "CFG" in the model list).
 2. Set **CFG scale** > 1 (start with 2–3) and enter the target value for each property.
-3. Optionally set a **Negative target** to steer *away from* an undesired value.
+3. Optionally set a **Negative** target to steer *away from* an undesired value.
 4. Run multiple jobs with different seeds to build a diverse set.
 5. Proceed with steps 2–6 from workflow 1 to compare the generated set against an unconditional baseline.
 
@@ -126,7 +126,7 @@ The key idea is that AutomaticMolCraft keeps model configuration, generated mole
 
 **Generate with property targets**
 
-7. Open **[3D Generation](../generation/index.md)**. Select a trained conditional checkpoint (labelled **CFG** in the model list).
+7. Open **[3D molecule generation](../generation/index.md)**. Select a trained conditional checkpoint (labelled **CFG** in the model list).
 8. Set a **CFG scale** (e.g. 1–3) and enter the property target (e.g. HOMO–LUMO gap = 3 eV for a low-gap target, or 15 eV for a high-gap target).
 9. Run the job and inspect generated structures in the split viewer.
 10. Repeat for each combination of checkpoint, target value, and CFG scale you want to benchmark. Keep **seed** fixed across runs for a fair comparison.

@@ -8,7 +8,7 @@ The **Management** tab assembles molecular datasets from multiple sources, merge
 
 ## Header
 
-If a compiled dataset is active, the header card shows the current molecule count and column count. Otherwise it prompts you to load data.
+If a compiled dataset is active, the header card shows the current molecule count and column count. Otherwise it prompts you to load data. Click the header line to expand the same rows-per-source / column-coverage / numeric-statistics breakdown described under [Compiled dataset view](#compiled-dataset-view).
 
 ---
 
@@ -89,7 +89,11 @@ The column list shows every column in the source.
 | **Mini stats** | Numeric: mini histogram of the distribution. Categorical: unique value count. Vector: dimension |
 | **Expand (▸)** | Show a larger stats view for that column |
 
-**Column toolbar**: **Select all** / **Clear** buttons to quickly include or exclude all columns in one click.
+**Column toolbar**: **Select all** / **Clear** buttons to quickly include or exclude all columns in one click, plus a **Computed** button (see below).
+
+### Subsampling
+
+Every non-locked flashcard has a **Subsample** row: enter a row count to randomly subsample that source before compilation, and optionally a **seed** for a reproducible draw. Leave the count blank to keep all rows. When set, a readout shows `→ N / M rows`.
 
 ### Computed columns before compile
 
@@ -150,18 +154,34 @@ Filtering in this panel is shared with the **Visualization** tab. Permanent filt
 
 ## Export
 
-The **Download dataset** panel exports the compiled data. Select an export scope before clicking a download button:
+The **Download dataset** panel exports the compiled data.
+
+### Export scope
+
+Pick a scope from the **Export scope** dropdown before clicking a download button:
 
 | Scope | Meaning |
 |---|---|
 | **Full compiled** | Every row in the compiled dataset |
 | **Filtered view** | Only rows passing the current global filters |
-| **Selected rows** | Only rows selected in the table or Visualization workspace |
+| **Selected rows** | Only rows selected in the table or Visualization workspace (disabled if nothing is selected) |
+
+A line below the dropdown previews the row and column count that will be exported, and a warning chip appears when the row count exceeds the CSV+XYZ zip cap.
+
+### Filename prefix
+
+Type a prefix in the **Filename prefix** field (default `compiled_dataset`); it's prepended to every downloaded file name.
+
+### Column selection
+
+Expand **Columns (n / total)** to choose which columns are included in the export. **Select all** / **Clear** toggle every column at once; individual checkboxes toggle one column.
+
+### Formats
 
 | Format | Contents |
 |---|---|
 | **Download ASE .db** | ASE database with geometries embedded and scalar columns written as `key_value_pairs` |
 | **Download CSV + XYZ zip** | CSV plus a folder of `.xyz` files, zipped; disabled above 5,000 rows |
-| **Download CSV only** | Scalar and categorical columns only; useful for large datasets |
+| **Download CSV only** | All selected columns flattened to scalars (vector/descriptor columns are expanded to `name_0, name_1, …`), no 3D geometry, no row cap — best for large exports |
 
-Use the filename field to set the export prefix. The exporter resolves XYZ geometries from the registered source information, so generated-output sources and path-loaded sources can be exported after compilation.
+Vector/descriptor columns are flattened to numeric `name_0…name_{dim-1}` columns in every CSV-based export. The exporter resolves XYZ geometries from the registered source information, so generated-output sources and path-loaded sources can be exported after compilation.

@@ -63,7 +63,7 @@ In each pane:
 | Button | Output |
 |---|---|
 | **XYZ** | Single molecule coordinate file |
-| **SVG** | Server-rendered 3D projection via OpenBabel |
+| **SVG** | Server-rendered 3D projection via `xyzrender` (must be installed and on the backend's `PATH`) |
 | **XYZ zip** | All molecules from the job in one archive |
 
 ### 6. Send to structure-guided generation
@@ -78,11 +78,12 @@ With a molecule selected in a pane, click **→ Use as ref** to load that XYZ di
 
 | Parameter | Default | Range | Chemical meaning |
 |---|---|---|---|
-| **Total molecules** | 1 | ≥ 1 | Number of independent XYZ files produced in this job |
-| **Batch size** | 1 | 1–256 | How many molecules are sampled in a single forward pass through the diffusion model. Larger batches are faster per molecule but use more GPU memory. Must not exceed Total molecules |
-| **Frames** | 1 | 1–100 | Number of trajectory snapshots captured during denoising. Set to 1 to save only the final structure (fastest). Set > 1 to enable step-by-step denoising playback |
+| **Total molecules** | 1 | ≥ 1 | Number of independent XYZ files produced in this job. Must be strictly greater than Batch size — raising Batch size above it bumps Total molecules up automatically |
+| **Batch size** | 1 | 1–256 | How many molecules are sampled in a single forward pass through the diffusion model. Larger batches are faster per molecule but use more GPU memory. Must be strictly lower than Total molecules |
+| **Frames** | 1 | 1–100 | Number of trajectory snapshots captured during denoising. Set to 1 to save only the final structure (fastest). Set > 1 to enable step-by-step denoising playback. Must be strictly lower than Diffusion steps — it is clamped down automatically at submit time |
 | **Diffusion steps** | 50 | 2–1 000 | Number of denoising steps. More steps produce smoother, higher-quality geometries at the cost of run time. For quick exploration 20–50 is sufficient; for final structures 100–200 is typical |
 | **Seed** | 86 | 0–999 999 | Random seed for reproducibility. Change it to sample a different region of chemical space with the same settings |
+| **Sampler** | ddpm | ddpm / ddim | Diffusion sampler. Only shown for **Unconditional** models — CFG models are always forced onto DDPM because DDIM is unavailable on the CFG/gradient-guidance sampling path |
 
 ### Molecular size
 
@@ -103,6 +104,8 @@ In **random** mode, the **Max size** field (visible in Basic Parameters) acts as
 - **0**: equivalent to unconditional generation — property targets are ignored entirely.
 - **1**: mild guidance; the model balances diversity with property steering.
 - **2–5**: stronger guidance; output properties are closer to the targets but structural diversity decreases. Values above 3 can produce geometrically strained structures.
+
+**CFG scale schedule** (`constant` / `linear` / `exponential` / `cosine`, default `constant`): how CFG scale varies across the denoising trajectory instead of staying fixed at the value above. `constant` keeps CFG scale fixed for every step; the other options ramp it up or down according to the named curve.
 
 !!! note "Guidance quality trade-off"
     Increasing CFG scale strengthens property steering but typically reduces the fraction of generated structures that pass geometric validity checks (e.g. PoseBuster). This trade-off is sensitive to how the model was trained: models with MAD-normalized property targets tend to retain higher structural quality at equivalent CFG strengths compared to models trained with fixed-scale normalization. Check the training-set property histograms (visible in **Show Model Details**) to choose a realistic target value — requesting a property far outside the training distribution reduces both guidance effectiveness and structural quality.
@@ -136,6 +139,6 @@ See [Presets](presets.md) — save and restore the full parameter state for any 
 
 ---
 
-## Reloading past jobs
+## Resetting generation state
 
-Click **Refresh state** to re-discover completed jobs from disk. Any job in `MOLCRAFT_OUTPUTS_DIR` can be reloaded into the viewer without re-running the model.
+Click **Refresh state** to reset every generation parameter back to its default, clear the current job and results from view, and re-fetch the model list from `MOLCRAFT_MODELS_DIR`. Use it after adding or removing a model folder on disk, or to start a fresh configuration without reloading the page. It does not reload a past job's results — those stay available only through the Results panel of the run that produced them, or by re-selecting the model.

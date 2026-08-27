@@ -1,24 +1,152 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-  version="1.1"
-  width="1020"
-  height="470"
-  viewBox="0 0 1020 470"
-  xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1976D2" />
+   version="1.1"
+   width="1020"
+   height="470"
+   viewBox="0 0 1020 470"
+   id="svg491"
+   sodipodi:docname="workspace_interplay_diagram.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview493"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="1.0042553"
+     inkscape:cx="493.40043"
+     inkscape:cy="277.31992"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg491" />
+  <defs
+     id="defs342">
+    <marker
+       style="overflow:visible"
+       id="marker2"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Triangle arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path2" />
     </marker>
-    <marker id="arrow-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#616161" />
+    <marker
+       style="overflow:visible"
+       id="marker1"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Triangle arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path1" />
     </marker>
-    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#388E3C" />
+    <marker
+       style="overflow:visible"
+       id="Triangle"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Triangle arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path135" />
     </marker>
-    <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7B1FA2" />
+    <marker
+       id="arrow-blue"
+       viewBox="0 0 10 10"
+       refX="9"
+       refY="5"
+       markerWidth="7"
+       markerHeight="7"
+       orient="auto-start-reverse"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M 0,0 10,5 0,10 Z"
+         fill="#1976d2"
+         id="path328" />
     </marker>
-    <style>
+    <marker
+       id="arrow-gray"
+       viewBox="0 0 10 10"
+       refX="9"
+       refY="5"
+       markerWidth="7"
+       markerHeight="7"
+       orient="auto-start-reverse"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M 0,0 10,5 0,10 Z"
+         fill="#616161"
+         id="path331" />
+    </marker>
+    <marker
+       id="arrow-green"
+       viewBox="0 0 10 10"
+       refX="9"
+       refY="5"
+       markerWidth="7"
+       markerHeight="7"
+       orient="auto-start-reverse"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M 0,0 10,5 0,10 Z"
+         fill="#388e3c"
+         id="path334" />
+    </marker>
+    <marker
+       id="arrow-purple"
+       viewBox="0 0 10 10"
+       refX="9"
+       refY="5"
+       markerWidth="7"
+       markerHeight="7"
+       orient="auto-start-reverse"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M 0,0 10,5 0,10 Z"
+         fill="#7b1fa2"
+         id="path337" />
+    </marker>
+    <style
+       id="style340">
       text { font-family: Helvetica, Arial, sans-serif; }
       .lane-title { font-size: 18.6667px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
       .card-title { font-size: 13.3333px; font-weight: 700; text-anchor: middle; }
@@ -30,102 +158,641 @@
       .label-bg { fill: #FFFFFF; opacity: 0.92; }
     </style>
   </defs>
-
-  <g id="generate">
-    <rect x="20" y="20" width="300" height="430" rx="4" ry="4" fill="#BBDEFB" stroke="#1976D2" class="lane" />
-    <line x1="20" y1="44" x2="320" y2="44" stroke="#1976D2" stroke-width="1.2" />
-    <text x="170" y="32" class="lane-title" fill="#0D47A1">Generate</text>
-
-    <rect x="40" y="58" width="260" height="64" rx="6" ry="6" class="card" stroke="#1976D2" />
-    <text x="170" y="78" class="card-title" fill="#0D47A1">Model Training</text>
-    <text x="170" y="94" class="card-line" fill="#0D47A1">training jobs</text>
-    <text x="170" y="110" class="card-line" fill="#0D47A1">checkpoint files</text>
-
-    <rect x="40" y="182" width="260" height="64" rx="6" ry="6" class="card" stroke="#1976D2" />
-    <text x="170" y="202" class="card-title" fill="#0D47A1">3D Molecule Generation</text>
-    <text x="170" y="218" class="card-line" fill="#0D47A1">de novo sampling</text>
-    <text x="170" y="234" class="card-line" fill="#0D47A1">generation jobs</text>
-
-    <rect x="40" y="322" width="260" height="64" rx="6" ry="6" class="card" stroke="#1976D2" />
-    <text x="170" y="342" class="card-title" fill="#0D47A1">Structure-directed Generation</text>
-    <text x="170" y="358" class="card-line" fill="#0D47A1">reference scaffold</text>
-    <text x="170" y="374" class="card-line" fill="#0D47A1">inpainting / outpainting</text>
-  </g>
-
-  <g id="curate">
-    <rect x="380" y="82" width="250" height="306" rx="4" ry="4" fill="#D1C4E9" stroke="#7B1FA2" class="lane" />
-    <line x1="380" y1="106" x2="630" y2="106" stroke="#7B1FA2" stroke-width="1.2" />
-    <text x="505" y="94" class="lane-title" fill="#1A0033">Curate</text>
-
-    <rect x="405" y="134" width="200" height="178" rx="6" ry="6" class="card" stroke="#7B1FA2" />
-    <text x="505" y="158" class="card-title" fill="#4A148C">Management</text>
-    <text x="505" y="180" class="card-line" fill="#4A148C">stage sources</text>
-    <text x="505" y="200" class="card-line" fill="#4A148C">merge columns</text>
-    <text x="505" y="220" class="card-line" fill="#4A148C">compile dataset</text>
-    <text x="505" y="240" class="card-line" fill="#4A148C">export files</text>
-  </g>
-
-  <g id="explore-enrich">
-    <rect x="690" y="20" width="310" height="430" rx="4" ry="4" fill="#C8E6C9" stroke="#388E3C" class="lane" />
-    <line x1="690" y1="44" x2="1000" y2="44" stroke="#388E3C" stroke-width="1.2" />
-    <text x="845" y="32" class="lane-title" fill="#1B5E20">Explore / Enrich</text>
-
-    <rect x="715" y="58" width="260" height="74" rx="6" ry="6" class="card" stroke="#388E3C" />
-    <text x="845" y="78" class="card-title" fill="#1B5E20">Analysis Tools</text>
-    <text x="845" y="94" class="card-line" fill="#1B5E20">properties</text>
-    <text x="845" y="110" class="card-line" fill="#1B5E20">fingerprints</text>
-    <text x="845" y="126" class="card-line" fill="#1B5E20">embeddings</text>
-
-    <rect x="715" y="192" width="260" height="74" rx="6" ry="6" class="card" stroke="#388E3C" />
-    <text x="845" y="212" class="card-title" fill="#1B5E20">Plug-in Tools</text>
-    <text x="845" y="228" class="card-line" fill="#1B5E20">custom scores</text>
-    <text x="845" y="244" class="card-line" fill="#1B5E20">external predictors</text>
-    <text x="845" y="260" class="card-line" fill="#1B5E20">registered sources</text>
-
-    <rect x="715" y="332" width="260" height="74" rx="6" ry="6" class="card" stroke="#388E3C" />
-    <text x="845" y="352" class="card-title" fill="#1B5E20">Visualization</text>
-    <text x="845" y="368" class="card-line" fill="#1B5E20">molecule IDs</text>
-    <text x="845" y="384" class="card-line" fill="#1B5E20">property columns</text>
-    <text x="845" y="400" class="card-line" fill="#1B5E20">filters + selection</text>
-  </g>
-
-  <path d="M 170 122 L 170 182" class="edge" stroke="#1976D2" marker-end="url(#arrow-blue)" />
-  <rect x="174" y="144" width="84" height="18" rx="2" class="label-bg" />
-  <text x="216" y="153" class="edge-label" fill="#0D47A1">checkpoints</text>
-
-  <path d="M 60 90 L 30 90 L 30 354 L 40 354" class="edge" stroke="#1976D2" marker-end="url(#arrow-blue)" />
-  <rect x="28" y="136" width="84" height="18" rx="2" class="label-bg" />
-  <text x="70" y="145" class="edge-label" fill="#0D47A1">checkpoints</text>
-
-  <path d="M 170 246 L 170 322" class="edge" stroke="#1976D2" marker-end="url(#arrow-blue)" />
-  <rect x="177" y="275" width="108" height="18" rx="2" class="label-bg" />
-  <text x="231" y="284" class="edge-label" fill="#0D47A1">use as reference</text>
-
-  <path d="M 300 214 L 350 214 L 350 178 L 405 178" class="edge" stroke="#616161" marker-end="url(#arrow-gray)" />
-  <rect x="310" y="182" width="92" height="18" rx="2" class="label-bg" />
-  <text x="356" y="191" class="edge-label" fill="#212121">add from job</text>
-
-  <path d="M 300 354 L 350 354 L 350 254 L 405 254" class="edge" stroke="#616161" marker-end="url(#arrow-gray)" />
-  <rect x="310" y="298" width="92" height="18" rx="2" class="label-bg" />
-  <text x="356" y="307" class="edge-label" fill="#212121">add from job</text>
-
-  <path d="M 605 164 L 660 164 L 660 95 L 715 95" class="edge" stroke="#388E3C" marker-end="url(#arrow-green)" />
-  <rect x="608" y="120" width="120" height="18" rx="2" class="label-bg" />
-  <text x="668" y="129" class="edge-label" fill="#1B5E20">compiled dataset</text>
-
-  <path d="M 605 224 L 715 224" class="edge" stroke="#388E3C" marker-end="url(#arrow-green)" />
-  <rect x="602" y="204" width="120" height="18" rx="2" class="label-bg" />
-  <text x="662" y="213" class="edge-label" fill="#1B5E20">compiled dataset</text>
-
-  <path d="M 605 288 L 660 288 L 660 369 L 715 369" class="edge" stroke="#388E3C" marker-end="url(#arrow-green)" />
-  <rect x="608" y="320" width="120" height="18" rx="2" class="label-bg" />
-  <text x="668" y="329" class="edge-label" fill="#1B5E20">compiled dataset</text>
-
-  <path d="M 715 82 L 650 82 L 650 145 L 605 145" class="edge" stroke="#7B1FA2" stroke-dasharray="5 5" marker-end="url(#arrow-purple)" />
-  <rect x="610" y="101" width="86" height="18" rx="2" class="label-bg" />
-  <text x="653" y="110" class="edge-label" fill="#7B1FA2">apply result</text>
-
-  <path d="M 715 250 L 650 250 L 650 266 L 605 266" class="edge" stroke="#7B1FA2" stroke-dasharray="5 5" marker-end="url(#arrow-purple)" />
-  <rect x="588" y="266" width="188" height="18" rx="2" class="label-bg" />
-  <text x="682" y="275" class="edge-label" fill="#7B1FA2">apply result / register source</text>
+  <rect
+     x="6.4269514"
+     y="20.013391"
+     width="313.55966"
+     height="387.97321"
+     rx="4.1807957"
+     ry="3.6090531"
+     fill="#bbdefb"
+     stroke="#1976d2"
+     class="lane"
+     id="rect344"
+     style="fill:#495178;fill-opacity:0.303387;stroke:#495178;stroke-width:3.32467;stroke-dasharray:none;stroke-opacity:1" />
+  <line
+     x1="6.4135647"
+     y1="44"
+     x2="320"
+     y2="44"
+     stroke="#1976d2"
+     stroke-width="1.22687"
+     id="line346"
+     style="stroke-width:3.5;stroke-dasharray:none;stroke:#495178;stroke-opacity:1" />
+  <text
+     x="170"
+     y="32"
+     class="lane-title"
+     fill="#0d47a1"
+     id="text348"
+     style="font-size:21.3333px">Generate</text>
+  <rect
+     x="40"
+     y="58"
+     width="260"
+     height="64"
+     rx="6"
+     ry="6"
+     class="card"
+     stroke="#1976d2"
+     id="rect350"
+     style="stroke:#001044;stroke-opacity:1;stroke-width:2.5;stroke-dasharray:none" />
+  <text
+     x="170"
+     y="78"
+     class="card-title"
+     fill="#0d47a1"
+     id="text352"
+     style="font-size:18.6667px;fill:#001044;fill-opacity:1">2) Model Training</text>
+  <text
+     x="170"
+     y="94"
+     class="card-line"
+     fill="#0d47a1"
+     id="text354"
+     style="fill:#001044;fill-opacity:1">training jobs</text>
+  <text
+     x="170"
+     y="110"
+     class="card-line"
+     fill="#0d47a1"
+     id="text356"
+     style="fill:#001044;fill-opacity:1">checkpoint files</text>
+  <rect
+     x="40"
+     y="182"
+     width="260"
+     height="64"
+     rx="6"
+     ry="6"
+     class="card"
+     stroke="#1976d2"
+     id="rect358"
+     style="stroke:#005a9a;stroke-opacity:1;stroke-width:2.5;stroke-dasharray:none" />
+  <text
+     x="170"
+     y="202"
+     class="card-title"
+     fill="#0d47a1"
+     id="text360"
+     style="font-size:18.6667px;fill:#005a9a;fill-opacity:1">3) 3D Molecule Generation</text>
+  <text
+     x="170"
+     y="218"
+     class="card-line"
+     fill="#0d47a1"
+     id="text362"
+     style="fill:#005a9a;fill-opacity:1">de novo sampling</text>
+  <text
+     x="170"
+     y="234"
+     class="card-line"
+     fill="#0d47a1"
+     id="text364"
+     style="fill:#005a9a;fill-opacity:1">generation jobs</text>
+  <rect
+     x="32.568943"
+     y="322.03207"
+     width="273.79828"
+     height="63.935806"
+     rx="6.3184223"
+     ry="5.9939818"
+     class="card"
+     stroke="#1976d2"
+     id="rect366"
+     style="stroke-width:2.56419;stroke-dasharray:none" />
+  <text
+     x="170"
+     y="342"
+     class="card-title"
+     fill="#0d47a1"
+     id="text368"
+     style="font-size:18.6667px;letter-spacing:-0.61px;fill:#00437f;fill-opacity:1"
+     dy="0 0 0 0.60000002"
+     dx="0 0 0 -1.65">4) Structure-directed Generation</text>
+  <text
+     x="170"
+     y="358"
+     class="card-line"
+     fill="#0d47a1"
+     id="text370"
+     style="fill:#00437f;fill-opacity:1">reference scaffold</text>
+  <text
+     x="170"
+     y="374"
+     class="card-line"
+     fill="#0d47a1"
+     id="text372"
+     style="fill:#00437f;fill-opacity:1">inpainting / outpainting</text>
+  <rect
+     x="380"
+     y="82"
+     width="250"
+     height="306"
+     rx="4"
+     ry="4"
+     fill="#d1c4e9"
+     stroke="#7b1fa2"
+     class="lane"
+     id="rect375"
+     style="fill:#efd5ed;fill-opacity:1;stroke:#d183c9;stroke-opacity:1;opacity:1;stroke-width:3.7;stroke-dasharray:none" />
+  <line
+     x1="380"
+     y1="106"
+     x2="630"
+     y2="106"
+     stroke="#7b1fa2"
+     stroke-width="1.2"
+     id="line377"
+     style="stroke:#d183c9;stroke-opacity:1;stroke-width:3.7;stroke-dasharray:none" />
+  <rect
+     x="404.97534"
+     y="133.97536"
+     width="200.04929"
+     height="171.00818"
+     rx="6.0014787"
+     ry="5.7643209"
+     class="card"
+     stroke="#7b1fa2"
+     id="rect381"
+     style="stroke:#d183c9;stroke-width:2.45071;stroke-dasharray:none;stroke-opacity:1" />
+  <rect
+     x="690"
+     y="20"
+     width="310"
+     height="430"
+     rx="4"
+     ry="4"
+     fill="#c8e6c9"
+     stroke="#388e3c"
+     class="lane"
+     id="rect394"
+     style="fill:#e3d26f;fill-opacity:0.40392157;stroke:#706216;stroke-opacity:1;stroke-width:3;stroke-dasharray:none" />
+  <line
+     x1="690"
+     y1="44"
+     x2="1000"
+     y2="44"
+     stroke="#388e3c"
+     stroke-width="1.2"
+     id="line396"
+     style="stroke:#706216;stroke-opacity:1;stroke-width:3;stroke-dasharray:none" />
+  <text
+     x="845"
+     y="34"
+     class="lane-title"
+     fill="#1b5e20"
+     id="text398"
+     style="font-size:21.3333px;fill:#a3388f;fill-opacity:1"><tspan
+       style="fill:#706216;fill-opacity:1"
+       id="tspan2">Explore / Enrich</tspan></text>
+  <rect
+     x="715"
+     y="58"
+     width="260"
+     height="74"
+     rx="6"
+     ry="6"
+     class="card"
+     stroke="#388e3c"
+     id="rect400"
+     style="stroke:#f18a18;stroke-opacity:1;stroke-width:2.5;stroke-dasharray:none" />
+  <text
+     x="845"
+     y="78"
+     class="card-title"
+     fill="#1b5e20"
+     id="text402"
+     style="font-size:18.6667px;fill:#e27d0e;fill-opacity:1">5) Analysis Tools</text>
+  <rect
+     x="715"
+     y="192"
+     width="260"
+     height="74"
+     rx="6"
+     ry="6"
+     class="card"
+     stroke="#388e3c"
+     id="rect410"
+     style="stroke:#f36769;stroke-opacity:1" />
+  <text
+     x="845"
+     y="212"
+     class="card-title"
+     fill="#1b5e20"
+     id="text412"
+     style="font-size:18.6667px;fill:#f36769;fill-opacity:1">6) Plug-in Tools</text>
+  <text
+     x="845"
+     y="228"
+     class="card-line"
+     fill="#1b5e20"
+     id="text414"
+     style="fill:#f36769;fill-opacity:1">custom scores</text>
+  <text
+     x="845"
+     y="244"
+     class="card-line"
+     fill="#1b5e20"
+     id="text416"
+     style="fill:#f36769;fill-opacity:1">external predictors</text>
+  <text
+     x="845"
+     y="260"
+     class="card-line"
+     fill="#1b5e20"
+     id="text418"
+     style="white-space:pre;inline-size:180.627;display:inline;fill:#f36769;fill-opacity:1"
+     xml:space="preserve"><tspan
+       x="845"
+       y="260"
+       id="tspan11">external computations</tspan></text>
+  <rect
+     x="715"
+     y="332"
+     width="260"
+     height="74"
+     rx="6"
+     ry="6"
+     class="card"
+     stroke="#388e3c"
+     id="rect420"
+     style="stroke:#9d1823;stroke-opacity:1;stroke-width:2.5;stroke-dasharray:none" />
+  <text
+     x="845"
+     y="352"
+     class="card-title"
+     fill="#1b5e20"
+     id="text422"
+     style="font-size:18.6667px;fill:#9d1823;fill-opacity:1">7) Visualization</text>
+  <text
+     x="845"
+     y="400"
+     class="card-line"
+     fill="#1b5e20"
+     id="text428"
+     style="fill:#9d1823;fill-opacity:1">filters + selection</text>
+  <path
+     d="M 170 122 L 170 182"
+     class="edge"
+     stroke="#1976D2"
+     marker-end="url(#arrow-blue)"
+     id="path431" />
+  <rect
+     x="174"
+     y="144"
+     width="84"
+     height="18"
+     rx="2"
+     class="label-bg"
+     id="rect433" />
+  <text
+     x="216"
+     y="153"
+     class="edge-label"
+     fill="#0D47A1"
+     id="text435"
+     style="fill:#001044;fill-opacity:1">checkpoints</text>
+  <path
+     d="M 32.574445,89.831453 H 15.992031 V 354.16253 h 16.576912"
+     class="edge"
+     stroke="#1976d2"
+     marker-end="url(#arrow-blue)"
+     id="path437"
+     sodipodi:nodetypes="cccc" />
+  <rect
+     x="28"
+     y="136"
+     width="84"
+     height="18"
+     rx="2"
+     class="label-bg"
+     id="rect439" />
+  <text
+     x="70"
+     y="145"
+     class="edge-label"
+     fill="#0D47A1"
+     id="text441"
+     style="fill:#001044;fill-opacity:1">checkpoints</text>
+  <path
+     d="M 170 246 L 170 322"
+     class="edge"
+     stroke="#1976D2"
+     marker-end="url(#arrow-blue)"
+     id="path443" />
+  <rect
+     x="177"
+     y="275"
+     width="108"
+     height="18"
+     rx="2"
+     class="label-bg"
+     id="rect445" />
+  <text
+     x="231"
+     y="284"
+     class="edge-label"
+     fill="#0D47A1"
+     id="text447">use as reference</text>
+  <path
+     d="M 300 214 L 350 214 L 350 178 L 405 178"
+     class="edge"
+     stroke="#616161"
+     marker-end="url(#arrow-gray)"
+     id="path449"
+     style="stroke:#005a9a;stroke-opacity:1" />
+  <rect
+     x="310"
+     y="182"
+     width="92"
+     height="18"
+     rx="2"
+     class="label-bg"
+     id="rect451" />
+  <text
+     x="356"
+     y="191"
+     class="edge-label"
+     fill="#212121"
+     id="text453"
+     style="stroke:none;stroke-opacity:1;fill:#005a9a;fill-opacity:1">add from job</text>
+  <path
+     d="m 306.36722,354 h 46.96799 V 254 H 405"
+     class="edge"
+     stroke="#616161"
+     marker-end="url(#arrow-gray)"
+     id="path455"
+     style="stroke:#00437f;stroke-opacity:1" />
+  <rect
+     x="310"
+     y="298"
+     width="92"
+     height="18"
+     rx="2"
+     class="label-bg"
+     id="rect457" />
+  <text
+     x="356"
+     y="307"
+     class="edge-label"
+     fill="#212121"
+     id="text459"
+     style="fill:#00437f;fill-opacity:1">add from job</text>
+  <path
+     d="M 605 164 L 660 164 L 660 95 L 715 95"
+     class="edge"
+     stroke="#388E3C"
+     marker-end="url(#arrow-green)"
+     id="path461"
+     style="stroke:#792d72;stroke-opacity:1;marker-end:url(#arrow-purple)" />
+  <rect
+     x="608"
+     y="120"
+     width="120"
+     height="18"
+     rx="2"
+     class="label-bg"
+     id="rect463" />
+  <text
+     x="668"
+     y="129"
+     class="edge-label"
+     fill="#1B5E20"
+     id="text465"
+     style="fill:#792d72;fill-opacity:1">compiled dataset</text>
+  <path
+     d="M 604.95686,228 H 709.02469"
+     class="edge"
+     stroke="#388e3c"
+     marker-end="url(#arrow-green)"
+     id="path467"
+     style="stroke:#792d72;stroke-opacity:1;marker-end:url(#marker2)" />
+  <rect
+     x="602"
+     y="204"
+     width="120"
+     height="18"
+     rx="2"
+     class="label-bg"
+     id="rect469" />
+  <text
+     x="662"
+     y="213"
+     class="edge-label"
+     fill="#1B5E20"
+     id="text471"
+     style="fill:#792d72;fill-opacity:1">compiled dataset</text>
+  <path
+     d="M 605 288 L 660 288 L 660 369 L 715 369"
+     class="edge"
+     stroke="#388E3C"
+     marker-end="url(#arrow-green)"
+     id="path473"
+     style="stroke:#792d72;stroke-opacity:1;marker-end:url(#arrow-purple)" />
+  <rect
+     x="608"
+     y="320"
+     width="120"
+     height="18"
+     rx="2"
+     class="label-bg"
+     id="rect475" />
+  <text
+     x="668"
+     y="329"
+     class="edge-label"
+     fill="#1B5E20"
+     id="text477"
+     style="fill:#792d72;fill-opacity:1">compiled dataset</text>
+  <path
+     d="m 715,85.086483 -59.88387,0 v 62.999997 h -45"
+     class="edge"
+     stroke="#7B1FA2"
+     stroke-dasharray="5, 5"
+     marker-end="url(#arrow-purple)"
+     id="path479"
+     style="stroke:#e27d0e;stroke-opacity:1;marker-end:url(#Triangle)"
+     sodipodi:nodetypes="cccc" />
+  <rect
+     x="610"
+     y="101"
+     width="86"
+     height="18"
+     rx="2"
+     class="label-bg"
+     id="rect481" />
+  <text
+     x="653"
+     y="110"
+     class="edge-label"
+     fill="#7B1FA2"
+     id="text483"
+     style="fill:#e27d0e;fill-opacity:1">apply result</text>
+  <rect
+     x="608"
+     y="268"
+     width="188"
+     height="18"
+     rx="2"
+     class="label-bg"
+     id="rect487" />
+  <text
+     x="702"
+     y="277"
+     class="edge-label"
+     fill="#7b1fa2"
+     id="text489"
+     style="fill:#f36769;fill-opacity:1">apply result / register source</text>
+  <path
+     d="m 714.9421,249.8972 h -61.01253 v 16.16347 h -42.23944"
+     class="edge"
+     stroke="#7B1FA2"
+     stroke-dasharray="4.86889, 4.86889"
+     marker-end="url(#arrow-purple)"
+     id="path485"
+     style="stroke:#f36769;stroke-opacity:1;marker-end:url(#marker1)" />
+  <text
+     x="505"
+     y="96"
+     class="lane-title"
+     fill="#1a0033"
+     id="text379"
+     style="font-size:21.3333px;fill:#792d72;fill-opacity:1">Curate</text>
+  <text
+     x="505"
+     y="158"
+     class="card-title"
+     fill="#4a148c"
+     id="text383"
+     style="font-size:18.6667px;fill:#792d72;fill-opacity:1">1) Management</text>
+  <text
+     x="505"
+     y="211.76913"
+     class="card-line"
+     fill="#4a148c"
+     id="text385"
+     style="fill:#792d72;fill-opacity:1">stage sources</text>
+  <text
+     x="505"
+     y="229.76913"
+     class="card-line"
+     fill="#4a148c"
+     id="text387"
+     style="fill:#792d72;fill-opacity:1">merge columns</text>
+  <text
+     x="505"
+     y="247.76913"
+     class="card-line"
+     fill="#4a148c"
+     id="text389"
+     style="fill:#792d72;fill-opacity:1">compile dataset</text>
+  <text
+     x="505"
+     y="267.76913"
+     class="card-line"
+     fill="#4a148c"
+     id="text391"
+     style="fill:#792d72;fill-opacity:1">export files</text>
+  <text
+     x="505"
+     y="183.63374"
+     class="card-line"
+     fill="#4a148c"
+     id="text996"
+     style="white-space:pre;inline-size:236.551;display:inline;fill:#792d72;fill-opacity:1"
+     transform="translate(0,-8)"
+     xml:space="preserve"><tspan
+       x="505"
+       y="183.63374"
+       id="tspan12">Upload/register 
+</tspan><tspan
+       x="505"
+       y="200.30037"
+       id="tspan13">generated molecules</tspan></text>
+  <text
+     x="845"
+     y="94"
+     class="card-line"
+     fill="#1b5e20"
+     id="text1055"
+     style="white-space:pre;inline-size:143.651;display:inline;fill:#e27d0e;fill-opacity:1"
+     transform="translate(43.183925)"
+     xml:space="preserve"><tspan
+       x="845"
+       y="94"
+       id="tspan14">tSNE/UMAP</tspan></text>
+  <text
+     x="845"
+     y="94"
+     class="card-line"
+     fill="#1b5e20"
+     id="text404"
+     style="white-space:pre;inline-size:143.651;display:inline;fill:#e27d0e;fill-opacity:1"
+     transform="translate(-64.486358)"
+     xml:space="preserve"><tspan
+       x="845"
+       y="94"
+       id="tspan15">Quality assessment</tspan></text>
+  <text
+     x="781.60089"
+     y="110"
+     class="card-line"
+     fill="#1b5e20"
+     id="text406"
+     style="fill:#e27d0e;fill-opacity:1">SMILES/fingerprints</text>
+  <text
+     x="760.36072"
+     y="126"
+     class="card-line"
+     fill="#1b5e20"
+     id="text408"
+     style="fill:#e27d0e;fill-opacity:1">Featurization</text>
+  <text
+     x="845"
+     y="94"
+     class="card-line"
+     fill="#1b5e20"
+     id="text1204"
+     style="white-space:pre;inline-size:143.651;display:inline;fill:#e27d0e;fill-opacity:1"
+     transform="translate(55.183925,15.92513)"
+     xml:space="preserve"><tspan
+       x="845"
+       y="94"
+       id="tspan16">xTB optimization</tspan></text>
+  <text
+     x="845"
+     y="94"
+     class="card-line"
+     fill="#1b5e20"
+     id="text1239"
+     style="white-space:pre;inline-size:199.632;display:inline;fill:#e27d0e;fill-opacity:1"
+     transform="translate(49.183925,31.85026)"
+     xml:space="preserve"><tspan
+       x="845"
+       y="94"
+       id="tspan17">xTB property computation</tspan></text>
+  <text
+     x="845"
+     y="94"
+     class="card-line"
+     fill="#1b5e20"
+     id="text1323"
+     style="white-space:pre;inline-size:257.204;display:inline;fill:#9d1823;fill-opacity:1"
+     transform="translate(1.3981008,274.30702)"
+     xml:space="preserve"><tspan
+       x="845"
+       y="94"
+       id="tspan18">2D/3D scatter plot and histogram</tspan></text>
+  <text
+     x="847.48535"
+     y="384.30701"
+     class="card-line"
+     fill="#1b5e20"
+     id="text1325"
+     style="white-space:pre;inline-size:166.766;display:inline;fill:#9d1823;fill-opacity:1"
+     xml:space="preserve"><tspan
+       x="847.48535"
+       y="384.30701"
+       id="tspan19">2D/3D molecule viewer</tspan></text>
 </svg>

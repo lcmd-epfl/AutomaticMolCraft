@@ -4,20 +4,21 @@ The **Visualization** tab is a multi-panel workspace for exploring a compiled da
 
 ![Visualization workspace](assets/screenshots/visualization_tab.png)
 
-*Linked plots, filters, sortable tables, and molecular viewers share the same molecule-selection state, allowing property trends and structural subsets to be inspected within a single interface.*
+*Linked plots, filters, tables, and molecular viewers share the same molecule-selection state, allowing property trends and structural subsets to be inspected within a single interface.*
 
 !!! note
-    A dataset must be loaded before any panels can be used — either via the [Data Manager](data-manager.md), or directly from the toolbar above the tab: select a CSV file + XYZ folder (or an ASE `.db` file) and click **Build Dataset**.
+    A dataset must be loaded before any panels can be used — register and compile one in [Data Manager](data-manager.md) (the **Management** tab) first.
 
 ---
 
 ## Adding and arranging panels
 
-The **action bar** (below the tab bar) provides three buttons:
+The **action bar** (below the tab bar) provides:
 
 - **2D Scatter** — requires ≥ 2 numeric columns
 - **3D Scatter** — requires ≥ 3 numeric columns
 - **Histogram** — requires ≥ 1 numeric column
+- **Reset** — clears the dataset, staged sources, descriptors, computed columns, filters, selections, and plots for the current session, after a confirmation dialog
 
 New panels are appended below existing ones. **Drag** a panel by its title bar to reposition it. **Drag any edge or corner** to resize it. Panels can be overlapped or tiled freely.
 
@@ -68,10 +69,20 @@ Click the **⚙** icon on any scatter panel (press **Esc** to close the modal).
 | Option | Description |
 |---|---|
 | Fixed color | One color for all points (color picker) |
+| Color source *(2D only)* | Fixed, Column, or Density / frequency — selects what feeds Color by. In 3D, Color by is bound directly to a column with no separate source picker |
 | Color by | Bind to a numeric column (continuous ramp) or categorical column (discrete palette) |
-| Palette | Color ramp when Color by is numeric: **Teal Sunset**, Viridis, Plasma, Cividis, Turbo |
+| Palette | Color ramp when Color by is numeric: **Teal Sunset**, Viridis, Plasma, Cividis, Turbo (renamed to contrast variants when Categorical is on) |
 | Show colorbar | Toggle the colorbar legend on the plot |
 | Categorical | Force categorical (discrete) color interpretation of a numeric column |
+
+**Density / frequency coloring** *(2D only)*, when Color source is set to Density / frequency:
+
+| Option | Description |
+|---|---|
+| Method | Bin frequency or KDE density |
+| Grid resolution | Auto, or a fixed grid from 24×24 to 96×96 |
+| Smoothing | KDE bandwidth slider (KDE method only) |
+| Color scale | Linear or Log |
 
 #### Graphical View
 
@@ -125,6 +136,8 @@ Click **⚙** on the histogram panel.
 | Option | Default | Description |
 |---|---|---|
 | Bin count | 40 | Number of bars (1–5 000) |
+| Bin size | — | Explicit bin width; overrides bin count when set |
+| Split by | None | Overlay separate histograms per value of a categorical column |
 | Bar fill color | — | Interior color |
 | Bar border color | — | Outline color |
 | Bar opacity | 0.75 | Slider 0.05–1.0 |
@@ -136,6 +149,8 @@ Click **⚙** on the histogram panel.
 | Highlight selected bin | on | Emphasise the bar(s) containing selected molecules |
 | Dim unselected bins | off | Fade bars with no selected molecules |
 | Show stats | off | Overlay mean and standard deviation |
+
+**View buttons** (also in the settings modal): **Fit all** and **Reset zoom**, same as the scatter plot.
 
 
 ---
@@ -210,13 +225,18 @@ Each pane header has two download buttons:
 
 ## Data table
 
-A sortable, paginated table of all dataset rows. Selected rows are highlighted. Click a row to select that molecule. Sort by clicking a column header; resize columns by dragging their edges.
+A paginated table of all dataset rows (50 rows per page, with a page-number jump box) and paginated columns (7 columns per page, with a "jump to column" search box). Selected/picked rows are highlighted.
+
+- **Click a row** — select that molecule (also updates the 3D viewer's active pane)
+- **Ctrl/Cmd + click a row** — add/remove it from the multi-molecule pick set used by the 3D viewer
+
+Columns are not sortable or resizable.
 
 ---
 
 ## Filter panel
 
-Row-level filters apply across all panels in real time. The active filter scope is also used when exporting from the [Data Manager](data-manager.md).
+Found in the **Filters** tab of the info panel next to the data table (alongside **Selection** and **Columns** tabs). Row-level filters apply across all panels in real time. The active filter scope is also used when exporting from the [Data Manager](data-manager.md).
 
 | Filter type | Applies to | How it works |
 |---|---|---|

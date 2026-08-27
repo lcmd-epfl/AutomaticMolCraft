@@ -6,6 +6,10 @@ The **Analysis tools** tab enriches the loaded dataset by running computations a
 !!! note
     A compiled dataset must be present (loaded via the [Data Manager](data-manager.md)) before running any tool.
 
+![Analysis tools workspace](assets/screenshots/analysis_tab.png)
+
+*The Analysis tools workspace: pick a tool and source under Settings, configure its parameters, then queue and run the step.*
+
 ---
 
 ## General workflow
@@ -54,8 +58,7 @@ Checks each molecule's geometry and connectivity against a set of chemical rules
 |---|---|---|---|
 | Metric set | `posebuster` | core, posebuster, geom_revised | Rule set to apply |
 | Recheck topology with RDKit | false | boolean | Re-evaluate bond connectivity using RDKit after the initial parse. Useful if `xyz2mol` assigns bonds incorrectly |
-| Check strain via XTB optimization | false | boolean | Flag molecules whose xTB energy drops significantly after geometry optimization — a sign of geometric strain in the raw structure |
-| Molecule converter | `xyz2mol` | xyz2mol, rdkit | Algorithm used to infer bonds from XYZ coordinates. Switch to `rdkit` if `xyz2mol` fails for your element types |
+| Molecule converter | `xyz2mol` | xyz2mol, openbabel | Algorithm used to infer bonds from XYZ coordinates. Switch to `openbabel` if `xyz2mol` fails for your element types |
 
 **Output**: one boolean column per validity criterion (True = passes the check). Failed molecules are `False`.
 
@@ -134,7 +137,12 @@ Relaxes each molecule's geometry to a local energy minimum. The output either re
 
 After the job completes, choose:
 - **Apply results** — overwrites the current XYZ geometries for those molecule IDs in-place.
-- **Register optimized set** — keeps the original geometries and adds optimized ones as a separate staged source with a new label.
+- **Register optimized set** — adds the optimized geometries as a staged source in the Data Manager. Behavior depends on the **ID prefix** and **Data source label** fields:
+
+| ID prefix | Data source label | Result |
+|---|---|---|
+| Empty | Same as the original data source | Replacement mode — original source rows are removed; optimized rows take their place |
+| Non-empty | Different from the original data source | Append mode — optimized rows are added as a new staged source with the prefix prepended to their IDs; the label must not already exist |
 
 ---
 
@@ -146,17 +154,25 @@ Computes a fixed-length numeric vector for each molecule, used as input for dime
 
 **UMA**: a neural network–based featurizer that produces dense molecular embeddings.
 
+**Morgan fingerprint**: computes a Morgan (circular) fingerprint directly from a SMILES column via RDKit — runs in-process, no XYZ or GPU required. Needs an existing SMILES column (e.g. from XYZ to SMILES conversion).
+
 | Parameter | Default | Applies to | What it does |
 |---|---|---|---|
-| Backend | `soap` | both | Choose SOAP (geometry-based) or UMA (neural) |
+| Backend | `soap` | all | Choose SOAP (geometry-based), UMA (neural), or Morgan fingerprint (SMILES-based) |
 | Auto-detect species | true | SOAP | Automatically infer the element list from the dataset. Disable to specify elements manually for reproducible vectors across datasets with different compositions |
 | r_cut | 6.0 Å | SOAP | Cutoff radius for the local atomic environment. Larger values capture longer-range interactions but increase vector length |
 | n_max | 8 | SOAP | Number of radial basis functions. Higher = finer radial resolution |
 | l_max | 6 | SOAP | Maximum angular momentum (spherical harmonic order). Higher = finer angular resolution. Computational cost scales as (l_max + 1)² |
 | sigma | 0.1 | SOAP | Gaussian smearing width for atomic densities. Larger sigma smooths out geometry noise |
-| Pooling | `mean` | SOAP | How per-atom descriptors are combined into one vector: `mean` (average) or `sum` (total) |
+| Pooling | `mean` | SOAP, UMA | How per-atom descriptors are combined into one vector: `mean` (average) or `sum` (total) |
+| UMA model path | *(empty)* | UMA | Optional path to a local UMA checkpoint. Relative paths resolve from the repository root; leave empty for the default checkpoint |
 | UMA device | `cpu` | UMA | `auto` selects GPU if available; `cpu` forces CPU; `cuda` forces GPU |
 | UMA batch size | 8 | UMA | Number of molecules processed per GPU batch |
+| SMILES column | *(required)* | Fingerprint | Dataset column holding SMILES strings to fingerprint |
+| Morgan radius | 2 | Fingerprint | Circular fingerprint radius (bond hops considered around each atom) |
+| Morgan bits | 2048 | Fingerprint | Length of the fingerprint vector |
+| Use chirality | false | Fingerprint | Encode stereochemistry in the fingerprint |
+| Use feature invariants | false | Fingerprint | Use pharmacophoric feature invariants instead of plain atom types |
 
 **Output**: a vector column added to the dataset. This column is the required input for Dimensionality reduction.
 
