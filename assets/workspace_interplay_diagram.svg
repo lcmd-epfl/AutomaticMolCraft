@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+  version="1.1"
+  width="1020"
+  height="470"
+  viewBox="0 0 1020 470"
+  xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1976D2" />
+    </marker>
+    <marker id="arrow-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#616161" />
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#388E3C" />
+    </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7B1FA2" />
+    </marker>
+    <style>
+      text { font-family: Helvetica, Arial, sans-serif; }
+      .lane-title { font-size: 18.6667px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
+      .card-title { font-size: 13.3333px; font-weight: 700; text-anchor: middle; }
+      .card-line { font-size: 13.3333px; text-anchor: middle; }
+      .edge-label { font-size: 13.3333px; font-style: italic; text-anchor: middle; dominant-baseline: middle; }
+      .lane { stroke-width: 1.2; }
+      .card { fill: #FFFFFF; stroke-width: 1.2; }
+      .edge { fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+      .label-bg { fill: #FFFFFF; opacity: 0.92; }
+    </style>
+  </defs>
+
+  <g id="generate">
+    <rect x="20" y="20" width="300" height="430" rx="4" ry="4" fill="#BBDEFB" stroke="#1976D2" class="lane" />
+    <line x1="20" y1="44" x2="320" y2="44" stroke="#1976D2" stroke-width="1.2" />
+    <text x="170" y="32" class="lane-title" fill="#0D47A1">Generate</text>
+
+    <rect x="40" y="58" width="260" height="64" rx="6" ry="6" class="card" stroke="#1976D2" />
+    <text x="170" y="78" class="card-title" fill="#0D47A1">Model Training</text>
+    <text x="170" y="94" class="card-line" fill="#0D47A1">training jobs</text>
+    <text x="170" y="110" class="card-line" fill="#0D47A1">checkpoint files</text>
+
+    <rect x="40" y="182" width="260" height="64" rx="6" ry="6" class="card" stroke="#1976D2" />
+    <text x="170" y="202" class="card-title" fill="#0D47A1">3D Molecule Generation</text>
+    <text x="170" y="218" class="card-line" fill="#0D47A1">de novo sampling</text>
+    <text x="170" y="234" class="card-line" fill="#0D47A1">generation jobs</text>
+
+    <rect x="40" y="322" width="260" height="64" rx="6" ry="6" class="card" stroke="#1976D2" />
+    <text x="170" y="342" class="card-title" fill="#0D47A1">Structure-directed Generation</text>
+    <text x="170" y="358" class="card-line" fill="#0D47A1">reference scaffold</text>
+    <text x="170" y="374" class="card-line" fill="#0D47A1">inpainting / outpainting</text>
+  </g>
+
+  <g id="curate">
+    <rect x="380" y="82" width="250" height="306" rx="4" ry="4" fill="#D1C4E9" stroke="#7B1FA2" class="lane" />
+    <line x1="380" y1="106" x2="630" y2="106" stroke="#7B1FA2" stroke-width="1.2" />
+    <text x="505" y="94" class="lane-title" fill="#1A0033">Curate</text>
+
+    <rect x="405" y="134" width="200" height="178" rx="6" ry="6" class="card" stroke="#7B1FA2" />
+    <text x="505" y="158" class="card-title" fill="#4A148C">Management</text>
+    <text x="505" y="180" class="card-line" fill="#4A148C">stage sources</text>
+    <text x="505" y="200" class="card-line" fill="#4A148C">merge columns</text>
+    <text x="505" y="220" class="card-line" fill="#4A148C">compile dataset</text>
+    <text x="505" y="240" class="card-line" fill="#4A148C">export files</text>
+  </g>
+
+  <g id="explore-enrich">
+    <rect x="690" y="20" width="310" height="430" rx="4" ry="4" fill="#C8E6C9" stroke="#388E3C" class="lane" />
+    <line x1="690" y1="44" x2="1000" y2="44" stroke="#388E3C" stroke-width="1.2" />
+    <text x="845" y="32" class="lane-title" fill="#1B5E20">Explore / Enrich</text>
+
+    <rect x="715" y="58" width="260" height="74" rx="6" ry="6" class="card" stroke="#388E3C" />
+    <text x="845" y="78" class="card-title" fill="#1B5E20">Analysis Tools</text>
+    <text x="845" y="94" class="card-line" fill="#1B5E20">properties</text>
+    <text x="845" y="110" class="card-line" fill="#1B5E20">fingerprints</text>
+    <text x="845" y="126" class="card-line" fill="#1B5E20">embeddings</text>
+
+    <rect x="715" y="192" width="260" height="74" rx="6" ry="6" class="card" stroke="#388E3C" />
+    <text x="845" y="212" class="card-title" fill="#1B5E20">Plug-in Tools</text>
+    <text x="845" y="228" class="card-line" fill="#1B5E20">custom scores</text>
+    <text x="845" y="244" class="card-line" fill="#1B5E20">external predictors</text>
+    <text x="845" y="260" class="card-line" fill="#1B5E20">registered sources</text>
+
+    <rect x="715" y="332" width="260" height="74" rx="6" ry="6" class="card" stroke="#388E3C" />
+    <text x="845" y="352" class="card-title" fill="#1B5E20">Visualization</text>
+    <text x="845" y="368" class="card-line" fill="#1B5E20">molecule IDs</text>
+    <text x="845" y="384" class="card-line" fill="#1B5E20">property columns</text>
+    <text x="845" y="400" class="card-line" fill="#1B5E20">filters + selection</text>
+  </g>
+
+  <path d="M 170 122 L 170 182" class="edge" stroke="#1976D2" marker-end="url(#arrow-blue)" />
+  <rect x="174" y="144" width="84" height="18" rx="2" class="label-bg" />
+  <text x="216" y="153" class="edge-label" fill="#0D47A1">checkpoints</text>
+
+  <path d="M 60 90 L 30 90 L 30 354 L 40 354" class="edge" stroke="#1976D2" marker-end="url(#arrow-blue)" />
+  <rect x="28" y="136" width="84" height="18" rx="2" class="label-bg" />
+  <text x="70" y="145" class="edge-label" fill="#0D47A1">checkpoints</text>
+
+  <path d="M 170 246 L 170 322" class="edge" stroke="#1976D2" marker-end="url(#arrow-blue)" />
+  <rect x="177" y="275" width="108" height="18" rx="2" class="label-bg" />
+  <text x="231" y="284" class="edge-label" fill="#0D47A1">use as reference</text>
+
+  <path d="M 300 214 L 350 214 L 350 178 L 405 178" class="edge" stroke="#616161" marker-end="url(#arrow-gray)" />
+  <rect x="310" y="182" width="92" height="18" rx="2" class="label-bg" />
+  <text x="356" y="191" class="edge-label" fill="#212121">add from job</text>
+
+  <path d="M 300 354 L 350 354 L 350 254 L 405 254" class="edge" stroke="#616161" marker-end="url(#arrow-gray)" />
+  <rect x="310" y="298" width="92" height="18" rx="2" class="label-bg" />
+  <text x="356" y="307" class="edge-label" fill="#212121">add from job</text>
+
+  <path d="M 605 164 L 660 164 L 660 95 L 715 95" class="edge" stroke="#388E3C" marker-end="url(#arrow-green)" />
+  <rect x="608" y="120" width="120" height="18" rx="2" class="label-bg" />
+  <text x="668" y="129" class="edge-label" fill="#1B5E20">compiled dataset</text>
+
+  <path d="M 605 224 L 715 224" class="edge" stroke="#388E3C" marker-end="url(#arrow-green)" />
+  <rect x="602" y="204" width="120" height="18" rx="2" class="label-bg" />
+  <text x="662" y="213" class="edge-label" fill="#1B5E20">compiled dataset</text>
+
+  <path d="M 605 288 L 660 288 L 660 369 L 715 369" class="edge" stroke="#388E3C" marker-end="url(#arrow-green)" />
+  <rect x="608" y="320" width="120" height="18" rx="2" class="label-bg" />
+  <text x="668" y="329" class="edge-label" fill="#1B5E20">compiled dataset</text>
+
+  <path d="M 715 82 L 650 82 L 650 145 L 605 145" class="edge" stroke="#7B1FA2" stroke-dasharray="5 5" marker-end="url(#arrow-purple)" />
+  <rect x="610" y="101" width="86" height="18" rx="2" class="label-bg" />
+  <text x="653" y="110" class="edge-label" fill="#7B1FA2">apply result</text>
+
+  <path d="M 715 250 L 650 250 L 650 266 L 605 266" class="edge" stroke="#7B1FA2" stroke-dasharray="5 5" marker-end="url(#arrow-purple)" />
+  <rect x="588" y="266" width="188" height="18" rx="2" class="label-bg" />
+  <text x="682" y="275" class="edge-label" fill="#7B1FA2">apply result / register source</text>
+</svg>

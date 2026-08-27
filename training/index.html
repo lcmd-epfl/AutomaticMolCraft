@@ -1,0 +1,2008 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="User tutorial for the AutomaticMolCraft web UI">
+      
+      
+      
+      
+        <link rel="prev" href="../workflows/">
+      
+      
+        <link rel="next" href="../plugin-tools/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Model Training - AutomaticMolCraft</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#model-training" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="AutomaticMolCraft" class="md-header__button md-logo" aria-label="AutomaticMolCraft" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AutomaticMolCraft
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Model Training
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pregHosh/AutomaticMolCraftt" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../installation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Installation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../quickstart/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Quick Start
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../ui-overview/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  UI Overview
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../generation/" class="md-tabs__link">
+          
+  
+  
+  Generation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../data-manager/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Data Manager
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../analysis-tools/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Analysis Tools
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../visualization/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Visualization
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../workflows/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Workflows
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Model Training
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../plugin-tools/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Plug-in Tools
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../faq/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  FAQ
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="AutomaticMolCraft" class="md-nav__button md-logo" aria-label="AutomaticMolCraft" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AutomaticMolCraft
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pregHosh/AutomaticMolCraftt" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Generation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    De-novo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../generation/structure-guided/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Structure-guided
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../generation/presets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Presets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-manager/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Manager
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../visualization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Training
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Training
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#yaml-import" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        YAML import
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#task-family" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task family
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run mode
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#form-sections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Form sections
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Form sections">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#experiment-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Experiment metadata
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#diffusion-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diffusion settings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Diffusion settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conditional-training-cfg" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conditional training (CFG)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regression-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regression settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ssl-3d-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SSL-3D settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vae-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VAE settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trainer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trainer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logger
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dry-mode-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dry mode output
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#job-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job history
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Job history">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Actions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-presets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration presets
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugin-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plug-in Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="model-training">Model Training</h1>
+<p>The <strong>Model training</strong> tab exposes the full MolCraftDiffusion training pipeline from the browser.</p>
+<p>!!! note "Extended task families"
+    Some task families are hidden by default. If the server sets <code>MOLCRAFT_UNLOCK_PASSWORD</code> (see <a href="../installation/">Installation</a>), an unlock field appears above the form — enter the password and click <strong>Unlock</strong> to reveal the extended families ("Extended models unlocked" is shown on success). The public families work without unlocking.</p>
+<h2 id="layout">Layout</h2>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Left</strong> (fixed 440 px)</td>
+<td>Presets bar, YAML import, experiment metadata, collapsible parameter form</td>
+</tr>
+<tr>
+<td><strong>Right</strong> (remaining width)</td>
+<td>Job history list</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="yaml-import">YAML import</h2>
+<p>Rather than filling the form manually, you can import an existing training YAML:</p>
+<p><strong>From a file path</strong> — paste an absolute path into the text box and press <strong>Enter</strong> or click the arrow button. The backend reads the file and populates every form field.</p>
+<p><strong>From a file upload</strong> — click the upload button and select a <code>.yaml</code> or <code>.yml</code> file.</p>
+<p>Both methods overwrite the current form state entirely. After import you can still edit individual fields before submitting.</p>
+<hr />
+<h2 id="task-family">Task family</h2>
+<p>The <strong>Task family</strong> dropdown selects the learning objective. It controls which form sections appear below.</p>
+<table>
+<thead>
+<tr>
+<th>Family</th>
+<th>Category</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>diffusion</code></td>
+<td>diffusion</td>
+<td>DDPM-based 3D molecule generation (the default generative model)</td>
+</tr>
+<tr>
+<td><code>flow_matching</code></td>
+<td>flow_matching</td>
+<td>Flow-matching variant of the generative model</td>
+</tr>
+<tr>
+<td><code>regression</code></td>
+<td>regression</td>
+<td>Supervised property predictor (used by CFG models for property steering)</td>
+</tr>
+<tr>
+<td><code>ssl3d</code></td>
+<td>ssl3d</td>
+<td>Self-supervised 3D pre-training (denoising + masking)</td>
+</tr>
+<tr>
+<td><code>vae</code></td>
+<td>vae</td>
+<td>Variational autoencoder for latent-space generation</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="run-mode">Run mode</h2>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Submit button</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Run</strong></td>
+<td><strong>Queue training job</strong></td>
+<td>Queues a real training job; the backend launches the training process and streams logs</td>
+</tr>
+<tr>
+<td><strong>Dry</strong></td>
+<td><strong>Generate YAML</strong></td>
+<td>Generates and validates the YAML configuration only — no training runs. The YAML is shown inline with a <strong>Copy command</strong> button and a <strong>Download YAML</strong> button</td>
+</tr>
+</tbody>
+</table>
+<p>Use <strong>Dry</strong> to inspect or share the configuration before committing compute.</p>
+<hr />
+<h2 id="form-sections">Form sections</h2>
+<p>Sections are collapsible (click the section title to toggle). Which sections appear depends on the task family.</p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Shown for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Data</td>
+<td>all</td>
+</tr>
+<tr>
+<td>Model</td>
+<td>all</td>
+</tr>
+<tr>
+<td>Diffusion settings</td>
+<td>diffusion, flow_matching</td>
+</tr>
+<tr>
+<td>Regression settings</td>
+<td>regression</td>
+</tr>
+<tr>
+<td>SSL-3D settings</td>
+<td>ssl3d</td>
+</tr>
+<tr>
+<td>VAE settings</td>
+<td>vae</td>
+</tr>
+<tr>
+<td>Trainer</td>
+<td>all</td>
+</tr>
+<tr>
+<td>Logger</td>
+<td>all</td>
+</tr>
+<tr>
+<td>Engine</td>
+<td>all</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="experiment-metadata">Experiment metadata</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Experiment name</td>
+<td><em>(required)</em></td>
+<td>Label used for the output directory and logger run name</td>
+</tr>
+<tr>
+<td>Seed</td>
+<td>42</td>
+<td>Global random seed for reproducibility</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="data">Data</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dataset path</td>
+<td><em>(required)</em></td>
+<td>Absolute path to the training dataset (CSV + XYZ folder or ASE <code>.db</code>)</td>
+</tr>
+<tr>
+<td>Batch size</td>
+<td>48</td>
+<td>Molecules per training step</td>
+</tr>
+<tr>
+<td>Max atom count</td>
+<td>86</td>
+<td>Molecules with more atoms than this are excluded</td>
+</tr>
+<tr>
+<td>Atom vocabulary</td>
+<td><code>H, B, C, N, O, F, Al, Si, P, S, Cl, As, Se, Br, I</code></td>
+<td>Comma-separated element symbols. Molecules containing unlisted elements are excluded unless <strong>Allow unknown</strong> is on</td>
+</tr>
+<tr>
+<td>Train ratio</td>
+<td>0.8</td>
+<td>Fraction used for training; the remainder becomes the validation set</td>
+</tr>
+<tr>
+<td>With hydrogen</td>
+<td>true</td>
+<td>Include hydrogen atoms in the geometry</td>
+</tr>
+<tr>
+<td>Use OHE feature</td>
+<td>true</td>
+<td>One-hot encode atom type as a feature vector</td>
+</tr>
+<tr>
+<td>Allow unknown</td>
+<td>false</td>
+<td>Pass through molecules with elements outside the vocabulary (marked with a special unknown token)</td>
+</tr>
+<tr>
+<td>Data-efficient collator</td>
+<td>true</td>
+<td>Use a variable-length batching strategy that reduces padding; improves GPU utilisation on diverse atom-count datasets</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="model">Model</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hidden size</td>
+<td>256</td>
+<td>Embedding dimension for all attention layers</td>
+</tr>
+<tr>
+<td>Number of layers</td>
+<td>9</td>
+<td>Transformer depth</td>
+</tr>
+<tr>
+<td>Number of sub-layers</td>
+<td>1</td>
+<td>Sub-layers per transformer block</td>
+</tr>
+<tr>
+<td>Dropout</td>
+<td>0</td>
+<td>Dropout probability (0 = disabled)</td>
+</tr>
+<tr>
+<td>Attention</td>
+<td>true</td>
+<td>Enable multi-head self-attention; set to false for a simpler MLP baseline</td>
+</tr>
+<tr>
+<td>Tanh</td>
+<td>true</td>
+<td>Apply tanh activation in the output head to bound predicted noise</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="diffusion-settings">Diffusion settings</h3>
+<p>Applies to <strong>diffusion</strong> and <strong>flow_matching</strong> task families.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Diffusion steps</td>
+<td>500</td>
+<td>Total forward-process steps T</td>
+</tr>
+<tr>
+<td>Noise schedule</td>
+<td><code>polynomial_2</code></td>
+<td>Variance schedule shape: <code>linear</code>, <code>cosine</code>, <code>polynomial_2</code></td>
+</tr>
+<tr>
+<td>Loss type</td>
+<td><code>vlb</code></td>
+<td>Training objective: <code>vlb</code> (variational lower bound) or <code>l2</code></td>
+</tr>
+<tr>
+<td>Context mask rate</td>
+<td>0</td>
+<td>Fraction of property context randomly masked during training — enables CFG at inference. Set &gt; 0 to train a conditional model</td>
+</tr>
+<tr>
+<td>Normalize factors</td>
+<td><code>1.0, 4.0, 10.0</code></td>
+<td>Per-channel scaling applied to atom coordinates, atom types, and charges before diffusion</td>
+</tr>
+<tr>
+<td>n_samples</td>
+<td>48</td>
+<td>Molecules generated per validation generative analysis run</td>
+</tr>
+<tr>
+<td>Generative analysis</td>
+<td>true</td>
+<td>Run a sample-quality evaluation at each validation step</td>
+</tr>
+<tr>
+<td>Use PoseBuster</td>
+<td>true</td>
+<td>Include PoseBuster validity metrics in the generative analysis</td>
+</tr>
+</tbody>
+</table>
+<h4 id="conditional-training-cfg">Conditional training (CFG)</h4>
+<p>Setting <strong>Context mask rate</strong> &gt; 0 trains a conditional model compatible with classifier-free guidance (CFG) at inference. During each training step, the property label is randomly dropped with this probability; the model learns both the conditional (<code>φ(z, t, y)</code>) and unconditional (<code>φ(z, t)</code>) denoising distributions in one pass. At inference, the two predictions are combined as:</p>
+<div class="highlight"><pre><span></span><code>ε̃ = (1 + w) φ(z, t, y) − w φ(z, t)
+</code></pre></div>
+<p>where <code>w</code> is the CFG scale set at generation time. Typical values for Context mask rate are 0.1–0.3.</p>
+<p><strong>Property normalization</strong> affects how strongly the conditioning signal contributes to the denoising function and consequently how well CFG guidance transfers to generated structures. Two common approaches:</p>
+<ul>
+<li><strong>Fixed scaling</strong> — multiply the raw property value by a constant before feeding it to the model. Simple but sensitive to the chosen scale.</li>
+<li><strong>MAD normalization</strong> — scale property values by the median absolute deviation of the training set. More robust across different property ranges and has been shown to retain a higher structural validity rate at strong CFG scales compared to fixed scaling.</li>
+</ul>
+<p>Choose the normalization scheme consistently across the generative and regression (property-predictor) models for a given experiment.</p>
+<p><strong>Conditioning mechanism</strong> — MolCraftDiffusion supports two ways to inject the property signal into the denoising network:</p>
+<table>
+<thead>
+<tr>
+<th>Mechanism</th>
+<th>How it works</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Feature concatenation (Concat.)</strong></td>
+<td>The property label <code>y</code> is appended directly to the molecular representation before each denoising step: <code>z = [x, h, y]</code>.</td>
+<td>The conditional variable becomes part of the main noise-prediction input, giving it a stronger gradient during fine-tuning. Generally effective for CFG-guided generation.</td>
+</tr>
+<tr>
+<td><strong>Adapter</strong></td>
+<td>A learnable MLP maps <code>y</code> into the hidden feature space of each EGNN block and adds this contribution only when the property context is present.</td>
+<td>Attaches the conditioning pathway to an already-trained denoising network; may receive weaker corrective gradients during fine-tuning.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Flow-matching extras</strong> (shown only for <code>flow_matching</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FM min t</td>
+<td>0.01</td>
+<td>Minimum time value for the flow ODE — avoids numerical issues at t = 0</td>
+</tr>
+<tr>
+<td>FM num timesteps</td>
+<td>100</td>
+<td>Integration steps for the flow ODE at inference</td>
+</tr>
+<tr>
+<td>FM self-condition</td>
+<td>false</td>
+<td>Enable self-conditioning: feed the model's previous prediction back as input</td>
+</tr>
+<tr>
+<td>Use velocity</td>
+<td>false</td>
+<td>Parameterise the model output as a velocity field rather than a noise prediction</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="regression-settings">Regression settings</h3>
+<p>Applies to <strong>regression</strong> task family only. Trains a property predictor head on top of the molecular encoder, used later for CFG property steering.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Criterion</td>
+<td><code>mse</code></td>
+<td>Loss function: <code>mse</code> or <code>mae</code></td>
+</tr>
+<tr>
+<td>Metric</td>
+<td><code>mae</code></td>
+<td>Validation metric</td>
+</tr>
+<tr>
+<td>Number of MLP layers</td>
+<td>3</td>
+<td>Depth of the property prediction head</td>
+</tr>
+<tr>
+<td>MLP batch norm</td>
+<td><code>batchnorm</code></td>
+<td>Normalisation inside the MLP: <code>batchnorm</code>, <code>layernorm</code>, or <code>none</code></td>
+</tr>
+<tr>
+<td>MLP dropout</td>
+<td>0.2</td>
+<td>Dropout in the prediction head</td>
+</tr>
+<tr>
+<td>Target normalization</td>
+<td>true</td>
+<td>Standardise property targets to zero mean and unit variance before training</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="ssl-3d-settings">SSL-3D settings</h3>
+<p>Applies to <strong>ssl3d</strong> task family only. Combines 3D coordinate denoising with masked atom-type prediction as a pre-training objective.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Denoise weight</td>
+<td>1</td>
+<td>Loss weight for the coordinate denoising term</td>
+</tr>
+<tr>
+<td>Mask rate</td>
+<td>0.15</td>
+<td>Fraction of atoms whose type is masked and predicted</td>
+</tr>
+<tr>
+<td>Mtype weight</td>
+<td>0.5</td>
+<td>Loss weight for the masked atom-type prediction term</td>
+</tr>
+<tr>
+<td>Sigma min</td>
+<td>0.01 Å</td>
+<td>Minimum noise standard deviation added to coordinates</td>
+</tr>
+<tr>
+<td>Sigma max</td>
+<td>2.0 Å</td>
+<td>Maximum noise standard deviation</td>
+</tr>
+<tr>
+<td>Sigma schedule</td>
+<td><code>uniform</code></td>
+<td>Distribution for sampling sigma: <code>uniform</code> or <code>log_uniform</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="vae-settings">VAE settings</h3>
+<p>Applies to <strong>vae</strong> task family only. Trains a variational autoencoder that encodes molecules into a continuous latent space.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Latent dim</td>
+<td>8</td>
+<td>Dimensionality of the VAE latent vector</td>
+</tr>
+<tr>
+<td>Augment noise</td>
+<td>0.1</td>
+<td>Standard deviation of Gaussian noise added to coordinates during training augmentation</td>
+</tr>
+<tr>
+<td>Augment rotation</td>
+<td>true</td>
+<td>Apply random 3D rotations to each molecule during training</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="trainer">Trainer</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Optimizer</td>
+<td><code>adamw</code></td>
+<td><code>adamw</code> or <code>adam</code></td>
+</tr>
+<tr>
+<td>Learning rate</td>
+<td>0.0002</td>
+<td>Initial LR</td>
+</tr>
+<tr>
+<td>Weight decay</td>
+<td>1e-12</td>
+<td>L2 regularisation coefficient</td>
+</tr>
+<tr>
+<td>Epochs</td>
+<td>200</td>
+<td>Total training epochs</td>
+</tr>
+<tr>
+<td>Scheduler</td>
+<td><code>cosineannealing</code></td>
+<td>LR schedule: <code>cosineannealing</code>, <code>step</code>, or <code>none</code></td>
+</tr>
+<tr>
+<td>Validation interval</td>
+<td>3</td>
+<td>Epochs between validation runs</td>
+</tr>
+<tr>
+<td>EMA decay</td>
+<td>0.9999</td>
+<td>Exponential moving average decay for model weights — EMA weights are used at inference</td>
+</tr>
+<tr>
+<td>Precision</td>
+<td>32</td>
+<td>Floating-point precision: <code>32</code> (full) or <code>16</code> (mixed)</td>
+</tr>
+<tr>
+<td>Save top-k</td>
+<td>3</td>
+<td>Number of best checkpoints to keep</td>
+</tr>
+<tr>
+<td>Gradient clip mode</td>
+<td><code>norm</code></td>
+<td><code>norm</code> (clip gradient norm) or <code>value</code> (clip element-wise)</td>
+</tr>
+<tr>
+<td>Initial grad norm</td>
+<td>3000</td>
+<td>Target gradient norm for the first step, used to initialise the gradient scaler</td>
+</tr>
+<tr>
+<td>Monitor mode</td>
+<td><code>max</code></td>
+<td>Whether to keep checkpoints with the highest (<code>max</code>) or lowest (<code>min</code>) monitored metric</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="logger">Logger</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Logger backend</td>
+<td><code>logging</code></td>
+<td><code>logging</code> (console/file) or <code>wandb</code> (Weights &amp; Biases)</td>
+</tr>
+<tr>
+<td>Log interval</td>
+<td>2</td>
+<td>Steps between log writes</td>
+</tr>
+<tr>
+<td>W&amp;B project</td>
+<td><em>(empty)</em></td>
+<td>W&amp;B project name (required when backend = wandb)</td>
+</tr>
+<tr>
+<td>W&amp;B entity</td>
+<td><em>(empty)</em></td>
+<td>W&amp;B team or username (optional)</td>
+</tr>
+<tr>
+<td>W&amp;B run name</td>
+<td><em>(empty)</em></td>
+<td>Override the auto-generated run name</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="engine">Engine</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Engine type</td>
+<td><code>original</code></td>
+<td>Training engine variant — <code>original</code> is the standard implementation</td>
+</tr>
+<tr>
+<td>Number of workers</td>
+<td>2</td>
+<td>DataLoader worker processes for prefetching</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="dry-mode-output">Dry mode output</h2>
+<p>After clicking <strong>Generate YAML</strong>, the rendered configuration appears in a read-only text area below the form. Two buttons are shown:</p>
+<ul>
+<li><strong>Copy command</strong> — copies a ready-to-run shell command (<code>MolCraftDiff train --config &lt;path&gt;</code>) to the clipboard.</li>
+<li><strong>Download YAML</strong> — saves the configuration as a <code>.yaml</code> file.</li>
+</ul>
+<hr />
+<h2 id="job-history">Job history</h2>
+<p>Every submitted Run job appears in the right column. Each row shows the experiment name and a status badge (<code>queued / running / completed / failed / cancelled</code>).</p>
+<p>Click a row to expand it. Three sub-tabs are available:</p>
+<table>
+<thead>
+<tr>
+<th>Sub-tab</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>LOG</strong></td>
+<td>Live-tailing training log. Updates every 3 seconds while the job is running</td>
+</tr>
+<tr>
+<td><strong>YAML</strong></td>
+<td>The full training configuration used for this job</td>
+</tr>
+<tr>
+<td><strong>INFO</strong></td>
+<td>Job metadata (start time, output directory) and a suggested launch command with a <strong>Copy</strong> button</td>
+</tr>
+</tbody>
+</table>
+<h3 id="actions">Actions</h3>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>When available</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Stop</strong></td>
+<td>Running jobs</td>
+<td>Sends SIGTERM to the training process</td>
+</tr>
+<tr>
+<td><strong>Clone to form</strong></td>
+<td>Any job</td>
+<td>Copies this job's configuration back into the form for re-use or editing</td>
+</tr>
+<tr>
+<td><strong>Download YAML</strong></td>
+<td>Any job</td>
+<td>Saves this job's YAML configuration</td>
+</tr>
+<tr>
+<td><strong>Delete</strong></td>
+<td>Completed / failed / cancelled jobs</td>
+<td>Removes the job record (training output files on disk are not deleted)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="configuration-presets">Configuration presets</h2>
+<p>The presets bar above the form works identically to the generation presets — see <a href="../generation/presets/">Presets</a>. Presets save the full form state and restore it in one click.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "toc.integrate", "search.suggest", "content.tooltips"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,665 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.1"
+   width="881"
+   height="535.61523"
+   viewBox="-0.5 -0.5 881 535.61523"
+   id="svg112"
+   sodipodi:docname="architecture_diagram.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview112"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.93088935"
+     inkscape:cx="300.25051"
+     inkscape:cy="361.48227"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg112" />
+  <defs
+     id="defs1" />
+  <g
+     data-cell-id="fe"
+     id="g14">
+    <path
+       d="M 880,24 V 2.88 Q 880,0 877.12,0 H 2.88 Q 0,0 0,2.88 V 24"
+       fill="#bbdefb"
+       stroke="#1976d2"
+       stroke-miterlimit="10"
+       pointer-events="all"
+       id="path1" />
+    <path
+       d="M 0,24 V 77.12 Q 0,80 2.88,80 H 877.12 Q 880,80 880,77.12 V 24"
+       fill="none"
+       stroke="#1976d2"
+       stroke-miterlimit="10"
+       pointer-events="none"
+       id="path2" />
+    <path
+       d="M 0,24 H 880"
+       fill="none"
+       stroke="#1976d2"
+       stroke-miterlimit="10"
+       pointer-events="none"
+       id="path3" />
+    <text
+       x="440"
+       y="16.5"
+       id="text3"
+       style="font-weight:bold;font-size:18.6667px;font-family:Helvetica;text-anchor:middle;fill:#0d47a1">Frontend - Browser</text>
+    <g
+       data-cell-id="fe1"
+       id="g9">
+      <g
+         id="g6">
+        <rect
+           x="20"
+           y="28"
+           width="155"
+           height="30"
+           rx="2.4000001"
+           ry="2.4000001"
+           fill="#ffffff"
+           stroke="#1976d2"
+           pointer-events="all"
+           id="rect5" />
+      </g>
+      <text
+         x="97.5"
+         y="47"
+         id="text6"
+         style="font-weight:bold;font-size:13.3333px;font-family:Helvetica;text-anchor:middle;fill:#0d47a1">React / TypeScript</text>
+    </g>
+    <rect
+       x="195"
+       y="28"
+       width="665"
+       height="30"
+       rx="1.2"
+       ry="1.2"
+       fill="#ffffff"
+       stroke="#1976d2"
+       pointer-events="all"
+       id="rect9" />
+    <text
+       x="527.5"
+       y="38.5"
+       id="text10"
+       style="font-size:13.3333px;font-family:Helvetica;text-anchor:middle;fill:#0d47a1"><tspan
+         sodipodi:role="line"
+         id="tspan139"
+         x="527.5"
+         y="38.5">Workspaces: Management, Visualization, 3D Molecular Generation, 3D Structure-directed Generation,</tspan><tspan
+         sodipodi:role="line"
+         x="527.5"
+         y="55.166626"
+         id="tspan140">Analysis Tools, Model Training, Plug-in Tools</tspan></text>
+  </g>
+  <path
+     d="M 880,136 V 114.88 Q 880,112 877.12,112 H 2.88 Q 0,112 0,114.88 V 136"
+     fill="#e0e0e0"
+     stroke="#616161"
+     stroke-miterlimit="10"
+     pointer-events="all"
+     id="path14" />
+  <path
+     d="m -0.04711073,136.04087 v 276.49477 q 0,2.16317 2.88030833,2.16317 H 877.1668 q 2.88031,0 2.88031,-2.16317 V 136.04087"
+     fill="none"
+     stroke="#616161"
+     stroke-miterlimit="10"
+     pointer-events="none"
+     id="path15"
+     style="stroke-width:0.866706" />
+  <path
+     d="M 0,136 H 880"
+     fill="none"
+     stroke="#616161"
+     stroke-miterlimit="10"
+     pointer-events="none"
+     id="path16" />
+  <text
+     x="440"
+     y="130.5"
+     id="text16"
+     style="font-weight:bold;font-size:18.6667px;font-family:Helvetica;text-anchor:middle;fill:#212121">Backend - Local Server</text>
+  <rect
+     x="20"
+     y="146"
+     width="150"
+     height="34"
+     rx="2.72"
+     ry="2.72"
+     fill="#ffffff"
+     stroke="#9e9e9e"
+     pointer-events="all"
+     id="rect18" />
+  <text
+     x="95"
+     y="167"
+     id="text19"
+     style="font-size:13.3333px;font-family:Helvetica;text-anchor:middle;fill:#000000">Uvicorn (ASGI)</text>
+  <rect
+     x="210"
+     y="146"
+     width="130"
+     height="34"
+     rx="2.72"
+     ry="2.72"
+     fill="#ffffff"
+     stroke="#9e9e9e"
+     pointer-events="all"
+     id="rect22" />
+  <text
+     x="275"
+     y="167"
+     id="text23"
+     style="font-weight:bold;font-size:13.3333px;font-family:Helvetica;text-anchor:middle;fill:#000000">FastAPI</text>
+  <rect
+     x="385"
+     y="146"
+     width="360"
+     height="34"
+     rx="2.72"
+     ry="2.72"
+     fill="#ffffff"
+     stroke="#9e9e9e"
+     pointer-events="all"
+     id="rect26" />
+  <text
+     x="565"
+     y="166.5"
+     id="text27"
+     style="font-size:13.3333px;font-family:Helvetica;text-anchor:middle;fill:#000000">Job Scheduler, background processes, logs, status</text>
+  <path
+     d="M 860,234 V 214.64 Q 860,212 857.36,212 H 22.64 Q 20,212 20,214.64 V 234"
+     fill="#c8e6c9"
+     stroke="#388e3c"
+     stroke-miterlimit="10"
+     pointer-events="all"
+     id="path30" />
+  <path
+     d="M 19.937643,234.05141 V 401.8012 q 0,1.79034 2.640392,1.79034 H 857.42197 q 2.64039,0 2.64039,-1.79034 V 234.05141"
+     fill="none"
+     stroke="#388e3c"
+     stroke-miterlimit="10"
+     pointer-events="none"
+     id="path31"
+     style="stroke-width:0.823566" />
+  <path
+     d="M 20,234 H 860"
+     fill="none"
+     stroke="#388e3c"
+     stroke-miterlimit="10"
+     pointer-events="none"
+     id="path32" />
+  <text
+     x="440"
+     y="229"
+     id="text32"
+     style="font-weight:bold;font-size:18.6667px;font-family:Helvetica;text-anchor:middle;fill:#1b5e20">MolCraftDiffusion Engine</text>
+  <rect
+     x="35"
+     y="238"
+     width="390"
+     height="48"
+     rx="3.8399999"
+     ry="3.8399999"
+     fill="#ffffff"
+     stroke="#388e3c"
+     pointer-events="all"
+     id="rect34" />
+  <text
+     x="230"
+     y="265.5"
+     id="text35"
+     style="font-size:13.3333px;font-family:Helvetica;text-anchor:middle;fill:#000000">Model Training YAML configs</text>
+  <rect
+     x="445"
+     y="238"
+     width="400"
+     height="48"
+     rx="3.8399999"
+     ry="3.8399999"
+     fill="#ffffff"
+     stroke="#388e3c"
+     pointer-events="all"
+     id="rect38" />
+  <text
+     x="645"
+     y="249.5"
+     id="text39"
+     style="font-size:13.3333px;font-family:Helvetica;text-anchor:middle;white-space:pre;inline-size:333.639;display:inline;fill:#000000"
+     xml:space="preserve"><tspan
+       x="645"
+       y="249.5"
+       id="tspan4">3D Generation de novo generation
+</tspan><tspan
+       x="645"
+       y="266.16663"
+       id="tspan5">Property-directed generation: CFG
+</tspan><tspan
+       x="645"
+       y="282.83324"
+       id="tspan6">Structure-directed generation: inpainting/outpainting</tspan></text>
+  <path
+     d="M 845,324 V 304.64 Q 845,302 842.36,302 H 37.64 Q 35,302 35,304.64 V 324"
+     fill="#ffe082"
+     stroke="#f9a825"
+     stroke-miterlimit="10"
+     pointer-events="all"
+     id="path42" />
+  <path
+     d="M 34.892822,324.07475 V 390.739 q 0,1.28126 2.640699,1.28126 H 842.46648 q 2.6407,0 2.6407,-1.28126 v -66.66425"
+     fill="none"
+     stroke="#f9a825"
+     stroke-miterlimit="10"
+     pointer-events="none"
+     id="path43"
+     style="stroke-width:0.696745" />
+  <path
+     d="M 35,324 H 845"
+     fill="none"
+     stroke="#f9a825"
+     stroke-miterlimit="10"
+     pointer-events="none"
+     id="path44" />
+  <text
+     x="440"
+     y="317"
+     id="text44"
+     style="font-weight:bold;font-size:18.6667px;font-family:Helvetica;text-anchor:middle;fill:#5d4037">Analysis</text>
+  <rect
+     x="45"
+     y="332"
+     width="138"
+     height="48"
+     rx="3.8399999"
+     ry="3.8399999"
+     fill="#ffffff"
+     stroke="#f9a825"
+     pointer-events="all"
+     id="rect46" />
+  <text
+     x="114"
+     y="347.5"
+     id="text47"
+     style="font-size:13.3333px;font-family:Helvetica;text-anchor:middle;fill:#000000"><tspan
+       sodipodi:role="line"
+       id="tspan112"
+       x="114"
+       y="347.5">xTB / MMFF94</tspan><tspan
+       sodipodi:role="line"
+       id="tspan113"
+       x="114"
+       y="364.16663">geometry optimization</tspan></text>
+  <rect
+     x="193"
+     y="332"
+     width="183"
+     height="48"
+     rx="3.8399999"
+     ry="3.8399999"
+     fill="#ffffff"
+     stroke="#f9a825"
+     pointer-events="all"
+     id="rect50" />
+  <text
+     x="284.5"
+     y="343.5"
+     id="text51"
+     style="font-size:13.3333px;font-family:Helvetica;text-anchor:middle;fill:#000000"><tspan
+       sodipodi:role="line"
+       id="tspan114"
+       x="284.5"
+       y="343.5">RDKit SMILES</tspan><tspan
+       sodipodi:role="line"
+       x="284.5"
+       y="360.16663"
+       id="tspan116">fingerprints</tspan><tspan
+       sodipodi:role="line"
+       x="284.5"
+       y="376.83325"
+       id="tspan117">scaffolds</tspan></text>
+  <rect
+     x="386"
+     y="332"
+     width="145"
+     height="48"
+     rx="3.8399999"
+     ry="3.8399999"
+     fill="#ffffff"
+     stroke="#f9a825"
+     pointer-events="all"
+     id="rect54" />
+  <text
+     x="458.5"
+     y="343.5"
+     id="text55"
+     style="font-size:13.3333px;font-family:Helvetica;text-anchor:middle;fill:#000000"><tspan
+       sodipodi:role="line"
+       id="tspan118"
+       x="458.5"
+       y="343.5"
+       style="font-size:13.3333px">UMAP/t-SNE</tspan><tspan
+       sodipodi:role="line"
+       id="tspan119"
+       x="458.5"
+       y="360.16663"
+       style="font-size:13.3333px">dimensionality</tspan><tspan
+       sodipodi:role="line"
+       x="458.5"
+       y="376.83325"
+       id="tspan120"
+       style="font-size:13.3333px">reduction</tspan></text>
+  <rect
+     x="541"
+     y="332"
+     width="120"
+     height="48"
+     rx="3.8399999"
+     ry="3.8399999"
+     fill="#ffffff"
+     stroke="#f9a825"
+     pointer-events="all"
+     id="rect58" />
+  <text
+     x="601"
+     y="343.5"
+     id="text59"
+     style="font-size:13.3333px;font-family:Helvetica;text-anchor:middle;fill:#000000"><tspan
+       sodipodi:role="line"
+       id="tspan121"
+       x="601"
+       y="343.5">3D molecular</tspan><tspan
+       sodipodi:role="line"
+       x="601"
+       y="360.16663"
+       id="tspan123">auality</tspan><tspan
+       sodipodi:role="line"
+       id="tspan122"
+       x="601"
+       y="376.83325">assessment</tspan></text>
+  <rect
+     x="671"
+     y="332"
+     width="162"
+     height="48"
+     rx="3.8399999"
+     ry="3.8399999"
+     fill="#ffffff"
+     stroke="#f9a825"
+     pointer-events="all"
+     id="rect62" />
+  <text
+     x="752"
+     y="359.5"
+     id="text63"
+     style="font-size:13.3333px;font-family:Helvetica;text-anchor:middle;fill:#000000">SOAP / UMA featurisation</text>
+  <path
+     d="m 170,163 h 31.88"
+     fill="none"
+     stroke="#9e9e9e"
+     stroke-miterlimit="10"
+     pointer-events="stroke"
+     id="path68" />
+  <path
+     d="m 208.88,163 -7,3.5 v -7 z"
+     fill="#9e9e9e"
+     stroke="#9e9e9e"
+     stroke-miterlimit="10"
+     pointer-events="all"
+     id="path69" />
+  <path
+     d="m 340,163 h 36.88"
+     fill="none"
+     stroke="#9e9e9e"
+     stroke-miterlimit="10"
+     pointer-events="stroke"
+     id="path70" />
+  <path
+     d="m 383.88,163 -7,3.5 v -7 z"
+     fill="#9e9e9e"
+     stroke="#9e9e9e"
+     stroke-miterlimit="10"
+     pointer-events="all"
+     id="path71" />
+  <path
+     d="m 565,180 v 10 q 0,10 -10,10 H 450 q -10,0 -10,1.41 v 1.41"
+     fill="none"
+     stroke="#388e3c"
+     stroke-width="1.5"
+     stroke-miterlimit="10"
+     pointer-events="stroke"
+     id="path72" />
+  <path
+     d="m 440,210.32 -3.75,-7.5 h 7.5 z"
+     fill="#388e3c"
+     stroke="#388e3c"
+     stroke-width="1.5"
+     stroke-miterlimit="10"
+     pointer-events="all"
+     id="path73" />
+  <path
+     d="m 880,474.61523 v -21.12 q 0,-2.88 -2.88,-2.88 H 2.88 q -2.88,0 -2.88,2.88 v 21.12"
+     fill="#d1c4e9"
+     stroke="#7b1fa2"
+     stroke-miterlimit="10"
+     pointer-events="all"
+     id="path75" />
+  <path
+     d="m 0,474.61523 v 57.12 q 0,2.88 2.88,2.88 h 874.24 q 2.88,0 2.88,-2.88 v -57.12"
+     fill="none"
+     stroke="#7b1fa2"
+     stroke-miterlimit="10"
+     pointer-events="none"
+     id="path76" />
+  <path
+     d="M 0,474.61523 H 880"
+     fill="none"
+     stroke="#7b1fa2"
+     stroke-miterlimit="10"
+     pointer-events="none"
+     id="path77" />
+  <text
+     x="440"
+     y="467.11523"
+     id="text77"
+     style="font-weight:bold;font-size:18.6667px;font-family:Helvetica;text-anchor:middle;fill:#1a0033">Local File Storage (env-var paths)</text>
+  <rect
+     x="15"
+     y="480.61523"
+     width="163"
+     height="36"
+     rx="2.8800001"
+     ry="2.8800001"
+     fill="#ffffff"
+     stroke="#7b1fa2"
+     pointer-events="all"
+     id="rect79" />
+  <text
+     x="96.5"
+     y="496.11523"
+     id="text80"
+     style="font-size:13.3333px;font-family:Helvetica;text-anchor:middle;fill:#000000"><tspan
+       sodipodi:role="line"
+       id="tspan128"
+       x="96.5"
+       y="496.11523">Model Checkpoints weights</tspan><tspan
+       sodipodi:role="line"
+       id="tspan129"
+       x="96.5"
+       y="512.78186">+ YAML</tspan></text>
+  <rect
+     x="196"
+     y="480.61523"
+     width="163"
+     height="36"
+     rx="2.8800001"
+     ry="2.8800001"
+     fill="#ffffff"
+     stroke="#7b1fa2"
+     pointer-events="all"
+     id="rect83" />
+  <text
+     x="277.5"
+     y="494.11523"
+     id="text84"
+     style="font-size:13.3333px;font-family:Helvetica;text-anchor:middle;fill:#000000"><tspan
+       sodipodi:role="line"
+       id="tspan130"
+       x="277.5"
+       y="494.11523"
+       style="font-size:13.3333px">Molecular Data:</tspan><tspan
+       sodipodi:role="line"
+       x="277.5"
+       y="510.78186"
+       id="tspan132"
+       style="font-size:13.3333px">XYZ/CSV, ASE .db</tspan></text>
+  <rect
+     x="377"
+     y="480.61523"
+     width="163"
+     height="36"
+     rx="2.8800001"
+     ry="2.8800001"
+     fill="#ffffff"
+     stroke="#7b1fa2"
+     pointer-events="all"
+     id="rect87" />
+  <text
+     x="458.5"
+     y="494.11523"
+     id="text88"
+     style="font-size:13.3333px;font-family:Helvetica;text-anchor:middle;fill:#000000"><tspan
+       sodipodi:role="line"
+       id="tspan133"
+       x="458.5"
+       y="494.11523">Plug-in Manifests</tspan><tspan
+       sodipodi:role="line"
+       id="tspan134"
+       x="458.5"
+       y="510.78186">runner scripts</tspan></text>
+  <rect
+     x="558"
+     y="480.61523"
+     width="148"
+     height="36"
+     rx="2.8800001"
+     ry="2.8800001"
+     fill="#ffffff"
+     stroke="#7b1fa2"
+     pointer-events="all"
+     id="rect91" />
+  <text
+     x="632"
+     y="502.11523"
+     id="text92"
+     style="font-size:13.3333px;font-family:Helvetica;text-anchor:middle;fill:#000000">Job Logs + metadata</text>
+  <rect
+     x="724"
+     y="480.61523"
+     width="148"
+     height="36"
+     rx="2.8800001"
+     ry="2.8800001"
+     fill="#ffffff"
+     stroke="#7b1fa2"
+     pointer-events="all"
+     id="rect95" />
+  <text
+     x="798"
+     y="494.11523"
+     id="text96"
+     style="font-size:13.3333px;font-family:Helvetica;text-anchor:middle;fill:#000000"><tspan
+       sodipodi:role="line"
+       id="tspan135"
+       x="798"
+       y="494.11523">Generation outputs</tspan><tspan
+       sodipodi:role="line"
+       id="tspan136"
+       x="798"
+       y="510.78186">presets configs</tspan></text>
+  <path
+     d="m 440,80 v 21.76"
+     fill="none"
+     stroke="#1976d2"
+     stroke-width="2"
+     stroke-miterlimit="10"
+     pointer-events="stroke"
+     id="path100" />
+  <path
+     d="m 440,109.76 -4,-8 h 8 z"
+     fill="#1976d2"
+     stroke="#1976d2"
+     stroke-width="2"
+     stroke-miterlimit="10"
+     pointer-events="all"
+     id="path101" />
+  <rect
+     fill="#ffffff"
+     stroke="none"
+     x="412"
+     y="91"
+     width="57"
+     height="13"
+     stroke-width="0"
+     id="rect101"
+     style="font-weight:bold;font-size:10px;font-family:Helvetica;text-anchor:middle" />
+  <text
+     x="440"
+     y="100"
+     id="text101"
+     style="font-weight:bold;font-size:10px;font-family:Helvetica;text-anchor:middle;fill:#0d47a1">HTTP REST</text>
+  <path
+     d="m 440,433.79523 v 1.64"
+     fill="none"
+     stroke="#7b1fa2"
+     stroke-width="1.5"
+     stroke-miterlimit="10"
+     pointer-events="stroke"
+     id="path104" />
+  <path
+     d="m 440,416.29523 3.75,7.5 h -7.5 z"
+     fill="#7b1fa2"
+     stroke="#7b1fa2"
+     stroke-width="1.5"
+     stroke-miterlimit="10"
+     pointer-events="all"
+     id="path105" />
+  <rect
+     fill="#ffffff"
+     stroke="none"
+     x="417"
+     y="429.61523"
+     width="47"
+     height="12"
+     stroke-width="0"
+     id="rect106"
+     style="font-style:italic;font-size:9px;font-family:Helvetica;text-anchor:middle" />
+  <text
+     x="440"
+     y="438.11523"
+     id="text106"
+     style="font-style:italic;font-size:13.3333px;font-family:Helvetica;text-anchor:middle;fill:#7b1fa2">read / write</text>
+  <path
+     d="m 440,449.71002 3.75,-7.5 h -7.5 z"
+     fill="#7b1fa2"
+     stroke="#7b1fa2"
+     stroke-width="1.5"
+     stroke-miterlimit="10"
+     pointer-events="all"
+     id="path138" />
+</svg>

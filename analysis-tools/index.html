@@ -1,0 +1,1714 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="User tutorial for the AutomaticMolCraft web UI">
+      
+      
+      
+      
+        <link rel="prev" href="../data-manager/">
+      
+      
+        <link rel="next" href="../visualization/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Analysis Tools - AutomaticMolCraft</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#analysis-tools" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="AutomaticMolCraft" class="md-header__button md-logo" aria-label="AutomaticMolCraft" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AutomaticMolCraft
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Analysis Tools
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pregHosh/AutomaticMolCraftt" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../installation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Installation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../quickstart/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Quick Start
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../ui-overview/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  UI Overview
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../generation/" class="md-tabs__link">
+          
+  
+  
+  Generation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../data-manager/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Data Manager
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Analysis Tools
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../visualization/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Visualization
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../workflows/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Workflows
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../training/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Model Training
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../plugin-tools/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Plug-in Tools
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../faq/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  FAQ
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="AutomaticMolCraft" class="md-nav__button md-logo" aria-label="AutomaticMolCraft" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AutomaticMolCraft
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pregHosh/AutomaticMolCraftt" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Generation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    De-novo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../generation/structure-guided/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Structure-guided
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../generation/presets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Presets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-manager/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Manager
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis Tools
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#general-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        General workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-run-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended run order
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tool-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tool reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tool reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#validity-and-connectivity-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validity and connectivity metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyz-to-smiles-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XYZ to SMILES conversion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xtb-electronic-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XTB electronic properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xtb-geometry-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XTB geometry optimization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#featurize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Featurize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dimensionality-reduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dimensionality reduction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#predict-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Predict properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../visualization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Training
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugin-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plug-in Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="analysis-tools">Analysis Tools</h1>
+<p>The <strong>Analysis tools</strong> tab enriches the loaded dataset by running computations as asynchronous background jobs. Each job either adds new columns to the dataset or replaces existing XYZ geometries with optimized versions.</p>
+<p>!!! note
+    A compiled dataset must be present (loaded via the <a href="../data-manager/">Data Manager</a>) before running any tool.</p>
+<hr />
+<h2 id="general-workflow">General workflow</h2>
+<p>The tab is organized around a step queue:</p>
+<ol>
+<li><strong><code>1</code> Settings</strong> — pick the <strong>Analysis tool</strong> and the <strong>Analysis source</strong> (which dataset/staged source to run on).</li>
+<li><strong><code>2</code> Parameters</strong> — configure the tool's parameters, then click <strong>Add to queue</strong>. Repeat to chain several steps (e.g. XYZ to SMILES → validity → xTB).</li>
+<li>Each queued step has a <strong>Post action</strong>: <strong>No post-action</strong>, <strong>Apply results</strong> (merge new columns into the dataset when the step completes), or <strong>Register optimized set</strong> (add the result as a staged source in the Data Manager — used for geometry optimization outputs).</li>
+<li>In the <strong>Workflow</strong> panel, click <strong>Run</strong>. Steps execute one at a time as background jobs; you can navigate to other tabs while waiting. <strong>Pause</strong>, <strong>Cancel active</strong>, and <strong>Clear workflow</strong> control the run; a paused or failed workflow shows <strong>Resume</strong> instead of Run.</li>
+<li>Completed jobs appear in the <strong>Analysis queue</strong> panel with a status badge (<code>queued / running / completed / failed / cancelled</code>) and a log/terminal button to inspect the raw output. If a step ran without a post action, you can still click <strong>Apply results</strong> (or <strong>Apply all results</strong>) or <strong>Register optimized set</strong> there afterwards.</li>
+</ol>
+<p><strong>Cancelling</strong>: click <strong>Cancel</strong> on a queued or running job. <strong>Clear queue</strong> removes finished jobs from the list.</p>
+<hr />
+<h2 id="recommended-run-order">Recommended run order</h2>
+<p>Many tools depend on outputs from earlier ones:</p>
+<ol>
+<li><strong>XYZ to SMILES</strong> — produces the <code>smiles</code> column required by validity checks and similarity filters.</li>
+<li><strong>Validity and connectivity metrics</strong> — use SMILES + XYZ to flag bad geometries; filter these out before expensive calculations.</li>
+<li><strong>XTB geometry optimization</strong> <em>(optional)</em> — replace raw geometries with optimized ones before running single-point calculations.</li>
+<li><strong>XTB electronic properties</strong> — single-point calculations on the (optionally optimized) geometries.</li>
+<li><strong>Featurize</strong> — compute SOAP or UMA vectors.</li>
+<li><strong>Dimensionality reduction</strong> — project featurization vectors to 2D for visualization.</li>
+<li><strong>Predict properties</strong> — run a MolCraftDiffusion checkpoint for property inference.</li>
+</ol>
+<hr />
+<h2 id="tool-reference">Tool reference</h2>
+<h3 id="validity-and-connectivity-metrics">Validity and connectivity metrics</h3>
+<p>Checks each molecule's geometry and connectivity against a set of chemical rules and flags problems as boolean columns.</p>
+<p><strong>Metric sets</strong> define which rules are applied:</p>
+<table>
+<thead>
+<tr>
+<th>Metric set</th>
+<th>What it checks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>core</code></td>
+<td>Basic valence rules, bond lengths, formal charges</td>
+</tr>
+<tr>
+<td><code>posebuster</code></td>
+<td>Core checks + pose-level geometry (torsions, clashes, planarity)</td>
+</tr>
+<tr>
+<td><code>geom_revised</code></td>
+<td>Revised geometry thresholds from the geom_revised benchmark</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Options</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Metric set</td>
+<td><code>posebuster</code></td>
+<td>core, posebuster, geom_revised</td>
+<td>Rule set to apply</td>
+</tr>
+<tr>
+<td>Recheck topology with RDKit</td>
+<td>false</td>
+<td>boolean</td>
+<td>Re-evaluate bond connectivity using RDKit after the initial parse. Useful if <code>xyz2mol</code> assigns bonds incorrectly</td>
+</tr>
+<tr>
+<td>Check strain via XTB optimization</td>
+<td>false</td>
+<td>boolean</td>
+<td>Flag molecules whose xTB energy drops significantly after geometry optimization — a sign of geometric strain in the raw structure</td>
+</tr>
+<tr>
+<td>Molecule converter</td>
+<td><code>xyz2mol</code></td>
+<td>xyz2mol, rdkit</td>
+<td>Algorithm used to infer bonds from XYZ coordinates. Switch to <code>rdkit</code> if <code>xyz2mol</code> fails for your element types</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Output</strong>: one boolean column per validity criterion (True = passes the check). Failed molecules are <code>False</code>.</p>
+<hr />
+<h3 id="xyz-to-smiles-conversion">XYZ to SMILES conversion</h3>
+<p>Converts each molecule's XYZ geometry to a <strong>SMILES</strong> string (Simplified Molecular Input Line Entry System — a compact linear notation for molecular connectivity, e.g. <code>CCO</code> = ethanol). Also computes two derived representations:</p>
+<p><strong>Morgan fingerprint</strong> — a fixed-length binary vector encoding each atom's local chemical environment up to a given bond radius. Used as a numerical molecular representation for similarity search and machine learning.</p>
+<p><strong>Bemis–Murcko scaffold</strong> — the core ring-and-linker framework of a molecule stripped of all side chains. Used to group molecules by structural class.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Range</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Morgan fingerprint bits</td>
+<td>2048</td>
+<td>integer</td>
+<td>Length of the fingerprint vector. 1024–4096 are typical values; longer vectors are more discriminating but use more memory</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Output columns added</strong>: <code>smiles</code>, <code>morgan_fp</code> (vector), <code>scaffold</code> (SMILES string of the ring system).</p>
+<p>Run this tool first — the <code>smiles</code> column enables SMARTS and similarity filters in the Visualization tab.</p>
+<hr />
+<h3 id="xtb-electronic-properties">XTB electronic properties</h3>
+<p>Runs <strong>xTB</strong> (extended tight-binding) single-point quantum-chemical calculations. xTB is a fast semi-empirical method that gives approximate but chemically meaningful electronic descriptors in seconds per molecule.</p>
+<p><strong>xTB methods available:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Speed</th>
+<th>Accuracy</th>
+<th>Best for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GFN1-xTB</td>
+<td>Fastest</td>
+<td>Lower</td>
+<td>Large datasets, initial screening</td>
+</tr>
+<tr>
+<td>GFN2-xTB</td>
+<td>Moderate</td>
+<td>Higher</td>
+<td>General-purpose; recommended default</td>
+</tr>
+<tr>
+<td>PTB</td>
+<td>Fastest</td>
+<td>Moderate</td>
+<td>Very large systems where GFN2 is too slow</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Options</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>XTB method</td>
+<td>GFN2-xTB</td>
+<td>GFN1-xTB, GFN2-xTB, PTB</td>
+<td>Level of theory</td>
+</tr>
+<tr>
+<td>Charge</td>
+<td>0</td>
+<td>integer</td>
+<td>Net formal charge of all molecules in the dataset. If molecules have different charges, pre-split the dataset</td>
+</tr>
+<tr>
+<td>Unpaired electrons</td>
+<td>0</td>
+<td>integer</td>
+<td>Number of unpaired electrons (0 = closed-shell, the typical case for drug-like molecules)</td>
+</tr>
+<tr>
+<td>Solvent</td>
+<td><em>(empty)</em></td>
+<td>string</td>
+<td>Implicit solvent name (e.g. <code>water</code>, <code>acetonitrile</code>, <code>methanol</code>). Leave empty for gas-phase calculation</td>
+</tr>
+<tr>
+<td>Property group</td>
+<td><code>energy</code></td>
+<td>see below</td>
+<td>Which property set to compute</td>
+</tr>
+<tr>
+<td>Timeout per molecule</td>
+<td>120 s</td>
+<td>integer</td>
+<td>Maximum wall time before marking a molecule as failed. Increase for large or complex structures</td>
+</tr>
+<tr>
+<td>Parallel jobs</td>
+<td>1</td>
+<td>integer</td>
+<td>Number of molecules calculated simultaneously. Set to the number of CPU cores available</td>
+</tr>
+<tr>
+<td>Apply empirical correction</td>
+<td>true</td>
+<td>boolean</td>
+<td>Apply Grimme's empirical correction to ionisation potential and electron affinity values</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Property groups:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Columns added</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>energy</code></td>
+<td>Total energy (Hartree), HOMO energy, LUMO energy, HOMO–LUMO gap</td>
+</tr>
+<tr>
+<td><code>dipole</code></td>
+<td>Dipole moment magnitude (Debye)</td>
+</tr>
+<tr>
+<td><code>reactivity</code></td>
+<td>Ionisation potential (IP), electron affinity (EA), chemical potential (μ), hardness (η), softness (S), electrophilicity (ω)</td>
+</tr>
+<tr>
+<td><code>global</code></td>
+<td>Combined energy + reactivity descriptors</td>
+</tr>
+<tr>
+<td><code>charges</code></td>
+<td>Per-atom partial charges (added as a vector column)</td>
+</tr>
+<tr>
+<td><code>fukui</code></td>
+<td>Fukui electrophilic (f⁻) and nucleophilic (f⁺) indices (per-atom vector columns)</td>
+</tr>
+<tr>
+<td><code>bond_orders</code></td>
+<td>Mayer bond orders for all atom pairs (vector column)</td>
+</tr>
+<tr>
+<td><code>all</code></td>
+<td>All of the above</td>
+</tr>
+</tbody>
+</table>
+<p>Start with <code>energy</code> for a quick screen; add <code>reactivity</code> if you need IP/EA/hardness; use <code>all</code> for a comprehensive descriptor set before featurization.</p>
+<hr />
+<h3 id="xtb-geometry-optimization">XTB geometry optimization</h3>
+<p>Relaxes each molecule's geometry to a local energy minimum. The output either replaces the original XYZ coordinates in-place or is registered as a new staged source.</p>
+<p><strong>MMFF94</strong> (Merck Molecular Force Field 94): a classical force field optimized for drug-like organic molecules. Faster than xTB but less accurate for heteroatoms, strained systems, or unusual bonding.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Options</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Optimization level</td>
+<td><code>gfn2</code></td>
+<td>gfn1, gfn2, gfn-ff, mmff94</td>
+<td>Method for geometry relaxation. GFN2 is the recommended default; use mmff94 for very large molecules or if xTB is too slow</td>
+</tr>
+<tr>
+<td>Charge</td>
+<td>0</td>
+<td>integer</td>
+<td>Net formal charge</td>
+</tr>
+<tr>
+<td>Timeout per molecule</td>
+<td>240 s</td>
+<td>integer</td>
+<td>Maximum wall time. Optimization is slower than single-point; increase for large structures</td>
+</tr>
+<tr>
+<td>Covalent radii scale factor</td>
+<td>1.3</td>
+<td>float</td>
+<td>Scale applied to covalent radii when assigning bonds from XYZ coordinates. Increase (e.g. to 1.5) if bonds between distant atoms are being missed</td>
+</tr>
+</tbody>
+</table>
+<p>After the job completes, choose:
+- <strong>Apply results</strong> — overwrites the current XYZ geometries for those molecule IDs in-place.
+- <strong>Register optimized set</strong> — keeps the original geometries and adds optimized ones as a separate staged source with a new label.</p>
+<hr />
+<h3 id="featurize">Featurize</h3>
+<p>Computes a fixed-length numeric vector for each molecule, used as input for dimensionality reduction or external ML models.</p>
+<p><strong>SOAP (Smooth Overlap of Atomic Positions)</strong>: encodes each atom's local chemical environment as a rotationally invariant power spectrum, then pools per-atom descriptors into one vector per molecule. Purely geometry-based — no SMILES needed.</p>
+<p><strong>UMA</strong>: a neural network–based featurizer that produces dense molecular embeddings.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Applies to</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backend</td>
+<td><code>soap</code></td>
+<td>both</td>
+<td>Choose SOAP (geometry-based) or UMA (neural)</td>
+</tr>
+<tr>
+<td>Auto-detect species</td>
+<td>true</td>
+<td>SOAP</td>
+<td>Automatically infer the element list from the dataset. Disable to specify elements manually for reproducible vectors across datasets with different compositions</td>
+</tr>
+<tr>
+<td>r_cut</td>
+<td>6.0 Å</td>
+<td>SOAP</td>
+<td>Cutoff radius for the local atomic environment. Larger values capture longer-range interactions but increase vector length</td>
+</tr>
+<tr>
+<td>n_max</td>
+<td>8</td>
+<td>SOAP</td>
+<td>Number of radial basis functions. Higher = finer radial resolution</td>
+</tr>
+<tr>
+<td>l_max</td>
+<td>6</td>
+<td>SOAP</td>
+<td>Maximum angular momentum (spherical harmonic order). Higher = finer angular resolution. Computational cost scales as (l_max + 1)²</td>
+</tr>
+<tr>
+<td>sigma</td>
+<td>0.1</td>
+<td>SOAP</td>
+<td>Gaussian smearing width for atomic densities. Larger sigma smooths out geometry noise</td>
+</tr>
+<tr>
+<td>Pooling</td>
+<td><code>mean</code></td>
+<td>SOAP</td>
+<td>How per-atom descriptors are combined into one vector: <code>mean</code> (average) or <code>sum</code> (total)</td>
+</tr>
+<tr>
+<td>UMA device</td>
+<td><code>cpu</code></td>
+<td>UMA</td>
+<td><code>auto</code> selects GPU if available; <code>cpu</code> forces CPU; <code>cuda</code> forces GPU</td>
+</tr>
+<tr>
+<td>UMA batch size</td>
+<td>8</td>
+<td>UMA</td>
+<td>Number of molecules processed per GPU batch</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Output</strong>: a vector column added to the dataset. This column is the required input for Dimensionality reduction.</p>
+<hr />
+<h3 id="dimensionality-reduction">Dimensionality reduction</h3>
+<p>Projects a high-dimensional molecular vector column to two numeric coordinates (e.g. <code>dim_red_x</code>, <code>dim_red_y</code>) that can be used as scatter plot axes in the Visualization tab.</p>
+<p><strong>UMAP (Uniform Manifold Approximation and Projection)</strong>: preserves both local neighbourhood structure and global topology. Faster than t-SNE for large datasets. Distances in the 2D plot are more interpretable.</p>
+<p><strong>t-SNE (t-distributed Stochastic Neighbor Embedding)</strong>: prioritises local cluster structure. Better at revealing tight clusters, but global distances are not meaningful and results vary with random seed.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Applies to</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vector column</td>
+<td><em>(required)</em></td>
+<td>both</td>
+<td>The featurization column to project</td>
+</tr>
+<tr>
+<td>Algorithm</td>
+<td>UMAP</td>
+<td>both</td>
+<td>UMAP or t-SNE</td>
+</tr>
+<tr>
+<td>Metric</td>
+<td><code>euclidean</code></td>
+<td>both</td>
+<td>Distance metric: <code>euclidean</code>, <code>cosine</code>, or <code>manhattan</code>. Use <code>cosine</code> for high-dimensional sparse vectors (e.g. Morgan fingerprints)</td>
+</tr>
+<tr>
+<td>Random seed</td>
+<td>42</td>
+<td>both</td>
+<td>Fix for reproducibility</td>
+</tr>
+</tbody>
+</table>
+<p><strong>UMAP-specific:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Neighbors</td>
+<td>15</td>
+<td>Number of nearest neighbours in the high-dimensional space. Smaller = finer local structure; larger = more global view</td>
+</tr>
+<tr>
+<td>Min distance</td>
+<td>0.1</td>
+<td>Minimum distance between points in 2D. Smaller = tighter clusters</td>
+</tr>
+<tr>
+<td>Epochs</td>
+<td>0 (auto)</td>
+<td>Optimisation iterations; 0 lets UMAP choose based on dataset size</td>
+</tr>
+<tr>
+<td>Learning rate</td>
+<td>1.0</td>
+<td>Step size for the embedding optimiser</td>
+</tr>
+<tr>
+<td>Spread</td>
+<td>1.0</td>
+<td>Overall scale of the 2D embedding</td>
+</tr>
+<tr>
+<td>Low memory</td>
+<td>true</td>
+<td>Use a slower but memory-efficient graph construction algorithm; keep enabled for datasets &gt; 10 000 molecules</td>
+</tr>
+</tbody>
+</table>
+<p><strong>t-SNE-specific:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Device</td>
+<td>CPU</td>
+<td><code>CPU (openTSNE)</code> or <code>CUDA (tsne-cuda)</code> — GPU can be 10–100× faster for large datasets</td>
+</tr>
+<tr>
+<td>CUDA device</td>
+<td>0</td>
+<td>GPU index when device = CUDA</td>
+</tr>
+<tr>
+<td>Perplexity</td>
+<td>30</td>
+<td>Effective number of neighbours; typical range 5–50. Increase for large, dense datasets</td>
+</tr>
+<tr>
+<td>Learning rate</td>
+<td>200</td>
+<td>Gradient step size. If the embedding collapses to a ball, increase this value</td>
+</tr>
+<tr>
+<td>Iterations</td>
+<td>1 000</td>
+<td>Total optimisation steps. Increase for large datasets</td>
+</tr>
+<tr>
+<td>Early exaggeration</td>
+<td>12.0</td>
+<td>Amplification of inter-cluster distances in the early optimisation phase — helps clusters separate</td>
+</tr>
+<tr>
+<td>Theta</td>
+<td>0.5</td>
+<td>Barnes–Hut approximation (0 = exact but slow; 1 = fastest but less accurate)</td>
+</tr>
+<tr>
+<td>Initialization</td>
+<td>PCA</td>
+<td>Starting layout for the embedding: <code>PCA</code> (recommended, deterministic), <code>Random</code>, or <code>Spectral</code></td>
+</tr>
+<tr>
+<td>Parallel jobs</td>
+<td>1</td>
+<td>CPU threads for openTSNE</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Output</strong>: two numeric columns added to the dataset, e.g. <code>dim_red_x</code> and <code>dim_red_y</code>. Bind these to the X/Y axes of a scatter plot in the Visualization tab to see the chemical space layout.</p>
+<hr />
+<h3 id="predict-properties">Predict properties</h3>
+<p>Runs property inference using a MolCraftDiffusion checkpoint. Only models that expose property predictors (CFG-trained models) appear in the list.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Options</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Predictive model</td>
+<td>select from available checkpoints</td>
+<td>The checkpoint used for inference</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Output</strong>: one numeric column per predicted property, added to the dataset.</p>
+<p>This is useful for predicting properties on a new set of molecules (e.g. generated structures) using a model trained on labelled data.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "toc.integrate", "search.suggest", "content.tooltips"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
