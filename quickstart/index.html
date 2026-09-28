@@ -1263,16 +1263,22 @@
 <hr />
 <h2 id="1-launch">1. Launch<a class="headerlink" href="#1-launch" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>conda<span class="w"> </span>activate<span class="w"> </span>molcraft
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>./dev.sh
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>automolcraft<span class="w"> </span>serve
 </code></pre></div>
-<p>Open <code>http://localhost:8000</code>. The app opens on the <strong>Management</strong> tab by default.</p>
+<p>Your browser opens <code>http://127.0.0.1:8000</code> (if it doesn't, open it yourself). The app opens on the
+<strong>Management</strong> tab by default. If you installed manually, <code>./dev.sh</code> starts the same app.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Run <code>automolcraft doctor</code> first if this is a new setup — it lists anything missing (models, xTB, GPU)
+before you hit it in a job.</p>
+</div>
 <hr />
 <h2 id="2-generate-a-molecule">2. Generate a molecule<a class="headerlink" href="#2-generate-a-molecule" title="Permanent link">&para;</a></h2>
 <h3 id="2a-open-the-generation-tab">2a. Open the generation tab<a class="headerlink" href="#2a-open-the-generation-tab" title="Permanent link">&para;</a></h3>
 <p>Click <strong>3D molecule generation</strong> in the tab bar.</p>
 <div class="admonition warning">
 <p class="admonition-title">MolCraftDiff not installed</p>
-<p>If a yellow banner appears, the <code>MolCraftDiff</code> CLI is missing. Install it following <a href="../installation/#2-install-molcraftdiffusion">Installation step 2</a> and restart the backend.</p>
+<p>If a yellow banner appears, the <code>MolCraftDiff</code> CLI is missing. Run <code>automolcraft doctor</code> to see what is missing, install it following <a href="../installation/">Installation</a>, and restart the backend.</p>
 </div>
 <h3 id="2b-select-a-model">2b. Select a model<a class="headerlink" href="#2b-select-a-model" title="Permanent link">&para;</a></h3>
 <p>The <strong>Models</strong> panel (left column) lists every checkpoint folder found under <code>MOLCRAFT_MODELS_DIR</code>. Models labelled <strong>CFG</strong> support property-targeted generation; models labelled <strong>Unconditional</strong> generate freely. Click one to select it.</p>

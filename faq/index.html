@@ -1047,6 +1047,39 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#valueerror-numpydtype-size-changed-after-installing-analysis-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ValueError: numpy.dtype size changed after installing analysis packages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-do-xtbs-scratch-files-go" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where do xTB's scratch files go?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#on-macos-the-health-check-says-the-molcraftdiffusion-commit-does-not-match" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        On macOS, the health check says the MolCraftDiffusion commit does not match
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1158,6 +1191,39 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#valueerror-numpydtype-size-changed-after-installing-analysis-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ValueError: numpy.dtype size changed after installing analysis packages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-do-xtbs-scratch-files-go" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where do xTB's scratch files go?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#on-macos-the-health-check-says-the-molcraftdiffusion-commit-does-not-match" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        On macOS, the health check says the MolCraftDiffusion commit does not match
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1180,8 +1246,8 @@
 
 <h1 id="faq">FAQ<a class="headerlink" href="#faq" title="Permanent link">&para;</a></h1>
 <h2 id="molcraftdiff-is-not-installed-banner-appears">"MolCraftDiff is not installed" banner appears<a class="headerlink" href="#molcraftdiff-is-not-installed-banner-appears" title="Permanent link">&para;</a></h2>
-<p>The <code>MolCraftDiff</code> CLI could not be found in the current Python environment. Install it following <a href="../installation/#2-install-molcraftdiffusion">Installation step 2</a>, then restart the backend (<code>./dev.sh</code>).</p>
-<p>If you installed into a different environment than the one <code>dev.sh</code> is using, set the correct interpreter explicitly:</p>
+<p>The <code>MolCraftDiff</code> CLI could not be found in the current Python environment. Run <code>automolcraft doctor</code> — it shows which Python the app uses and whether MolCraftDiffusion is installed there. Install it following <a href="../installation/">Installation</a>, then restart the backend.</p>
+<p><code>automolcraft serve</code> always uses the environment it is installed in. With <code>./dev.sh</code>, if you installed into a different environment than the one <code>dev.sh</code> picks, set the interpreter explicitly:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nv">BACKEND_PYTHON</span><span class="o">=</span>/path/to/your/python<span class="w"> </span>./dev.sh
 </code></pre></div>
 <hr />
@@ -1190,23 +1256,25 @@
 <p>Check the current models directory shown under the model list. If it is wrong, set <code>MOLCRAFT_MODELS_DIR</code> in your <code>.env</code> file and restart.</p>
 <hr />
 <h2 id="xtb-calculations-fail-immediately">xTB calculations fail immediately<a class="headerlink" href="#xtb-calculations-fail-immediately" title="Permanent link">&para;</a></h2>
-<p><code>xtb</code> is not on the PATH used by the backend. Install it via conda-forge in the same environment:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span><span class="nv">xtb</span><span class="o">==</span><span class="m">6</span>.7.1
+<p><code>xtb</code> is not on the PATH used by the backend (<code>automolcraft doctor</code> shows it under <em>Analysis tools</em>). Install it via conda-forge in the same environment:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>--override-channels<span class="w"> </span><span class="nv">xtb</span><span class="o">==</span><span class="m">6</span>.7.1<span class="w"> </span>xtb-python
 </code></pre></div>
+<p><code>xtb-python</code> is needed by <strong>XTB electronic properties</strong>; the <code>xtb</code> binary alone covers geometry optimisation.</p>
 <p>Then restart the backend.</p>
 <hr />
 <h2 id="port-conflict-on-startup">Port conflict on startup<a class="headerlink" href="#port-conflict-on-startup" title="Permanent link">&para;</a></h2>
 <p>If port 8000 is already in use:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nv">BACKEND_PORT</span><span class="o">=</span><span class="m">9000</span><span class="w"> </span>./dev.sh
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>automolcraft<span class="w"> </span>serve<span class="w"> </span>--port<span class="w"> </span><span class="m">9000</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1"># or, with the manual install:</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="nv">BACKEND_PORT</span><span class="o">=</span><span class="m">9000</span><span class="w"> </span>./dev.sh
 </code></pre></div>
 <p>Then open <code>http://localhost:9000</code>.</p>
 <hr />
 <h2 id="the-frontend-shows-a-blank-page-or-cannot-connect">The frontend shows a blank page or "cannot connect"<a class="headerlink" href="#the-frontend-shows-a-blank-page-or-cannot-connect" title="Permanent link">&para;</a></h2>
-<p>The pre-built frontend in <code>frontend/dist</code> may be missing or stale. Rebuild it:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">cd</span><span class="w"> </span>webapp/database-explorer-lite/frontend
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>npm<span class="w"> </span>install<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span>build
+<p>The pre-built frontend in <code>frontend/dist</code> may be missing or stale (for example after <code>git pull</code>). Rebuild it and start again:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>automolcraft<span class="w"> </span>serve<span class="w"> </span>--rebuild
 </code></pre></div>
-<p>Then restart <code>./dev.sh</code>. Alternatively, use <code>FRONTEND_DEV=1 ./dev.sh</code> to run Vite directly at <code>:5173</code>.</p>
+<p>With the manual install, run <code>npm install &amp;&amp; npm run build</code> in <code>webapp/database-explorer-lite/frontend</code>, then restart <code>./dev.sh</code>. To run Vite directly at <code>:5173</code> instead, use <code>automolcraft serve --dev</code> (or <code>FRONTEND_DEV=1 ./dev.sh</code>).</p>
 <hr />
 <h2 id="an-analysis-job-completes-but-apply-results-produces-no-new-columns">An analysis job completes but "Apply results" produces no new columns<a class="headerlink" href="#an-analysis-job-completes-but-apply-results-produces-no-new-columns" title="Permanent link">&para;</a></h2>
 <p>The runner may have returned an empty result (e.g. all molecules timed out). Check the job log by clicking the terminal icon next to the job in the queue. Common causes:</p>
@@ -1218,6 +1286,18 @@
 <hr />
 <h2 id="dataset-is-loaded-but-visualization-shows-no-plots">Dataset is loaded but Visualization shows no plots<a class="headerlink" href="#dataset-is-loaded-but-visualization-shows-no-plots" title="Permanent link">&para;</a></h2>
 <p>Panels must be added manually. In the Visualization action bar, click <strong>2D Scatter</strong>, <strong>3D Scatter</strong>, or <strong>Histogram</strong> to add a plot panel, then click its axis labels to change the column bindings.</p>
+<hr />
+<h2 id="valueerror-numpydtype-size-changed-after-installing-analysis-packages"><code>ValueError: numpy.dtype size changed</code> after installing analysis packages<a class="headerlink" href="#valueerror-numpydtype-size-changed-after-installing-analysis-packages" title="Permanent link">&para;</a></h2>
+<p>pandas was downgraded to a build made for numpy 1. The usual cause is <code>pip install 'molcraftdiffusion[analyze]'</code>, which pulls in <code>posecheck</code> and its <code>pandas==2.0.0</code> pin. Reinstall a numpy-2 pandas:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s1">'pandas&gt;=2.3,&lt;2.4'</span>
+</code></pre></div>
+<p>pip will then warn that <code>posecheck</code> wants pandas 2.0.0; that only affects protein-pocket checks. The environment files avoid this by not installing <code>posecheck</code>.</p>
+<hr />
+<h2 id="where-do-xtbs-scratch-files-go">Where do xTB's scratch files go?<a class="headerlink" href="#where-do-xtbs-scratch-files-go" title="Permanent link">&para;</a></h2>
+<p>xTB writes files such as <code>xtbopt.log</code>, <code>charges</code>, <code>wbo</code> and <code>xtbrestart</code> into its working directory. Analysis and generation jobs run inside their own job folder (under <code>MOLCRAFT_ANALYSIS_WORK_DIR</code> or <code>MOLCRAFT_OUTPUTS_DIR</code>), so those files stay with the job. If you find them in the repository root, they come from an older version of the app and can be deleted.</p>
+<hr />
+<h2 id="on-macos-the-health-check-says-the-molcraftdiffusion-commit-does-not-match">On macOS, the health check says the MolCraftDiffusion commit does not match<a class="headerlink" href="#on-macos-the-health-check-says-the-molcraftdiffusion-commit-does-not-match" title="Permanent link">&para;</a></h2>
+<p>Expected. <code>environment-macos.yml</code> installs MolCraftDiffusion 1.12.0 at the commit that added macOS support, which is newer than the Linux pin. The version still matches. See <a href="../installation/#macos-apple-silicon">macOS (Apple Silicon)</a>.</p>
 
 
 
