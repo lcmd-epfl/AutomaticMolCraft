@@ -106,10 +106,21 @@ If you use **AutomaticMolCraft** in your research, please cite:
 
 ### AutomaticMolCraft
 
-[![DOI](https://img.shields.io/badge/DOI-TBD-lightgrey)](https://github.com/pregHosh/AutomaticMolCraftt)
+[![DOI](https://img.shields.io/badge/DOI-10.26434/chemrxiv.15008080/v1-red)](https://chemrxiv.org/doi/abs/10.26434/chemrxiv.15008080/v1)
 
-_Citation placeholder — no preprint/DOI for AutomaticMolCraft itself yet._
+[AutomaticMolCraft: A Web Interface for 3D Molecular Generation, Dataset Curation, and Structure–Property Analysis](https://chemrxiv.org/doi/abs/10.26434/chemrxiv.15008080/v1)
 
+```bibtex
+@article{worakul_automaticmolcraft_2026,
+	title = {{AutomaticMolCraft}: {A} {Web} {Interface} for {3D} {Molecular} {Generation}, {Dataset} {Curation}, and {Structure}–{Property} {Analysis}},
+	url = {https://chemrxiv.org/doi/abs/10.26434/chemrxiv.15008080/v1},
+	doi = {10.26434/chemrxiv.15008080/v1},
+	publisher = {American Chemical Society (ACS)},
+	author = {Worakul, Thanapat and Hernandez Cuellar, Osvaldo and Corminboeuf, Clémence},
+	month = aug,
+	year = {2026},
+}
+```
 If you use **MolCraftDiffusion**, the generative engine this app is built on, please cite:
 
 ### MolCraftDiffusion
