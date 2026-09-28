@@ -8,10 +8,15 @@ This page walks from a fresh launch to a generated molecule and a simple visuali
 
 ```bash
 conda activate molcraft
-./dev.sh
+automolcraft serve
 ```
 
-Open `http://localhost:8000`. The app opens on the **Management** tab by default.
+Your browser opens `http://127.0.0.1:8000` (if it doesn't, open it yourself). The app opens on the
+**Management** tab by default. If you installed manually, `./dev.sh` starts the same app.
+
+!!! tip
+    Run `automolcraft doctor` first if this is a new setup — it lists anything missing (models, xTB, GPU)
+    before you hit it in a job.
 
 
 ---
@@ -23,7 +28,7 @@ Open `http://localhost:8000`. The app opens on the **Management** tab by default
 Click **3D molecule generation** in the tab bar.
 
 !!! warning "MolCraftDiff not installed"
-    If a yellow banner appears, the `MolCraftDiff` CLI is missing. Install it following [Installation step 2](installation.md#2-install-molcraftdiffusion) and restart the backend.
+    If a yellow banner appears, the `MolCraftDiff` CLI is missing. Run `automolcraft doctor` to see what is missing, install it following [Installation](installation.md), and restart the backend.
 
 ### 2b. Select a model
 

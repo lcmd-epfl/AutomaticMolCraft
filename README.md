@@ -41,27 +41,38 @@ A browser-based platform for the full 3D molecular generative design pipeline: r
 ## Installation
 
 ```bash
-conda create -n molcraft python=3.11 -y
+git clone https://github.com/pregHosh/AutomaticMolCraftt && cd AutomaticMolCraftt
+conda env create -f environment.yml        # macOS (Apple Silicon): environment-macos.yml
 conda activate molcraft
-conda install -c conda-forge xtb==6.7.1 openbabel -y
+automolcraft doctor                        # checks xTB, MolCraftDiffusion, GPU, models; says what's missing
 ```
 
-**Pinned to MolCraftDiffusion commit `b79e8aadc85f7047fbd9a70d1c41ea3aba0fc0a7`** (version 1.12.0) — not on PyPI, install from the exact commit:
+The environment file installs xTB, OpenBabel, Node.js, MolCraftDiffusion at the pinned commit
+(`b79e8aad…`, version 1.12.0), the analysis-tool packages, and this app (which provides the
+`automolcraft` command). Download [pretrained models from Hugging Face](https://huggingface.co/pregH/MolecularDiffusion)
+into `models/`, then launch:
 
 ```bash
+automolcraft serve                         # builds the frontend on first run, opens http://127.0.0.1:8000
+```
+
+Options: `--port 9000`, `--host 0.0.0.0`, `--dev` (Vite hot reload), `--rebuild`, `--no-browser`.
+
+**Manual install** — the step-by-step route still works and launches with `./dev.sh`:
+
+```bash
+conda create -n molcraft python=3.11 -y && conda activate molcraft
+conda install -c conda-forge xtb==6.7.1 openbabel -y
 MOLCRAFT_REF=b79e8aadc85f7047fbd9a70d1c41ea3aba0fc0a7
 pip install "molcraftdiffusion[gpu] @ git+https://github.com/pregHosh/MolCraftDiffusion@${MOLCRAFT_REF}" \
     --find-links https://data.pyg.org/whl/torch-2.6.0+cu124.html   # or [cpu] with the CPU torch index
-```
-
-Download [pretrained models from Hugging Face](https://huggingface.co/pregH/MolecularDiffusion) into `models/`, then launch:
-
-```bash
+pip install -r webapp/database-explorer-lite/backend/requirements.txt
 cp webapp/database-explorer-lite/.env.example webapp/database-explorer-lite/.env
 ./dev.sh
 ```
 
-Open `http://localhost:8000`. See the [installation guide](https://preghosh.github.io/AutomaticMolCraftt/installation/) for environment variables, GPU/CPU builds, and dev-mode options.
+See the [installation guide](https://preghosh.github.io/AutomaticMolCraftt/installation/) for macOS notes,
+CPU-only Linux, environment variables, and all launch options.
 
 ## Usage
 

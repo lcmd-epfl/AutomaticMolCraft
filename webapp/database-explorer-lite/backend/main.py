@@ -218,7 +218,7 @@ TRAIN_OUTPUTS_DIR = (
     else (REPO_ROOT / "outputs" / "train").resolve()
 )
 TRAIN_DRY_DIR = TRAIN_OUTPUTS_DIR / "dry"
-TRAIN_DB_PATH = HERE / "training_jobs.db"
+TRAIN_DB_PATH = Path(os.environ.get("MOLCRAFT_TRAIN_DB", HERE / "training_jobs.db")).resolve()
 
 TRAINING_QUEUE: list[str] = []
 TRAINING_QUEUE_PAYLOADS: dict[str, dict[str, Any]] = {}
@@ -1849,7 +1849,8 @@ def _run_generation_job(job_id: str, cmd: list[str], job_dir: Path, log_path: Pa
     return_code = None
     try:
         with log_path.open("ab") as log_fh:
-            proc = subprocess.Popen(cmd, cwd=str(REPO_ROOT), stdout=log_fh, stderr=subprocess.STDOUT)
+            # Run inside the job folder so any scratch files the CLI writes stay with the job.
+            proc = subprocess.Popen(cmd, cwd=str(job_dir), stdout=log_fh, stderr=subprocess.STDOUT)
             ACTIVE_GENERATION_PROCS[job_id] = proc
             return_code = proc.wait()
     except Exception as exc:
@@ -3469,9 +3470,12 @@ def _analysis_run_command(
             log_fh.flush()
             # Write straight to the log file: live tailing keeps working and
             # proc.wait(timeout=...) is not defeated by an EOF drain loop.
+            # xtb drops scratch files (xtbopt.log, charges, wbo, ...) in its cwd, so run in
+            # the job folder. `predict` keeps REPO_ROOT: a custom MOLCRAFT_PREDICT_CONFIG may
+            # hold paths relative to the repo.
             proc = subprocess.Popen(
                 cmd,
-                cwd=str(REPO_ROOT),
+                cwd=str(REPO_ROOT if cmd[1:2] == ["predict"] else job_dir),
                 stdout=log_fh,
                 stderr=subprocess.STDOUT,
                 text=True,
@@ -6042,6 +6046,7 @@ CREATE TABLE IF NOT EXISTS training_jobs (
 def _train_db_init() -> None:
     TRAIN_OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
     TRAIN_DRY_DIR.mkdir(parents=True, exist_ok=True)
+    TRAIN_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(str(TRAIN_DB_PATH)) as con:
         con.execute(_TRAINING_SCHEMA)
         con.commit()

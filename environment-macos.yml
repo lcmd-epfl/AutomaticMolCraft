@@ -1,0 +1,33 @@
+# AutomaticMolCraft — macOS on Apple Silicon (M-series GPU through PyTorch MPS)
+#
+#   conda env create -f environment-macos.yml
+#   conda activate molcraft
+#   automolcraft doctor
+#   automolcraft serve
+#
+# Linux / WSL: use environment.yml instead.
+name: molcraft
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.11
+  - pip
+  - xtb=6.7.1
+  - xtb-python
+  - openbabel
+  - nodejs
+  - pip:
+      # MolCraftDiffusion 1.12.0 at its macOS-support commit: plain PyPI torch (with MPS) and
+      # pure-torch torch_scatter / torch_cluster shims instead of the PyG C++ extensions.
+      - molcraftdiffusion[mac] @ git+https://github.com/pregHosh/MolCraftDiffusion@dd69d35ac78f2b3c77a08b8a9285f65b89fc8b1e
+      - molcraft-mac-shims @ git+https://github.com/pregHosh/MolCraftDiffusion@dd69d35ac78f2b3c77a08b8a9285f65b89fc8b1e#subdirectory=mac_shims
+      # Analysis-tool dependencies. MolCraftDiffusion's [analyze] extra is not used: it pulls
+      # posecheck, which pins pandas==2.0.0 and breaks numpy 2.
+      - posebusters>=0.5.1
+      - morfeus-ml
+      - rmsd
+      - open3d
+      - pandas>=2.3,<2.4
+      # This web app, with UMAP and SOAP featurisation.
+      - -e .[all]

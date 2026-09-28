@@ -1,0 +1,35 @@
+# AutomaticMolCraft — Linux / WSL (NVIDIA CUDA 12.4)
+#
+#   conda env create -f environment.yml
+#   conda activate molcraft
+#   automolcraft doctor
+#   automolcraft serve
+#
+# macOS (Apple Silicon): use environment-macos.yml instead.
+# CPU-only Linux: replace the find-links URL with .../torch-2.6.0+cpu.html and the
+# `molcraftdiffusion[gpu]` line with `molcraftdiffusion[cpu]`, and add
+# `--extra-index-url https://download.pytorch.org/whl/cpu`.
+name: molcraft
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.11
+  - pip
+  - xtb=6.7.1
+  - xtb-python
+  - openbabel
+  - nodejs
+  - pip:
+      - --find-links https://data.pyg.org/whl/torch-2.6.0+cu124.html
+      # Pinned MolCraftDiffusion commit (1.12.0); keep in sync with MOLCRAFT_PINNED_COMMIT in backend/main.py.
+      - molcraftdiffusion[gpu] @ git+https://github.com/pregHosh/MolCraftDiffusion@b79e8aadc85f7047fbd9a70d1c41ea3aba0fc0a7
+      # Analysis-tool dependencies. MolCraftDiffusion's [analyze] extra is not used: it pulls
+      # posecheck, which pins pandas==2.0.0 and breaks numpy 2.
+      - posebusters>=0.5.1
+      - morfeus-ml
+      - rmsd
+      - open3d
+      - pandas>=2.3,<2.4
+      # This web app, with UMAP and SOAP featurisation.
+      - -e .[all]

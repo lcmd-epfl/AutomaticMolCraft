@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "automolcraft"
+version = "0.1.0"
+description = "Browser-based platform for 3D molecular generative design with MolCraftDiffusion"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+# The web app's own dependencies. MolCraftDiffusion, xTB and OpenBabel are platform-specific
+# and come from environment.yml / environment-macos.yml (see docs/installation.md).
+dependencies = [
+    "fastapi==0.114.2",
+    "uvicorn[standard]==0.29.0",
+    "python-multipart",
+    "PyYAML>=6.0",
+    "openTSNE>=1.0.4",
+    "ase>=3.22",
+]
+
+[project.optional-dependencies]
+umap = ["umap-learn"]
+featurize = ["dscribe"]
+all = ["automolcraft[umap,featurize]"]
+
+[project.scripts]
+automolcraft = "automolcraft.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/pregHosh/AutomaticMolCraftt"
+Documentation = "https://preghosh.github.io/AutomaticMolCraftt/"
+
+[tool.setuptools]
+packages = ["automolcraft"]
